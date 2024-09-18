@@ -1,17 +1,15 @@
-set(ProjectName "v7")
-set(ProjectSubName "Common.Services")
+set(TARGET ${PARENT_PROJECT_NAME}.TransactionManager)
 
-add_library(${ProjectName}.${ProjectSubName}.TransactionManager
-    Source/TransactionManager.cpp
+add_library(${TARGET}
+    source/transaction_manager.cpp
 )
-target_include_directories(${ProjectName}.${ProjectSubName}.TransactionManager
+target_include_directories(${TARGET}
     PUBLIC
-    Source/
-    Include/
+    source/
+    include/
+    ${CMAKE_HOME_DIRECTORY}/common
 )
-target_link_libraries(${ProjectName}.${ProjectSubName}.TransactionManager
+target_link_libraries(${TARGET}
     JsonCpp::JsonCpp
-    v7.Common.IStationDatabase
-    v7.Common.IStationDatabaseFactory
-    v7.Common.Services.Exceptions
+    DrugLib.Common.Database.DBI
 )

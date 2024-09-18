@@ -2,9 +2,9 @@
 #pragma GCC system_header
 #include "hash_creator_interface.hpp"
 
-namespace ControlSystemV7::Common
+namespace drug_lib::common::hash_creator
 {
-    class SHA256Function : public IHashCreator
+    class SHA256Function : public HashCreator
     {
     private:
         SHA256_CTX sha256;

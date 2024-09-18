@@ -49,4 +49,5 @@ endif()
 
 # Include subdirectories
 add_subdirectory(common)
-# Add other subdirectories as needed
+
+add_subdirectory(data)
