@@ -8,9 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Add options to enable or disable Boost and Qt5
-option(USE_BOOST "Enable Boost library" ON)
-option(USE_QT5 "Enable Qt5 library" ON)
-
+option(USE_BOOST "Enable Boost library" OFF)
+option(USE_QT5 "Enable Qt5 library" OFF)
+option(USE_PROTOBUF "Enable Ptotobuf" OFF)
 # Global compiler options (if necessary)
 # It's better to set these per-target
 # add_compile_options(-pthread -pipe -Wall -fPIC -Werror=return-type)
@@ -19,7 +19,7 @@ option(USE_QT5 "Enable Qt5 library" ON)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenSSL 3.0.0 REQUIRED)
-find_package(Protobuf REQUIRED)
+
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
@@ -46,8 +46,18 @@ if(USE_QT5)
         message(FATAL_ERROR "Qt5 libraries not found, but USE_QT5 is ON.")
     endif()
 endif()
-
+if(USE_PROTOBUF)
+    find_package(Protobuf REQUIRED)
+    if(NOT Protobuf_FOUND)
+        message(FATAL_ERROR "Protobuf libraries not found, but USE_PROTOBUF is ON.")
+    endif()
+endif()
 # Include subdirectories
 add_subdirectory(common)
 
 add_subdirectory(data)
+
+add_subdirectory(dao)
+
+
+add_subdirectory(tests)
