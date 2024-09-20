@@ -6,7 +6,7 @@ add_library(${TARGET}
 
 target_link_libraries(${TARGET}
     JsonCpp::JsonCpp
-    DrugLib.Database.Base
+    DrugLib.Common.Database.Base
 )
 target_include_directories(${TARGET}
     INTERFACE

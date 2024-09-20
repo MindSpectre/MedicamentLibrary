@@ -3,16 +3,18 @@
 #include <string>
 namespace drug_lib::data
 {
+    /// @brief base class displying field in database
     class FieldBase
     {
     public:
         virtual ~FieldBase() = default;
-
+        /// @return column name of element
         virtual const std::string &name() const = 0;
     };
-
+    /// @brief real field of database
+    /// @tparam T type of value in database
     template <typename T>
-    class Field : public FieldBase
+    class Field final: public FieldBase 
     {
     public:
         Field(std::string name, T value)
