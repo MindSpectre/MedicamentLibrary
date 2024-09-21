@@ -7,9 +7,10 @@
 #include <vector>
 
 
-namespace drug_lib::data
+namespace drug_lib::common::db
 {
     /// @brief class for describe EQUAL conditions for db fields 
+    /// @note equally returning records tht have these fields
     /// @warning ONLY SUPPORT EQUAL 
     class FieldConditions {
     public:
@@ -21,7 +22,7 @@ namespace drug_lib::data
             fields_.push_back(std::move(field));
         }
         /// @return acceptable collection of conditions
-        const std::vector<std::shared_ptr<FieldBase>>& fields() const {
+        const std::vector<std::shared_ptr<FieldBase>>& extract() const {
             return fields_;
         }
 

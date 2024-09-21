@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-namespace drug_lib::data
+namespace drug_lib::common::db
 {
     class Record {
     public:

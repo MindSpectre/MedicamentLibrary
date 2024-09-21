@@ -52,12 +52,13 @@ if(USE_PROTOBUF)
         message(FATAL_ERROR "Protobuf libraries not found, but USE_PROTOBUF is ON.")
     endif()
 endif()
-# Include subdirectories
+
+##############################################################################
+
 add_subdirectory(common)
 
 add_subdirectory(data)
 
 add_subdirectory(dao)
-
 
 add_subdirectory(tests)
