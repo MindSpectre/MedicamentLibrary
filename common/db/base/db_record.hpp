@@ -7,7 +7,8 @@
 
 namespace drug_lib::common::db
 {
-    class Record {
+    class Record final
+    {
     public:
         virtual ~Record() = default;
 
@@ -15,7 +16,7 @@ namespace drug_lib::common::db
             fields_.push_back(std::move(field));
         }
 
-        const std::vector<std::shared_ptr<FieldBase>>& fields() const {
+        [[nodiscard]] const std::vector<std::shared_ptr<FieldBase>>& fields() const {
             return fields_;
         }
 

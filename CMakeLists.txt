@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 
 project(DrugLib LANGUAGES CXX)
+set(CMAKE_TOOLCHAIN_FILE "/opt/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -25,7 +26,7 @@ find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
 
 # Conditionally find Boost if enabled
-if(USE_BOOST)
+if (USE_BOOST)
     # Boost settings (adjust as needed)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_MULTITHREADED OFF)
@@ -34,24 +35,24 @@ if(USE_BOOST)
     # set(BOOST_ROOT /opt/vcpkg/installed/x64-linux) # Adjust if necessary
 
     find_package(Boost REQUIRED COMPONENTS log_setup log filesystem program_options)
-    if(NOT Boost_FOUND)
+    if (NOT Boost_FOUND)
         message(FATAL_ERROR "Boost libraries not found, but USE_BOOST is ON.")
-    endif()
-endif()
+    endif ()
+endif ()
 
 # Conditionally find Qt5 if enabled
-if(USE_QT5)
+if (USE_QT5)
     find_package(Qt5 COMPONENTS Core Quick REQUIRED)
-    if(NOT Qt5_FOUND)
+    if (NOT Qt5_FOUND)
         message(FATAL_ERROR "Qt5 libraries not found, but USE_QT5 is ON.")
-    endif()
-endif()
-if(USE_PROTOBUF)
+    endif ()
+endif ()
+if (USE_PROTOBUF)
     find_package(Protobuf REQUIRED)
-    if(NOT Protobuf_FOUND)
+    if (NOT Protobuf_FOUND)
         message(FATAL_ERROR "Protobuf libraries not found, but USE_PROTOBUF is ON.")
-    endif()
-endif()
+    endif ()
+endif ()
 
 ##############################################################################
 

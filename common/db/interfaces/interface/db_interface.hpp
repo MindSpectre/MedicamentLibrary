@@ -10,7 +10,8 @@
 
 namespace drug_lib::common::db::interfaces
 {
-    using namespace drug_lib::data;
+    using namespace drug_lib::common::db;
+
     class DBInterface
     {
     public:
@@ -24,7 +25,7 @@ namespace drug_lib::common::db::interfaces
         // Управление таблицами
         virtual void create_table(const std::string& table_name, const Record& field_list) = 0;
         virtual void remove_table(const std::string& table_name) = 0;
-        virtual bool has_table(const std::string& table_name) const = 0;
+        [[nodiscard]] virtual bool check_table(const std::string& table_name) const = 0;
 
         // Манипуляция данными
         virtual void add_data(const std::string& table_name, const std::vector<Record>& rows) = 0;
@@ -60,7 +61,8 @@ namespace drug_lib::common::db::interfaces
             std::vector<std::shared_ptr<FieldBase>>&& conditions) = 0;
 
         // Получение количества записей
-        virtual int get_count(const std::string& table_name, const std::shared_ptr<FieldBase>& field, double& query_exec_time) = 0;
+        virtual int get_count(const std::string& table_name, const std::shared_ptr<FieldBase>& field,
+                              double& query_exec_time) = 0;
 
         // Методы полнотекстового поиска
         virtual std::vector<Record> get_data_fts(
@@ -93,8 +95,8 @@ namespace drug_lib::common::db::interfaces
         template <typename... Fields>
         void upsert_data(const std::string& table_name,
                          const std::vector<Record>& rows,
-                         std::vector<std::shared_ptr<FieldBase>> conflict_fields,
-                         std::vector<std::shared_ptr<FieldBase>> replace_fields)
+                         const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
+                         const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
             upsert_data(table_name, rows, conflict_fields, replace_fields);
         }
@@ -102,8 +104,8 @@ namespace drug_lib::common::db::interfaces
         template <typename... Fields>
         void upsert_data(const std::string& table_name,
                          std::vector<Record>&& rows,
-                         std::vector<std::shared_ptr<FieldBase>> conflict_fields,
-                         std::vector<std::shared_ptr<FieldBase>> replace_fields)
+                         const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
+                         const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
             upsert_data(table_name, std::move(rows), conflict_fields, replace_fields);
         }

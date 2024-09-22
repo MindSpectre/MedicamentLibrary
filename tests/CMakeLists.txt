@@ -1,9 +1,9 @@
 add_executable(InstallmentCheck
-    basic/installment_check.cpp
+        basic/installment_check.cpp
 )
 
 target_link_libraries(InstallmentCheck
-    PRIVATE
-    DrugLib.Common.Database.Base
-    DrugLib.Dao.CrudBase
+        PRIVATE
+        DrugLib.Dao.CrudInterface
+        DrugLib.Dao.Handbook.Medicaments
 )

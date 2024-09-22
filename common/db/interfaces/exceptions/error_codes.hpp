@@ -1,4 +1,4 @@
-namespace ControlSystemV7::Common::Services::Exceptions
+namespace drug_lib::common::db
 {
     namespace ReturnErrorCodes
     {
@@ -29,21 +29,3 @@ namespace ControlSystemV7::Common::Services::Exceptions
         };
     }
 }
-/*
-| Value     | Description    |
-| :---:     | :---:          |
-| 100       | OK.No errors   |
-| 211       | Invalid hash   |
-| 221       | Invalid data   |
-| 222       | Invalid volume of fuel/good |
-| 223       | Invalid product. |
-| 310       | DB Exception:NoError  |
-| 311       | DB Exception:CreateTableError  |
-| 312       | DB Exception:RemoveTableError  |
-| 313       | DB Exception:HasTableError  |
-| 314       | DB Exception:AddRowError  |
-| 315       | DB Exception:QueryError  |
-| 316       | DB Exception:UnknownError  |
-| 330       | Inaccessible files. |
-| 900       | Unknown error |
-*/

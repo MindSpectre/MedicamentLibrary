@@ -7,7 +7,7 @@ namespace drug_lib::common::hash_creator
     class SHA256Function : public HashCreator
     {
     private:
-        SHA256_CTX sha256;
+        SHA256_CTX sha256{};
 
     public:
         SHA256Function(/* args */)
@@ -15,13 +15,13 @@ namespace drug_lib::common::hash_creator
             SHA256_Init(&sha256);
         }
 
-        ~SHA256Function(){}
+        ~SHA256Function() override= default;
 
-        /// @brief создает 16 битный хэш для полученой соли и данной строки
-        /// @param data самое сообщение
+        /// @brief Создает 16 битный хэш для полученой соли и данной строки
+        /// @param data Cамо сообщение
         /// @param salt соль
         /// @return 16 битный хэш с использованием ключа соли и сообщения
-        std::string HashFucntion(const std::string &data, const std::string &salt) override
+        std::string hash_function(const std::string &data, const std::string &salt) override
         {
             std::string preparedData = key + data + key;
             unsigned char hash[SHA256_DIGEST_LENGTH];
@@ -34,7 +34,7 @@ namespace drug_lib::common::hash_creator
                 sprintf(&hash_hex[i * 2], "%02x", hash[i]);
             }
 
-            return std::string(hash_hex);
+            return {hash_hex};
         }
     };
 

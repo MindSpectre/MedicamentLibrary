@@ -83,10 +83,11 @@ Makefile
 # ===========================
 # IDE and Package Manager Files
 # ===========================
-.vscode/
-.idea/
+/.vscode/
+/.idea/
 *.DS_Store
 *.iml
 *.ipch
 *.pdb
 *.opendb
+/.cmake/

@@ -10,12 +10,13 @@ namespace drug_lib::dao
     class HandbookBase
     {
     public:
+        virtual ~HandbookBase() = default;
         virtual void insert(const RecordType &record) = 0;
         virtual void insert(const std::vector<RecordType> &record) = 0;
         virtual void update(const RecordType &record) = 0;
         virtual void update(const std::vector<RecordType> &record) = 0;
-        virtual void remove(const drug_lib::data::FieldConditions &conditions) = 0;
-        virtual std::vector<RecordType> & get(const drug_lib::data::FieldConditions &conditions) = 0;
+        virtual void remove(const drug_lib::common::db::FieldConditions &conditions) = 0;
+        virtual std::vector<RecordType> & get(const drug_lib::common::db::FieldConditions &conditions) = 0;
     };
 
 }

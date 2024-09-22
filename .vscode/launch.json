@@ -1,185 +1,185 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 
-    "version": "0.2.0",
-    "configurations": [
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "v7.TestPaymasterService",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/Tests/TestPaymasterService/v7.TestPaymasterService",
+      "args": [
+        "NotStartNotifications"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
         {
-            "name": "v7.TestPaymasterService",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/Tests/TestPaymasterService/v7.TestPaymasterService",
-            "args": [
-                "NotStartNotifications"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
         },
         {
-            "name": "v7.ServicesGrpc.PaymasterService.ServiceApp",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/ServicesGrpc/PaymasterService/v7.ServicesGrpc.PaymasterService.ServiceApp",
-            "args": [
-                "--dbPort=5432",
-                "--configDir=/home/kv202/Config",
-                "--configFile=Terminals_Scantech",
-                "--logConfigDir=/home/kv202/TmpConfig/Log",
-                "--logConfigFile=PaymasterService.ini"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
-        },
-        {
-            "name": "v7.ServicesGrpc.PrintingService.ServiceApp",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/ServicesGrpc/PrintingService/v7.ServicesGrpc.Printer.ServiceApp",
-            "args": [
-                "--configDir=/home/kv202/Config",
-                "--configFile=Printing"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
-        },
-        {
-            "name": "v7.ServicesGrpc.LoaderService.ServiceApp",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/ServicesGrpc/LoaderService/v7.ServicesGrpc.LoaderService.ServiceApp",
-            "args": [
-                "--logConfigDir=/home/kv202/Config/Log",
-                "--logConfigFile=Loader.ini"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
-        },
-        {
-            "name": "v7.UITouch2",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/GUIApps/UITouch2/v7.UITouch2",
-            "args": [
-                "--terminalId=2",
-                "--printerId=1"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
-        },
-        {
-            "name": "v7.Tools.GsvToStorage",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/Tools/CsvToStorage/v7.Tools.CsvToStorage",
-            "args": [
-                "--sourceFileName=${workspaceRoot}/build/Tools/CsvToStorage/article_def_v_orig.csv",
-                "--autoGenerateBarcodes=false"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
-        },
-        {
-            "name": "v7.Tools.LoaderConfigurator",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/Tools/v7.Tools.LoaderConfigurator",
-            "args": [
-                "--configPath=/home/kv202/Config/azt2_driver_configs"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "setupCommands": [
-                {
-                    "description": "Test",
-                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
         }
-    ]
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.ServicesGrpc.PaymasterService.ServiceApp",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/ServicesGrpc/PaymasterService/v7.ServicesGrpc.PaymasterService.ServiceApp",
+      "args": [
+        "--dbPort=5432",
+        "--configDir=/home/kv202/Config",
+        "--configFile=Terminals_Scantech",
+        "--logConfigDir=/home/kv202/TmpConfig/Log",
+        "--logConfigFile=PaymasterService.ini"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.ServicesGrpc.PrintingService.ServiceApp",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/ServicesGrpc/PrintingService/v7.ServicesGrpc.Printer.ServiceApp",
+      "args": [
+        "--configDir=/home/kv202/Config",
+        "--configFile=Printing"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.ServicesGrpc.LoaderService.ServiceApp",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/ServicesGrpc/LoaderService/v7.ServicesGrpc.LoaderService.ServiceApp",
+      "args": [
+        "--logConfigDir=/home/kv202/Config/Log",
+        "--logConfigFile=Loader.ini"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.UITouch2",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/GUIApps/UITouch2/v7.UITouch2",
+      "args": [
+        "--terminalId=2",
+        "--printerId=1"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.Tools.GsvToStorage",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/Tools/CsvToStorage/v7.Tools.CsvToStorage",
+      "args": [
+        "--sourceFileName=${workspaceRoot}/build/Tools/CsvToStorage/article_def_v_orig.csv",
+        "--autoGenerateBarcodes=false"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    },
+    {
+      "name": "v7.Tools.LoaderConfigurator",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/Tools/v7.Tools.LoaderConfigurator",
+      "args": [
+        "--configPath=/home/kv202/Config/azt2_driver_configs"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "setupCommands": [
+        {
+          "description": "Test",
+          "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "visualizerFile": "/home/neo/.config/Code/User/workspaceStorage/68f352de3fef1db2e9c3773ffa45d573/tonka3000.qtvsctools/qt.natvis.xml"
+    }
+  ]
 }

@@ -3,13 +3,13 @@
 #include <string>
 namespace drug_lib::common::db
 {
-    /// @brief base class displying field in database
+    /// @brief base class displaying field in database
     class FieldBase
     {
     public:
         virtual ~FieldBase() = default;
         /// @return column name of element
-        virtual const std::string &name() const = 0;
+        [[nodiscard]] virtual const std::string &name() const = 0;
     };
     /// @brief real field of database
     /// @tparam T type of value in database
@@ -21,7 +21,7 @@ namespace drug_lib::common::db
             : name_(std::move(name)), value_(std::move(value)) {}
         /// @brief get function
         /// @return column name of field
-        const std::string &name() const override { return name_; }
+        [[nodiscard]] const std::string &name() const override { return name_; }
         void set_name(const std::string &name) { name_ = name; }
         void set_name(std::string &&name) { name_ = name; }
         /// @brief get function

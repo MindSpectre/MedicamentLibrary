@@ -1,0 +1,13 @@
+# add_library(${PARENT_PROJECT_NAME}.Strategies
+#     source/transaction_manager.cpp
+# )
+# target_include_directories(${PARENT_PROJECT_NAME}.Strategies
+#     PUBLIC
+#     source/
+#     include/
+#     ${CMAKE_HOME_DIRECTORY}/common
+# )
+# target_link_libraries(${PARENT_PROJECT_NAME}.Strategies
+#     JsonCpp::JsonCpp
+#     DrugLib.Common.Database.DBI
+# )
