@@ -12,11 +12,11 @@ namespace drug_lib::common::database
 {
     using namespace exceptions;
 
-    PqxxClient::PqxxClient(std::string_view host,
-                           int port,
-                           std::string_view db_name,
-                           std::string_view login,
-                           std::string_view password)
+    PqxxClient::PqxxClient(const std::string_view host,
+                           const int port,
+                           const std::string_view db_name,
+                           const std::string_view login,
+                           const std::string_view password)
         : in_transaction_(false)
     {
         try
@@ -43,23 +43,33 @@ namespace drug_lib::common::database
         {
             throw ConnectionException(e.what());
         }
+        pqxx::work(*this->conn_);
     }
 
     // Utility method to check if an identifier is valid
-    bool PqxxClient::is_valid_identifier(std::string_view identifier)
+    bool PqxxClient::is_valid_identifier(const std::string_view identifier)
     {
         static const std::regex valid_identifier_regex("^[a-zA-Z_][a-zA-Z0-9_]*$");
         return std::regex_match(identifier.begin(), identifier.end(), valid_identifier_regex);
     }
 
     // Utility method to escape identifiers
-    std::string PqxxClient::escape_identifier(std::string_view identifier) const
+    std::string PqxxClient::escape_identifier(const std::string_view identifier) const
     {
         if (!is_valid_identifier(identifier))
         {
             throw InvalidIdentifierException(std::string(identifier));
         }
         return conn_->quote_name(std::string(identifier));
+    }
+
+    std::unique_ptr<pqxx::work> PqxxClient::initialize_transaction()
+    {
+        if (in_transaction_)
+        {
+            return std::move(shared_transaction_);
+        }
+        return std::make_unique<pqxx::work>(*conn_);
     }
 
     // Utility method to execute a query
@@ -88,9 +98,7 @@ namespace drug_lib::common::database
         }
         try
         {
-            pqxx::work txn(*conn_);
-            txn.exec("BEGIN;");
-            txn.commit();
+            shared_transaction_ = std::make_unique<pqxx::work>(*conn_);
             in_transaction_ = true;
         }
         catch (const pqxx::sql_error& e)
@@ -108,9 +116,7 @@ namespace drug_lib::common::database
         }
         try
         {
-            pqxx::work txn(*conn_);
-            txn.exec("COMMIT;");
-            txn.commit();
+            shared_transaction_->commit();
             in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
@@ -128,9 +134,8 @@ namespace drug_lib::common::database
         }
         try
         {
-            pqxx::work txn(*conn_);
-            txn.exec("ROLLBACK;");
-            txn.commit();
+            shared_transaction_->abort();
+            shared_transaction_.reset();
             in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
@@ -140,9 +145,9 @@ namespace drug_lib::common::database
     }
 
     // Table Management
-    void PqxxClient::create_table(std::string_view table_name, const Record& field_list)
+    void PqxxClient::create_table(const std::string_view table_name, const Record& field_list)
     {
-        std::string table = escape_identifier(table_name);
+        const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
         query_stream << "CREATE TABLE " << table << " (";
 
@@ -160,14 +165,14 @@ namespace drug_lib::common::database
         execute_query(query, pqxx::params{});
     }
 
-    void PqxxClient::remove_table(std::string_view table_name)
+    void PqxxClient::remove_table(const std::string_view table_name)
     {
         const std::string table = escape_identifier(table_name);
         const std::string query = "DROP TABLE IF EXISTS " + table + ";";
         execute_query(query, pqxx::params{});
     }
 
-    bool PqxxClient::check_table(std::string_view table_name) const
+    bool PqxxClient::check_table(const std::string_view table_name) const
     {
         const std::string table = conn_->esc(std::string(table_name));
         const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = " + conn_->
