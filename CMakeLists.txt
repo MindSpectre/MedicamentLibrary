@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(DrugLib LANGUAGES CXX)
-set(CMAKE_TOOLCHAIN_FILE "/opt/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -20,7 +19,7 @@ option(USE_PROTOBUF "Enable Ptotobuf" OFF)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenSSL 3.0.0 REQUIRED)
-
+find_package(GTest CONFIG REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
