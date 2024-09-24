@@ -24,4 +24,4 @@ target_include_directories(${PARENT_PROJECT_NAME}.CrudInterface
 
 ##############################################################################
 
-add_subdirectory(handbooks)
+#add_subdirectory(handbooks)
