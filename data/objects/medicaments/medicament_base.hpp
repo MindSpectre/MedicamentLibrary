@@ -33,31 +33,31 @@ namespace drug_lib::data::objects
         void set_price(double price) { price_ = price; }
 
         // Метод для преобразования медикамента в запись (Record)
-        virtual drug_lib::common::db::Record to_record() const
+        virtual drug_lib::common::database::Record to_record() const
         {
-            drug_lib::common::db::Record newrec;
-            newrec.add_field(std::make_shared<drug_lib::common::db::Field<std::string>>("name", name_));
-            newrec.add_field(std::make_shared<drug_lib::common::db::Field<std::string>>("manufacturer", manufacturer_));
-            newrec.add_field(std::make_shared<drug_lib::common::db::Field<double>>("price", price_));
+            drug_lib::common::database::Record newrec;
+            newrec.add_field(std::make_shared<drug_lib::common::database::Field<std::string>>("name", name_));
+            newrec.add_field(std::make_shared<drug_lib::common::database::Field<std::string>>("manufacturer", manufacturer_));
+            newrec.add_field(std::make_shared<drug_lib::common::database::Field<double>>("price", price_));
             return std::move(newrec);
         }
 
         // Метод для обновления данных медикамента на основе записи
-        virtual void from_record(const drug_lib::common::db::Record &record)
+        virtual void from_record(const drug_lib::common::database::Record &record)
         {
             for (const auto &field : record.fields())
             {
                 if (field->name() == "name")
                 {
-                    name_ = dynamic_cast<drug_lib::common::db::Field<std::string> *>(field.get())->value();
+                    name_ = dynamic_cast<drug_lib::common::database::Field<std::string> *>(field.get())->value();
                 }
                 else if (field->name() == "manufacturer")
                 {
-                    manufacturer_ = dynamic_cast<drug_lib::common::db::Field<std::string> *>(field.get())->value();
+                    manufacturer_ = dynamic_cast<drug_lib::common::database::Field<std::string> *>(field.get())->value();
                 }
                 else if (field->name() == "price")
                 {
-                    price_ = dynamic_cast<drug_lib::common::db::Field<double> *>(field.get())->value();
+                    price_ = dynamic_cast<drug_lib::common::database::Field<double> *>(field.get())->value();
                 }
             }
         }
