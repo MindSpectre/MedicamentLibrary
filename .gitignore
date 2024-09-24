@@ -83,7 +83,8 @@ Makefile
 # ===========================
 # IDE and Package Manager Files
 # ===========================
-/.vscode/
+.vscode/
+
 /.idea/
 *.DS_Store
 *.iml
@@ -92,40 +93,4 @@ Makefile
 *.opendb
 /.cmake/
 /build-upstream-vcpkg/
-/build-upstream-vcpkg-dbg/.cmake/api/v1/query/cache-v2
-/build-upstream-vcpkg-dbg/.cmake/api/v1/query/cmakeFiles-v1
-/build-upstream-vcpkg-dbg/.cmake/api/v1/query/codemodel-v2
-/build-upstream-vcpkg-dbg/.cmake/api/v1/query/toolchains-v1
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/cache-v2-eae00a91b60f7006b2ae.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/cmakeFiles-v1-737ded80d07e3df4fadc.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/codemodel-v2-8291a5d6361fe7f28bc0.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-.-Debug-f5ebdc15457944623624.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common.db.behavioral-Debug-5b8e2af95e3a779b8b0d.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common.db.creational-Debug-4ee94ae1ebcdc04e728c.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common.db.postgres.pqxx_impl-Debug-30fa7fc39f53a643cacf.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common.db-Debug-c3b8185c1996396b2ea1.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common.hash_creator-Debug-e604581b665120bd8779.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-common-Debug-6a5c22a1ee7f2aca6d8e.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-dao-Debug-2c288fd5c751849be4e3.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-data.objects-Debug-012ef34e391ca84a1cf7.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-data-Debug-6f38794c44c06cb31d42.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/directory-tests-Debug-b01f6abb0ab61427ef3b.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/index-2024-09-24T19-12-46-0733.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.Database.Behavioral.OperationsStrategies-Debug-57f45440975aee7ddb5d.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.Database.Exceptions-Debug-41ad7f4c1484dde75f0d.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.Database.Factory-Debug-d9d6d3cc3acd574bf234.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.Database.Interface-Debug-9f0e380247791ea03174.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.Database.PqxxClient-Debug-bdcbb623a01d6f5c432e.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.HashCreator.Factory-Debug-b9c217cf533006642853.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Common.HashCreator.sha_256-Debug-8fcdcd47f49c80b4b196.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Dao.CrudInterface-Debug-e96b1d99bd882b2fd0ee.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Data.Objects.Medicaments-Debug-6e6aa7fc5ff3c47cc0ce.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Data.Objects.Organizations-Debug-d2b69d63f1e3792efcbc.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Data.Objects.Patients-Debug-31e91a72faf55f57a146.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-DrugLib.Tests.Unit.PqxxClient-Debug-71240fc557f35a0b290c.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/target-InstallmentCheck-Debug-a5d77039f3ea30cc904b.json
-/build-upstream-vcpkg-dbg/.cmake/api/v1/reply/toolchains-v1-632d8377847ad9d040d3.json
-/build-upstream-vcpkg-dbg/tests/DrugLib.Tests.Unit.PqxxClient
-/build-upstream-vcpkg-dbg/.ninja_deps
-/build-upstream-vcpkg-dbg/.ninja_log
-/build-upstream-vcpkg-dbg/build.ninja
+/build-upstream-vcpkg-dbg/
