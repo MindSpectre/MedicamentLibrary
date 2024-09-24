@@ -36,7 +36,8 @@ target_include_directories(${PARENT_PROJECT_NAME}.Interface
 # Error handling
 ##############################################################################
 add_library(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
-        exceptions/exceptions.hpp)
+        exceptions/exceptions.hpp
+        exceptions/error_codes.hpp)
 target_include_directories(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
         exceptions
 )

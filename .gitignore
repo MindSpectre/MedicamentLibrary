@@ -53,6 +53,8 @@
 out/
 bin/
 lib/
+/build-upstream-vcpkg/
+/build-upstream-vcpkg-dbg/
 
 # ===========================
 # CMake Generated Files
@@ -92,5 +94,3 @@ Makefile
 *.pdb
 *.opendb
 /.cmake/
-/build-upstream-vcpkg/
-/build-upstream-vcpkg-dbg/
