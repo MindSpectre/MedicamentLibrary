@@ -1,25 +1,19 @@
 # PARENT_PROJECT_NAME = DrugLib.Common.Database
 
-set(PARENT_PROJECT_NAME ${PARENT_PROJECT_NAME}.Managers)
+set(TARGET_PREFIX ${PARENT_PROJECT_NAME}.Behavioral)
 
-##############################################################################
-# Transaction Manager
-##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Transaction
-        transactions/source/transaction_manager.cpp
+add_library(${TARGET_PREFIX}.OperationsStrategies
+        operations_strategies/controller/source/strategy_control.cpp
+        operations_strategies/controller/include/strategy_control.hpp
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Transaction
+target_include_directories(${TARGET_PREFIX}.OperationsStrategies
         PUBLIC
-        transactions/source/
-        transactions/include/
-        ${CMAKE_HOME_DIRECTORY}/common
+        operations_strategies/controller/include
+        operations_strategies/controller/source
+        operations_strategies/interface
+        operations_strategies/patterns
 )
-target_link_libraries(${PARENT_PROJECT_NAME}.Transaction
-        JsonCpp::JsonCpp
-        DrugLib.Common.Database.DBI
+target_link_libraries(${TARGET_PREFIX}.OperationsStrategies
+        PUBLIC
+        DrugLib.Common.Database.Interface
 )
-##############################################################################
-
-##############################################################################
-
-add_subdirectory(strategies)

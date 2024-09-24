@@ -1,4 +1,4 @@
-namespace drug_lib::common::db
+namespace drug_lib::common::database
 {
     namespace ReturnErrorCodes
     {

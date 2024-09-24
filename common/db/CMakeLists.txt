@@ -13,16 +13,41 @@ target_include_directories(${PARENT_PROJECT_NAME}.Base
 )
 ##############################################################################
 
+##############################################################################
+# Database Client Interface
+##############################################################################
+add_library(${PARENT_PROJECT_NAME}.Interface
+        INTERFACE
+        interface/db_interface.hpp
+)
+
+target_link_libraries(${PARENT_PROJECT_NAME}.Interface
+        INTERFACE
+        JsonCpp::JsonCpp
+        DrugLib.Common.Database.Base
+)
+target_include_directories(${PARENT_PROJECT_NAME}.Interface
+        INTERFACE
+        interface
+)
+##############################################################################
+
+##############################################################################
+# Error handling
+##############################################################################
+add_library(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
+        exceptions/exceptions.hpp)
+target_include_directories(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
+        exceptions
+)
+##############################################################################
 
 ##############################################################################
 
-add_subdirectory(interfaces/exceptions)
 
-add_subdirectory(interfaces/interface)
+add_subdirectory(creational)
 
-add_subdirectory(creational/factory)
-
-#add_subdirectory(managers)
+add_subdirectory(behavioral)
 
 add_subdirectory(postgres/pqxx_impl)
 

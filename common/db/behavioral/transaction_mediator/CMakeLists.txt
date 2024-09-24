@@ -1,3 +1,0 @@
-# DrugLib.Common.Database
-
-

@@ -10,7 +10,10 @@ add_library(${TARGET}
 
 target_link_libraries(${TARGET}
         JsonCpp::JsonCpp
-        DrugLib.Common.Database.DBI
+        DrugLib.Common.Database.Interface
+        DrugLib.Common.Database.Exceptions
+        DrugLib.Common.Database.Behavioral.OperationsStrategies
+        libpqxx::pqxx
 )
 
 target_include_directories(${TARGET}

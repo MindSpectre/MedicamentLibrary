@@ -1,13 +1,13 @@
 #pragma once
-#include "StrategyBase.hpp"
+#include "strategy_base.hpp"
 
-namespace ControlSystemV7::Common::Database::Strategies
+namespace drug_lib::common::database::behavioral::strategies
 {
     template <typename... Args>
-    class BatcherStrategy : public StrategyBase<Args...>
+    class BatcherStrategy final : public StrategyBase<Args...>
     {
     private:
-        void InternalLogic(Args... query) override
+        void internal_logic(Args... query) override
         {
             await.push(std::make_tuple(query...));
 
@@ -17,17 +17,19 @@ namespace ControlSystemV7::Common::Database::Strategies
                 std::apply(this->action, result);
             }
         }
+
         size_t threshold = 1;
-        std::function<std::tuple<Args...>(BatcherStrategy<Args...> &)> Merge;
-        
+        std::function<std::tuple<Args...>(BatcherStrategy<Args...>&)> Merge;
+
     public:
         std::queue<std::tuple<Args...>> await;
-        void SetThreshold(size_t threshold) { this->threshold = threshold; }
-        int32_t GetThreshold() const { return threshold; }
+        void set_threshold(size_t threshold) { this->threshold = threshold; }
+        [[nodiscard]] int32_t get_threshold() const { return threshold; }
         BatcherStrategy() = default;
-        ~BatcherStrategy()
+
+        ~BatcherStrategy() override
         {
-            if (Merge && await.size()!=0)
+            if (Merge && await.size() != 0)
             {
                 auto result = Merge(*this);
                 if (this->action)
@@ -36,7 +38,8 @@ namespace ControlSystemV7::Common::Database::Strategies
                 }
             }
         }
-        void SetMerge(std::function<std::tuple<Args...>(BatcherStrategy<Args...> &)> externalProcess)
+
+        void SetMerge(std::function<std::tuple<Args...>(BatcherStrategy<Args...>&)> externalProcess)
         {
             Merge = externalProcess;
         }
