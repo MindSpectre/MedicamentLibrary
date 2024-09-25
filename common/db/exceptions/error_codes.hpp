@@ -14,7 +14,7 @@ namespace drug_lib::common::database::errors
         CONSTRAINT_VIOLATION = 422, // Foreign key, unique or other constraint violation
         PERMISSION_DENIED = 403, // Insufficient permissions for the operation
         DATA_CONVERSION_ERROR = 412, // Error while converting data types
-
+        INVALID_DATA = 413,
         // Server-Side Errors (5xx)
         CONNECTION_FAILED = 500, // Failed to connect to the database
         DISCONNECTION_FAILED = 501, // Failed to disconnect from the database
@@ -26,7 +26,7 @@ namespace drug_lib::common::database::errors
         CONNECTION_TIMEOUT = 507, // Connection to the database timed out
         CONNECTION_POOL_EXHAUSTED = 508, // No available connections in the pool
         DEADLOCK_DETECTED = 509, // Deadlock detected during transaction
-
+        SYSTEM_ROLLBACK = 510,
         // Miscellaneous Errors (6xx)
         NULL_POINTER_EXCEPTION = 600, // Attempted to dereference a null pointer
         UNKNOWN_ERROR = 601 // An unknown or unspecified error occurred

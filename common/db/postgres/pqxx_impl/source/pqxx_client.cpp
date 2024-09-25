@@ -11,6 +11,7 @@
 namespace drug_lib::common::database
 {
     using namespace exceptions;
+    using db_err = errors::DbErrorCode;
 
     PqxxClient::PqxxClient(const std::string_view host,
                            const int port,
@@ -29,21 +30,26 @@ namespace drug_lib::common::database
                 << " dbname=" << db_name;
 
             conn_ = std::make_shared<pqxx::connection>(conn_str.str());
-
             if (!conn_->is_open())
             {
-                throw ConnectionException("Failed to open database connection.");
+                throw ConnectionException("Failed to open database connection.",
+                                          db_err::CONNECTION_FAILED);
             }
+            _oid_preprocess();
+        }
+        catch (const pqxx::too_many_connections& e)
+        {
+            throw ConnectionException(e.what(), db_err::CONNECTION_POOL_EXHAUSTED);
         }
         catch (const pqxx::sql_error& e)
         {
-            throw ConnectionException(e.what());
+            throw ConnectionException(e.what(), db_err::INVALID_QUERY);
         }
+
         catch (const std::exception& e)
         {
-            throw ConnectionException(e.what());
+            throw ConnectionException(e.what(), db_err::PERMISSION_DENIED);
         }
-        pqxx::work(*this->conn_);
     }
 
     // Utility method to check if an identifier is valid
@@ -58,19 +64,61 @@ namespace drug_lib::common::database
     {
         if (!is_valid_identifier(identifier))
         {
-            throw InvalidIdentifierException(std::string(identifier));
+            throw InvalidIdentifierException(std::string(identifier), db_err::INVALID_QUERY);
         }
         return conn_->quote_name(std::string(identifier));
     }
 
     std::unique_ptr<pqxx::work> PqxxClient::initialize_transaction()
     {
-        if (in_transaction_)
+        std::unique_ptr<pqxx::work> tmp;
+        try
         {
-            return std::move(shared_transaction_);
+            if (in_transaction_)
+            {
+                return std::move(shared_transaction_);
+            }
+            tmp = std::make_unique<pqxx::work>(*conn_);
         }
-        return std::make_unique<pqxx::work>(*conn_);
+        catch (std::exception& e)
+        {
+            throw TransactionException(std::string(e.what()).append("UNEXPECTED WORK THROWS ERROR"),
+                                       db_err::TRANSACTION_START_FAILED);
+        }
+        return tmp;
     }
+
+    DatabaseException PqxxClient::adapt_exception(const std::exception& pqxxerr)
+    {
+        if (const auto* deadlock_error = dynamic_cast<const pqxx::deadlock_detected*>(&pqxxerr))
+        {
+            return DatabaseException(deadlock_error->what(), db_err::DEADLOCK_DETECTED);
+        }
+
+        if (const auto* rollback_error = dynamic_cast<const pqxx::transaction_rollback*>(&pqxxerr))
+        {
+            return DatabaseException(rollback_error->what(), db_err::SYSTEM_ROLLBACK);
+        }
+
+        if (const auto* syntax_error = dynamic_cast<const pqxx::syntax_error*>(&pqxxerr))
+        {
+            return DatabaseException(syntax_error->what(), db_err::INVALID_QUERY);
+        }
+
+        if (const auto* data_error = dynamic_cast<const pqxx::data_exception*>(&pqxxerr))
+        {
+            return DatabaseException(data_error->what(), db_err::INVALID_DATA);
+        }
+
+        if (const auto* sql_error = dynamic_cast<const pqxx::sql_error*>(&pqxxerr))
+        {
+            return DatabaseException(sql_error->what(), db_err::QUERY_EXECUTION_FAILED);
+        }
+
+        // If none of the specific exceptions match, return a generic exception
+        return DatabaseException(pqxxerr.what(), db_err::UNKNOWN_ERROR);
+    }
+
 
     // Utility method to execute a query
     void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params) const
@@ -82,9 +130,9 @@ namespace drug_lib::common::database
             txn.exec_params(query_string, params);
             txn.commit();
         }
-        catch (const pqxx::sql_error& e)
+        catch (const std::exception& e)
         {
-            throw QueryException(e.what());
+            throw adapt_exception(e);
         }
     }
 
@@ -94,7 +142,7 @@ namespace drug_lib::common::database
         std::lock_guard<std::mutex> lock(conn_mutex_);
         if (in_transaction_)
         {
-            throw TransactionException("Transaction already started.");
+            throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
         }
         try
         {
@@ -103,7 +151,7 @@ namespace drug_lib::common::database
         }
         catch (const pqxx::sql_error& e)
         {
-            throw TransactionException(e.what());
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
         }
     }
 
@@ -112,7 +160,7 @@ namespace drug_lib::common::database
         std::lock_guard<std::mutex> lock(conn_mutex_);
         if (!in_transaction_)
         {
-            throw TransactionException("No active transaction to commit.");
+            throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
         }
         try
         {
@@ -121,7 +169,7 @@ namespace drug_lib::common::database
         }
         catch (const pqxx::sql_error& e)
         {
-            throw TransactionException(e.what());
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
         }
     }
 
@@ -130,7 +178,7 @@ namespace drug_lib::common::database
         std::lock_guard<std::mutex> lock(conn_mutex_);
         if (!in_transaction_)
         {
-            throw TransactionException("No active transaction to rollback.");
+            throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
         }
         try
         {
@@ -140,8 +188,32 @@ namespace drug_lib::common::database
         }
         catch (const pqxx::sql_error& e)
         {
-            throw TransactionException(e.what());
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
         }
+    }
+
+    void PqxxClient::make_unique_constraint(const std::string_view table_name,
+                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields)
+    {
+        conflict_fields_ = std::move(conflict_fields);
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        std::ostringstream sub_query;
+        query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
+        std::ostringstream name_constraint;
+        sub_query << " UNIQUE (";
+        for (auto&& column : conflict_fields_)
+        {
+            sub_query << escape_identifier(column->get_name()) << ",";
+            name_constraint << column->get_name() << "_";
+        }
+        name_constraint << table_name;
+        std::string query = query_stream.str();
+        query.append(escape_identifier(name_constraint.str())).append(sub_query.str());
+        query.pop_back();
+        query += ");";
+
+        execute_query(query, pqxx::params{});
     }
 
     // Table Management
@@ -184,9 +256,9 @@ namespace drug_lib::common::database
             const pqxx::result res = ntx.exec(query);
             return res[0][0].as<bool>();
         }
-        catch (const pqxx::sql_error& e)
+        catch (const std::exception& e)
         {
-            throw QueryException(e.what());
+            throw adapt_exception(e);
         }
     }
 
@@ -206,15 +278,14 @@ namespace drug_lib::common::database
     // Upsert Data Implementation
     void PqxxClient::upsert_data_impl(const std::string_view table_name,
                                       const std::vector<Record>& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-
+        query.pop_back();
         // Build ON CONFLICT clause
         std::ostringstream conflict_stream;
         conflict_stream << " ON CONFLICT (";
-        for (const auto& field : conflict_fields)
+        for (const auto& field : conflict_fields_)
         {
             conflict_stream << escape_identifier(field->get_name()) << ", ";
         }
@@ -236,10 +307,82 @@ namespace drug_lib::common::database
 
     void PqxxClient::upsert_data_impl(const std::string_view table_name,
                                       std::vector<Record>&& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
-        upsert_data_impl(table_name, rows, conflict_fields, replace_fields);
+        upsert_data_impl(table_name, rows, replace_fields);
+    }
+
+    void PqxxClient::_oid_preprocess()
+    {
+        try
+        {
+            pqxx::nontransaction txn(*conn_);
+            pqxx::result r = txn.exec(
+                "SELECT typname, oid FROM pg_type WHERE typname IN ('bool', 'int2', 'int4', 'int8', 'float4', 'float8', 'text', 'varchar', 'bpchar', 'timestamp', 'timestamptz')");
+            for (const auto& row : r)
+            {
+                type_oids_.insert({row["typname"].c_str(), row["oid"].as<int>()});
+            }
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
+
+    std::shared_ptr<FieldBase> PqxxClient::process_field(const pqxx::field& field) const
+    {
+        std::shared_ptr<FieldBase> field_ptr;
+
+        // Get the field's PostgreSQL type OID
+        const auto type_oid = field.type();
+        // Determine the C++ type based on the PostgreSQL type OID
+        if (type_oid == type_oids_.at("int4"))
+        {
+            auto value = field.as<int32_t>();
+            field_ptr = std::make_shared<Field<int>>(field.name(), value);
+            return field_ptr;
+        }
+
+        if (type_oid == type_oids_.at("int8")) // Bigint
+        {
+            auto value = field.as<int64_t>();
+            field_ptr = std::make_shared<Field<int64_t>>(field.name(), value);
+            return field_ptr;
+        }
+        // case type_oids_["float4"]: // Real
+        if (type_oid == type_oids_.at("float8")) // Double precision
+        {
+            auto value = field.as<double>();
+            field_ptr = std::make_shared<Field<double>>(field.name(), value);
+            return field_ptr;
+        }
+        if (type_oid == type_oids_.at("text")) // Text
+        // case type_oids_["varchar"]: // Varchar
+        // case type_oids_["bpchar"]: // Char
+        {
+            auto value = field.as<std::string>();
+            field_ptr = std::make_shared<Field<std::string>>(field.name(), value);
+            return field_ptr;
+        }
+        if (type_oid == type_oids_.at("bool")) // Boolean
+        {
+            auto value = field.as<bool>();
+            field_ptr = std::make_shared<Field<bool>>(field.name(), value);
+            return field_ptr;
+        } // Timestamp without time zone
+        if (type_oid == type_oids_.at("timestamptz") || type_oids_.at("timestamp")) // Timestamp with time zone
+        {
+            const auto value = field.as<std::string>();
+            // Parse the timestamp string into std::chrono::system_clock::time_point
+            std::istringstream iss(value);
+            std::tm tm = {};
+            iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+            auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+            field_ptr = std::make_shared<Field<std::chrono::system_clock::time_point>>(field.name(), tp);
+            return field_ptr;
+        }
+        return field_ptr;
     }
 
     // Data Retrieval
@@ -276,15 +419,15 @@ namespace drug_lib::common::database
                     Record record;
                     for (const auto& field : row)
                     {
-                        auto field_ptr = std::make_shared<Field<std::string>>(field.name(), field.c_str());
+                        auto field_ptr = process_field(field);
                         record.add_field(field_ptr);
                     }
                     results.push_back(std::move(record));
                 }
             }
-            catch (const pqxx::sql_error& e)
+            catch (const std::exception& e)
             {
-                throw QueryException(e.what());
+                throw adapt_exception(e);
             }
         }
         else
@@ -301,15 +444,15 @@ namespace drug_lib::common::database
                     Record record;
                     for (const auto& field : row)
                     {
-                        auto field_ptr = std::make_shared<Field<std::string>>(field.name(), field.c_str());
+                        auto field_ptr = process_field(field);
                         record.add_field(field_ptr);
                     }
                     results.push_back(std::move(record));
                 }
             }
-            catch (const pqxx::sql_error& e)
+            catch (const std::exception& e)
             {
-                throw QueryException(e.what());
+                throw adapt_exception(e);
             }
         }
 
@@ -344,7 +487,7 @@ namespace drug_lib::common::database
         else
         {
             // No conditions provided, throw exception to prevent deleting all data
-            throw QueryException("No conditions provided for delete operation.");
+            throw QueryException("No conditions provided for delete operation.", db_err::RECORD_NOT_FOUND);
         }
     }
 
@@ -353,7 +496,8 @@ namespace drug_lib::common::database
                               const std::shared_ptr<FieldBase>& field,
                               std::chrono::duration<double>& query_exec_time) const
     {
-        const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
+        const std::chrono::time_point<std::chrono::system_clock> start_time =
+            std::chrono::high_resolution_clock::now();
         const std::string table = escape_identifier(table_name);
         const std::string field_name = escape_identifier(field->get_name());
         const std::string query = "SELECT COUNT(" + field_name + ") FROM " + table + ";";
@@ -367,9 +511,9 @@ namespace drug_lib::common::database
             query_exec_time = end_time - start_time;
             return res[0][0].as<int>();
         }
-        catch (const pqxx::sql_error& e)
+        catch (const std::exception& e)
         {
-            throw QueryException(e.what());
+            throw adapt_exception(e);
         }
     }
 
@@ -379,7 +523,8 @@ namespace drug_lib::common::database
         const std::string_view fts_query_params,
         std::chrono::duration<double>& query_exec_time) const
     {
-        const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
+        const std::chrono::time_point<std::chrono::system_clock> start_time =
+            std::chrono::high_resolution_clock::now();
         std::vector<Record> results;
         const std::string table = escape_identifier(table_name);
         const std::string query = "SELECT * FROM " + table +
@@ -399,15 +544,15 @@ namespace drug_lib::common::database
                 Record record;
                 for (const auto& field : row)
                 {
-                    auto field_ptr = std::make_shared<Field<std::string>>(field.name(), field.c_str());
+                    auto field_ptr = process_field(field);
                     record.add_field(field_ptr);
                 }
                 results.push_back(std::move(record));
             }
         }
-        catch (const pqxx::sql_error& e)
+        catch (const std::exception& e)
         {
-            throw QueryException(e.what());
+            throw adapt_exception(e);
         }
 
         return results;
@@ -419,7 +564,8 @@ namespace drug_lib::common::database
         std::chrono::duration<double>& query_exec_time,
         const std::function<void(const std::vector<Record>&)>& on_result) const
     {
-        const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
+        const std::chrono::time_point<std::chrono::system_clock> start_time =
+            std::chrono::high_resolution_clock::now();
         const std::string table = escape_identifier(table_name);
         const std::string query = "SELECT * FROM " + table +
             " WHERE to_tsvector('simple', json_data::text) @@ to_tsquery('simple', $1);";
@@ -440,7 +586,7 @@ namespace drug_lib::common::database
                 Record record;
                 for (const auto& field : row)
                 {
-                    auto field_ptr = std::make_shared<Field<std::string>>(field.name(), field.c_str());
+                    auto field_ptr = process_field(field);
                     record.add_field(field_ptr);
                 }
                 batch_results.push_back(std::move(record));
@@ -459,9 +605,9 @@ namespace drug_lib::common::database
 
             return true;
         }
-        catch (const pqxx::sql_error& e)
+        catch (const std::exception& e)
         {
-            throw QueryException(e.what());
+            throw adapt_exception(e);
         }
     }
 
@@ -472,7 +618,7 @@ namespace drug_lib::common::database
     {
         if (rows.empty())
         {
-            throw QueryException("No data provided for insert.");
+            throw QueryException("No data provided for insert.", db_err::INVALID_QUERY);
         }
 
         const std::string table = escape_identifier(table_name);

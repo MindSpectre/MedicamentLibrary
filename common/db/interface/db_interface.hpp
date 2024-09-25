@@ -30,6 +30,9 @@ namespace drug_lib::common::database::interfaces
         virtual void remove_table(std::string_view table_name) = 0;
         [[nodiscard]] virtual bool check_table(std::string_view table_name) const = 0;
 
+        virtual void make_unique_constraint(std::string_view table_name,
+                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) = 0;
+
         // Data Manipulation using Perfect Forwarding
         template <typename Rows>
         void add_data(std::string_view table_name, Rows&& rows)
@@ -41,10 +44,10 @@ namespace drug_lib::common::database::interfaces
         template <typename Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
-                         const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
+
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
-            upsert_data_impl(table_name, std::forward<Rows>(rows), conflict_fields, replace_fields);
+            upsert_data_impl(table_name, std::forward<Rows>(rows), replace_fields);
         }
 
         // Data Retrieval
@@ -81,12 +84,12 @@ namespace drug_lib::common::database::interfaces
 
         virtual void upsert_data_impl(std::string_view table_name,
                                       const std::vector<Record>& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
+
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields) = 0;
 
         virtual void upsert_data_impl(std::string_view table_name,
                                       std::vector<Record>&& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
+
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields) = 0;
     };
 }

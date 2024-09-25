@@ -21,5 +21,6 @@ target_include_directories(${TARGET}
         source/
         include/
         ${CMAKE_HOME_DIRECTORY}/common
+        ${Boost_INCLUDE_DIRS}
 )
 ##############################################################################

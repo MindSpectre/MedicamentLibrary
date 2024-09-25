@@ -44,8 +44,8 @@ protected:
         fields.add_field(std::make_shared<Field<int>>("id", 0));
         fields.add_field(std::make_shared<Field<std::string>>("name", ""));
         fields.add_field(std::make_shared<Field<bool>>("active", false));
-
         db_client->create_table(test_table, fields);
+        db_client->make_unique_constraint(test_table, {std::make_shared<Field<int>>("id", 0)});
     }
 
     void TearDown() override
@@ -163,15 +163,12 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     upsert_records.push_back(std::move(record_upsert));
 
     // Conflict and replace fields
-    std::vector<std::shared_ptr<FieldBase>> conflict_fields = {
-        std::make_shared<Field<int>>("id", 0)
-    };
     std::vector<std::shared_ptr<FieldBase>> replace_fields = {
         std::make_shared<Field<std::string>>("name", ""),
         std::make_shared<Field<bool>>("active", false)
     };
 
-    EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, conflict_fields, replace_fields));
+    EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
 
     // Retrieve data and verify
     FieldConditions conditions;
@@ -180,7 +177,7 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     EXPECT_EQ(results.size(), 1);
 
     const auto& rec = results.front();
-    int id = std::dynamic_pointer_cast<Field<int>>(rec.at("id"))->value();
+    int id = std::dynamic_pointer_cast<Field<int32_t>>(rec.at("id"))->value();
     std::string name = std::dynamic_pointer_cast<Field<std::string>>(rec.at("name"))->value();
     bool active = std::dynamic_pointer_cast<Field<bool>>(rec.at("active"))->value();
 

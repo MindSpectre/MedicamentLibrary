@@ -10,9 +10,81 @@
 #include <regex>
 #include "db_interface.hpp"
 #include "exceptions.hpp"
+#include <boost/container/flat_map.hpp>
 
 namespace drug_lib::common::database
 {
+    class PqxxConnectParams
+    {
+    public:
+        PqxxConnectParams(const std::string_view host,
+                          const int port,
+                          const std::string_view db_name,
+                          const std::string_view login,
+                          const std::string_view password): host_(host), port_(port), db_name_(db_name),
+                                                            login_(login),
+                                                            password_(password)
+        {
+        }
+
+        [[nodiscard]] const std::string_view& get_host() const
+        {
+            return host_;
+        }
+
+        void set_host(const std::string_view& host)
+        {
+            host_ = host;
+        }
+
+        [[nodiscard]] int get_port() const
+        {
+            return port_;
+        }
+
+        void set_port(const int port)
+        {
+            port_ = port;
+        }
+
+        [[nodiscard]] const std::string_view& get_db_name() const
+        {
+            return db_name_;
+        }
+
+        void set_db_name(const std::string_view& db_name)
+        {
+            db_name_ = db_name;
+        }
+
+        [[nodiscard]] const std::string_view& get_login() const
+        {
+            return login_;
+        }
+
+        void set_login(const std::string_view& login)
+        {
+            login_ = login;
+        }
+
+        [[nodiscard]] const std::string_view& get_password() const
+        {
+            return password_;
+        }
+
+        void set_password(const std::string_view& password)
+        {
+            password_ = password;
+        }
+
+    private:
+        std::string_view host_;
+        int port_;
+        std::string_view db_name_;
+        std::string_view login_;
+        std::string_view password_;
+    };
+
     class PqxxClient final : public interfaces::DbInterface
     {
     public:
@@ -29,6 +101,8 @@ namespace drug_lib::common::database
         void commit_transaction() override;
         void rollback_transaction() override;
 
+        void make_unique_constraint(std::string_view table_name,
+                                    std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) override;
         // Table Management
         void create_table(std::string_view table_name, const Record& field_list) override;
         void remove_table(std::string_view table_name) override;
@@ -44,10 +118,9 @@ namespace drug_lib::common::database
         template <typename Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
-                         const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
-            upsert_data_impl(table_name, std::forward<Rows>(rows), conflict_fields, replace_fields);
+            upsert_data_impl(table_name, std::forward<Rows>(rows), replace_fields);
         }
 
         // Data Retrieval
@@ -84,15 +157,17 @@ namespace drug_lib::common::database
 
         void upsert_data_impl(std::string_view table_name,
                               const std::vector<Record>& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
                               const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
         void upsert_data_impl(std::string_view table_name,
                               std::vector<Record>&& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& conflict_fields,
                               const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
+        void _oid_preprocess();
+        boost::container::flat_map<std::string, int> type_oids_;
+        std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
+        std::shared_ptr<FieldBase> process_field(const pqxx::field& field) const;
         std::shared_ptr<pqxx::connection> conn_;
         mutable std::mutex conn_mutex_;
         bool in_transaction_;
@@ -112,5 +187,7 @@ namespace drug_lib::common::database
         std::string escape_identifier(std::string_view identifier) const;
 
         std::unique_ptr<pqxx::work> initialize_transaction();
+
+        static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
     };
 }
