@@ -1,32 +1,60 @@
 #!/bin/bash
 # Ubuntu installation script for project dependencies
+
+set -e  # Exit immediately if a command exits with a non-zero status
+
 echo "Installation starts for Ubuntu."
-# Update the package list
-sudo apt update
+
+# Update the package list, but don't exit if it fails
+sudo apt-get update || true
 
 # Install necessary packages
-sudo apt install -y zip unzip
-sudo apt install -y build-essential pkg-config
-sudo apt install -y curl
-sudo apt install -y haskell-platform
-sudo apt install -y libicu-dev
-sudo apt install -y uuid-dev
-sudo apt install -y mesa-common-dev
-sudo apt install -y libglu1-mesa-dev
-sudo apt install -y libxkbcommon-x11-0
-sudo apt install -y libssl-dev
-sudo apt install -y openssl
-sudo apt install -y zlib1g-dev
+sudo apt-get install -y \
+    build-essential \
+    pkg-config \
+    curl \
+    haskell-platform \
+    libicu-dev \
+    uuid-dev \
+    mesa-common-dev \
+    libglu1-mesa-dev \
+    libxkbcommon-x11-0 \
+    libssl-dev \
+    openssl \
+    zlib1g-dev \
+    zip \
+    unzip
 
 # Install and set up Vcpkg
-sudo git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg
-cd /opt/vcpkg/
-sudo git checkout 2023.10.19
-sudo ./bootstrap-vcpkg.sh
+VCPKG_ROOT="/opt/vcpkg"
+
+if [ ! -d "$VCPKG_ROOT" ]; then
+    echo "Cloning vcpkg repository..."
+    sudo git clone https://github.com/Microsoft/vcpkg.git "$VCPKG_ROOT"
+    sudo chown -R "$USER":"$USER" "$VCPKG_ROOT"
+fi
+
+cd "$VCPKG_ROOT" || exit
+
+echo "Updating vcpkg..."
+git pull origin master
+
+echo "Bootstrapping vcpkg..."
+./bootstrap-vcpkg.sh
 
 # Install dependencies from Vcpkg
-sudo /opt/vcpkg/vcpkg install boost-system boost-filesystem boost-log boost-program-options grpc jsoncpp valijson libpq libuuid gtest
+echo "Installing vcpkg packages..."
+./vcpkg install \
+    boost-system \
+    boost-filesystem \
+    boost-log \
+    boost-program-options \
+    grpc \
+    jsoncpp \
+    valijson \
+    libpq \
+    libuuid \
+    gtest \
+    libpqxx
 
 echo "Installation complete for Ubuntu."
-
-

@@ -7,12 +7,12 @@
 
 
 
-namespace ControlSystemV7::Common
+namespace drug_lib::common::hash_creator
 {
-    class IHashCreatorFactory
+    class HashCreatorFactory
     {
     public:
-        static std::unique_ptr<IHashCreator> CreateSHA256Coder()
+        static std::unique_ptr<HashCreator> CreateSHA256Coder()
         {
             return std::make_unique<SHA256Function>();
         }
