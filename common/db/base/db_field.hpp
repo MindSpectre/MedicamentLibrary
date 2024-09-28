@@ -23,6 +23,9 @@ namespace drug_lib::common::database
 
         /// @brief Gets the SQL data type of the field
         [[nodiscard]] virtual std::string get_sql_type() const = 0;
+
+        template <typename T>
+        T as() const;
     };
 
     /// @brief Represents a field of a specific type in the database
@@ -116,4 +119,21 @@ namespace drug_lib::common::database
         std::string name_;
         T value_;
     };
+
+    template <typename T>
+    T FieldBase::as() const
+    {
+        // Ensure that T is a valid type, e.g., int, std::string, etc.
+        static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
+
+        // Attempt to dynamic cast this object to a Field<T> type
+        const auto* derived = std::dynamic_pointer_cast<const Field<T>>(this);
+
+        if (!derived)
+        {
+            throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
+        }
+
+        return derived->value();
+    }
 }
