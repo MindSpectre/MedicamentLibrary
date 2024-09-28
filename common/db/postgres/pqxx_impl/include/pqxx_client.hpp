@@ -164,15 +164,16 @@ namespace drug_lib::common::database
                               const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
-        void _oid_preprocess();
         boost::container::flat_map<std::string, int> type_oids_;
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
-        std::shared_ptr<FieldBase> process_field(const pqxx::field& field) const;
+
         std::shared_ptr<pqxx::connection> conn_;
         mutable std::mutex conn_mutex_;
         bool in_transaction_;
         std::unique_ptr<pqxx::work> shared_transaction_;
 
+        void _oid_preprocess();
+        std::shared_ptr<FieldBase> process_field(const pqxx::field& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
         void execute_query(const std::string& query_string, const pqxx::params& params = {}) const;
