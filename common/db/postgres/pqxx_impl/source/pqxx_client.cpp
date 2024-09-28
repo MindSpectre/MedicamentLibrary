@@ -317,7 +317,7 @@ namespace drug_lib::common::database
         try
         {
             pqxx::nontransaction txn(*conn_);
-            pqxx::result r = txn.exec(
+            const pqxx::result r = txn.exec(
                 "SELECT typname, oid FROM pg_type WHERE typname IN ('bool', 'int2', 'int4', 'int8', 'float4', 'float8', 'text', 'varchar', 'bpchar', 'timestamp', 'timestamptz')");
             for (const auto& row : r)
             {
@@ -334,9 +334,9 @@ namespace drug_lib::common::database
     {
         std::shared_ptr<FieldBase> field_ptr;
 
-        // Get the field's PostgreSQL type OID
+        // Get the field's PostgresSQL type OID
         const auto type_oid = field.type();
-        // Determine the C++ type based on the PostgreSQL type OID
+        // Determine the C++ type based on the PostgresSQL type OID
         if (type_oid == type_oids_.at("int4"))
         {
             auto value = field.as<int32_t>();
@@ -544,7 +544,7 @@ namespace drug_lib::common::database
                 Record record;
                 for (const auto& field : row)
                 {
-                    auto field_ptr = process_field(field);
+                    const auto field_ptr = process_field(field);
                     record.add_field(field_ptr);
                 }
                 results.push_back(std::move(record));
@@ -586,7 +586,7 @@ namespace drug_lib::common::database
                 Record record;
                 for (const auto& field : row)
                 {
-                    auto field_ptr = process_field(field);
+                    const auto field_ptr = process_field(field);
                     record.add_field(field_ptr);
                 }
                 batch_results.push_back(std::move(record));
