@@ -1,6 +1,6 @@
 # PARENT_PROJECT_NAME = NULL
 
-set(PARENT_PROJECT_NAME ${PROJECT_NAME}.Common)
+set(COMMON_LIBS ${PROJECT_NAME}_Common)
 
 ###############################################
 add_subdirectory(hash_creator)

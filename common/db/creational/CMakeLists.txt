@@ -1,6 +1,6 @@
-# PARENT_PROJECT_NAME = DrugLib.Common.Database
+# PARENT_PROJECT_NAME = DrugLib_Common_Database
 
-set(UNITED_TARGET ${PARENT_PROJECT_NAME}.Factory)
+set(UNITED_TARGET ${DATABASE_LIBS}_Factory)
 
 ##############################################################################
 # Database interface Factory class
@@ -13,7 +13,7 @@ add_library(${UNITED_TARGET}
 )
 target_link_libraries(${UNITED_TARGET}
         PUBLIC
-        DrugLib.Common.Database.Interface
-        DrugLib.Common.Database.PqxxClient
+        ${DATABASE_LIBS}_Interface
+        ${DATABASE_LIBS}_PqxxClient
 )
 ##############################################################################

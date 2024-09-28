@@ -1,17 +1,18 @@
-# PARENT_PROJECT_NAME = Data
-set(PARENT_PROJECT_NAME ${PARENT_PROJECT_NAME}.Objects)
+# COMMON_PREFIX = Data
+set(COMMON_PREFIX DrugLib_Data_Objects)
 
 ##############################################################################
 # Objects: Medicaments
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Medicaments
+add_library(${COMMON_PREFIX}_Medicaments
         medicaments/source/medicaments.cpp
 )
-target_link_libraries(${PARENT_PROJECT_NAME}.Medicaments PRIVATE
-        DrugLib.Common.Database.Base
+target_link_libraries(${COMMON_PREFIX}_Medicaments PRIVATE
+        DrugLib_Common_Database_Base
+        ${DATA_LIBS}_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Medicaments
+target_include_directories(${COMMON_PREFIX}_Medicaments
         PUBLIC
         medicaments/include
         medicaments/
@@ -22,14 +23,14 @@ target_include_directories(${PARENT_PROJECT_NAME}.Medicaments
 ##############################################################################
 # Objects: Organizations
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Organizations
+add_library(${COMMON_PREFIX}_Organizations
         organizations/source/organizations.cpp
 )
-target_link_libraries(${PARENT_PROJECT_NAME}.Organizations PRIVATE
-        DrugLib.Common.Database.Base
+target_link_libraries(${COMMON_PREFIX}_Organizations PRIVATE
+        DrugLib_Common_Database_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Organizations
+target_include_directories(${COMMON_PREFIX}_Organizations
         PUBLIC
         organizations/include
         organizations/
@@ -39,14 +40,14 @@ target_include_directories(${PARENT_PROJECT_NAME}.Organizations
 ##############################################################################
 # Objects: Patients
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Patients
+add_library(${COMMON_PREFIX}_Patients
         patients/source/patients.cpp
 )
-target_link_libraries(${PARENT_PROJECT_NAME}.Patients PRIVATE
-        DrugLib.Common.Database.Base
+target_link_libraries(${COMMON_PREFIX}_Patients PRIVATE
+        DrugLib_Common_Database_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Patients
+target_include_directories(${COMMON_PREFIX}_Patients
         PUBLIC
         patients/include
         patients/

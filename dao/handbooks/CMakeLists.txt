@@ -1,23 +1,24 @@
 # PARENT_PROJECT_NAME = DrugLib.Dao
 
-set(PARENT_PROJECT_NAME ${PARENT_PROJECT_NAME}.Handbook)
+set(Handbooks ${DAL}_Handbook)
 
 ##############################################################################
 # Handbook: Medicament
 ##############################################################################
 
-add_library(${PARENT_PROJECT_NAME}.Medicaments
+add_library(${Handbooks}_Medicaments
         STATIC
         medicaments/source/medicaments_handbook.cpp
 )
 
-target_link_libraries(${PARENT_PROJECT_NAME}.Medicaments
+target_link_libraries(${Handbooks}_Medicaments
         PRIVATE
         JsonCpp::JsonCpp
-        DrugLib.Dao.CrudInterface
-        DrugLib.Data.Objects.Medicaments
+        DrugLib_Dao_CrudInterface
+        DrugLib_Common_Database_PqxxClient
+        DrugLib_Data_Objects_Medicaments
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Medicaments
+target_include_directories(${Handbooks}_Medicaments
         PUBLIC
         medicaments/include
 )
@@ -27,18 +28,18 @@ target_include_directories(${PARENT_PROJECT_NAME}.Medicaments
 # Handbook: Organization
 ##############################################################################
 
-add_library(${PARENT_PROJECT_NAME}.Organizations
+add_library(${Handbooks}_Organizations
         STATIC
         organizations/source/organizations_handbook.cpp
 )
 
-target_link_libraries(${PARENT_PROJECT_NAME}.Organizations
+target_link_libraries(${Handbooks}_Organizations
         PRIVATE
         JsonCpp::JsonCpp
-        DrugLib.Dao.CrudInterface
-        DrugLib.Data.Objects.Organizations
+        DrugLib_Dao_CrudInterface
+        DrugLib_Data_Objects_Organizations
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Organizations
+target_include_directories(${Handbooks}_Organizations
         PUBLIC
         organizations/include
 )
@@ -48,18 +49,18 @@ target_include_directories(${PARENT_PROJECT_NAME}.Organizations
 # Handbook: Medicament
 ##############################################################################
 
-add_library(${PARENT_PROJECT_NAME}.Patients
+add_library(${Handbooks}_Patients
         STATIC
         patients/source/patients_handbook.cpp
 )
 
-target_link_libraries(${PARENT_PROJECT_NAME}.Patients
+target_link_libraries(${Handbooks}_Patients
         PRIVATE
         JsonCpp::JsonCpp
-        DrugLib.Dao.CrudInterface
-        DrugLib.Data.Objects.Patients
+        DrugLib_Dao_CrudInterface
+        DrugLib_Data_Objects_Patients
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Patients
+target_include_directories(${Handbooks}_Patients
         PUBLIC
         patients/include
 )

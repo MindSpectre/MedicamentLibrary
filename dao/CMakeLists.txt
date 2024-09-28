@@ -1,22 +1,23 @@
 # PARENT_PROJECT_NAME = NULL
 
-set(PARENT_PROJECT_NAME ${PROJECT_NAME}.Dao)
+set(DAL ${PROJECT_NAME}_Dao)
 
 
 ##############################################################################
 # DAO CRUD INTERFACE
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.CrudInterface
+add_library(${DAL}_CrudInterface
         INTERFACE
         crud_interface/
 )
 
-target_link_libraries(${PARENT_PROJECT_NAME}.CrudInterface
+target_link_libraries(${DAL}_CrudInterface
         INTERFACE
         JsonCpp::JsonCpp
-        DrugLib.Common.Database.Base
+        DrugLib_Common_Database_Base
+        DrugLib_Common_Database_PqxxClient
 )
-target_include_directories(${PARENT_PROJECT_NAME}.CrudInterface
+target_include_directories(${DAL}_CrudInterface
         INTERFACE
         crud_interface/
 )
@@ -24,4 +25,4 @@ target_include_directories(${PARENT_PROJECT_NAME}.CrudInterface
 
 ##############################################################################
 
-#add_subdirectory(handbooks)
+add_subdirectory(handbooks)
