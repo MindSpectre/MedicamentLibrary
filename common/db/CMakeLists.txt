@@ -1,32 +1,36 @@
-# PARENT_PROJECT_NAME = DrugLib.Common
+# DATABASE_LIBS = DrugLib.Common
 
-set(PARENT_PROJECT_NAME ${PARENT_PROJECT_NAME}.Database)
+set(DATABASE_LIBS ${COMMON_LIBS}_Database)
 
 ##############################################################################
 # Database main classes NECESSARY UTILITY
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Base INTERFACE)
+add_library(${DATABASE_LIBS}_Base INTERFACE)
 
-target_include_directories(${PARENT_PROJECT_NAME}.Base
+target_include_directories(${DATABASE_LIBS}_Base
         INTERFACE
         base
+)
+target_link_libraries(${DATABASE_LIBS}_Base
+        INTERFACE
+        Boost::boost
 )
 ##############################################################################
 
 ##############################################################################
 # Database Client Interface
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Interface
+add_library(${DATABASE_LIBS}_Interface
         INTERFACE
         interface/db_interface.hpp
 )
 
-target_link_libraries(${PARENT_PROJECT_NAME}.Interface
+target_link_libraries(${DATABASE_LIBS}_Interface
         INTERFACE
         JsonCpp::JsonCpp
-        DrugLib.Common.Database.Base
+        ${DATABASE_LIBS}_Base
 )
-target_include_directories(${PARENT_PROJECT_NAME}.Interface
+target_include_directories(${DATABASE_LIBS}_Interface
         INTERFACE
         interface
 )
@@ -35,10 +39,10 @@ target_include_directories(${PARENT_PROJECT_NAME}.Interface
 ##############################################################################
 # Error handling
 ##############################################################################
-add_library(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
+add_library(${DATABASE_LIBS}_Exceptions INTERFACE
         exceptions/exceptions.hpp
         exceptions/error_codes.hpp)
-target_include_directories(${PARENT_PROJECT_NAME}.Exceptions INTERFACE
+target_include_directories(${DATABASE_LIBS}_Exceptions INTERFACE
         exceptions
 )
 ##############################################################################

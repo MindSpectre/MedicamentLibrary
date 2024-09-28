@@ -1,5 +1,5 @@
-# PARENT_PROJECT_NAME = DrugLib.Common.Database
-set(TARGET ${PARENT_PROJECT_NAME}.PqxxClient)
+# PARENT_PROJECT_NAME = DrugLib_Common_Database
+set(TARGET ${DATABASE_LIBS}_PqxxClient)
 
 ##############################################################################
 # Postgres Database client implementation used on PQXX lib ONLY FOR C++
@@ -9,18 +9,18 @@ add_library(${TARGET}
 )
 
 target_link_libraries(${TARGET}
+        PUBLIC
         JsonCpp::JsonCpp
-        DrugLib.Common.Database.Interface
-        DrugLib.Common.Database.Exceptions
-        DrugLib.Common.Database.Behavioral.OperationsStrategies
+        ${DATABASE_LIBS}_Interface
+        ${DATABASE_LIBS}_Exceptions
+        ${DATABASE_LIBS}_Behavioral_OperationsStrategies
         libpqxx::pqxx
+        Boost::container
 )
 
 target_include_directories(${TARGET}
         PUBLIC
         source/
         include/
-        ${CMAKE_HOME_DIRECTORY}/common
-        ${Boost_INCLUDE_DIRS}
 )
 ##############################################################################

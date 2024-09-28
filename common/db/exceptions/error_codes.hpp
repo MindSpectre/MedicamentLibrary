@@ -22,7 +22,7 @@ namespace drug_lib::common::database::errors
         PREPARED_STATEMENT_FAILED = 503, // Failed to prepare a statement
         TRANSACTION_START_FAILED = 504, // Failed to start a transaction
         TRANSACTION_COMMIT_FAILED = 505, // Failed to commit a transaction
-        TRANSACTION_ROLLBACK_FAILED = 506, // Failed to rollback a transaction
+        TRANSACTION_ROLLBACK_FAILED = 506, // Failed to roll back a transaction
         CONNECTION_TIMEOUT = 507, // Connection to the database timed out
         CONNECTION_POOL_EXHAUSTED = 508, // No available connections in the pool
         DEADLOCK_DETECTED = 509, // Deadlock detected during transaction

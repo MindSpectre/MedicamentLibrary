@@ -7,7 +7,6 @@
 #include "db_field.hpp"
 #include "db_record.hpp"
 #include "db_conditions.hpp"
-#include "exceptions.hpp"
 
 using namespace drug_lib::common::database;
 
@@ -110,17 +109,17 @@ TEST_F(PqxxClientTest, AddDataTest)
     EXPECT_NO_THROW(db_client->add_data(test_table, records));
 
     // Retrieve data and verify
-    FieldConditions conditions;
-    auto results = db_client->get_data(test_table, conditions);
+    const FieldConditions conditions;
+    const auto results = db_client->get_data(test_table, conditions);
 
     EXPECT_EQ(results.size(), 2);
 
     // Check content
     for (const auto& rec : results)
     {
-        int id = std::dynamic_pointer_cast<Field<int>>(rec.at("id"))->value();
-        std::string name = std::dynamic_pointer_cast<Field<std::string>>(rec.at("name"))->value();
-        bool active = std::dynamic_pointer_cast<Field<bool>>(rec.at("active"))->value();
+        const auto id = rec.at("id")->as<int32_t>();
+        const auto name = rec.at("name")->as<std::string>();
+        const bool active = std::dynamic_pointer_cast<Field<bool>>(rec.at("active"))->value();
 
         if (id == 1)
         {
@@ -163,7 +162,7 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     upsert_records.push_back(std::move(record_upsert));
 
     // Conflict and replace fields
-    std::vector<std::shared_ptr<FieldBase>> replace_fields = {
+    const std::vector<std::shared_ptr<FieldBase>> replace_fields = {
         std::make_shared<Field<std::string>>("name", ""),
         std::make_shared<Field<bool>>("active", false)
     };
@@ -171,15 +170,15 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
 
     // Retrieve data and verify
-    FieldConditions conditions;
-    auto results = db_client->get_data(test_table, conditions);
+    const FieldConditions conditions;
+    const auto results = db_client->get_data(test_table, conditions);
 
     EXPECT_EQ(results.size(), 1);
 
     const auto& rec = results.front();
-    int id = std::dynamic_pointer_cast<Field<int32_t>>(rec.at("id"))->value();
-    std::string name = std::dynamic_pointer_cast<Field<std::string>>(rec.at("name"))->value();
-    bool active = std::dynamic_pointer_cast<Field<bool>>(rec.at("active"))->value();
+    const auto id = rec.at("id")->as<int32_t>();
+    const auto name = rec.at("name")->as<std::string>();
+    const auto active = rec.at("active")->as<bool>();
 
     EXPECT_EQ(id, 1);
     EXPECT_EQ(name, "Alice Updated");
@@ -210,7 +209,7 @@ TEST_F(PqxxClientTest, RemoveDataTest)
     EXPECT_NO_THROW(db_client->remove_data(test_table, conditions));
 
     // Verify removal
-    auto results = db_client->get_data(test_table, FieldConditions());
+    const auto results = db_client->get_data(test_table, FieldConditions());
     EXPECT_TRUE(results.empty());
 }
 
@@ -231,8 +230,8 @@ TEST_F(PqxxClientTest, GetCountTest)
     EXPECT_NO_THROW(db_client->add_data(test_table, records));
 
     // Get count
-    std::chrono::duration<double> query_time;
-    int count = db_client->get_count(test_table, std::make_shared<Field<int>>("id", 0), query_time);
+    std::chrono::duration<double> query_time{};
+    const int count = db_client->get_count(test_table, std::make_shared<Field<int>>("id", 0), query_time);
 
     EXPECT_EQ(count, 5);
 }
