@@ -11,6 +11,10 @@ target_include_directories(${PARENT_PROJECT_NAME}.Base
         INTERFACE
         base
 )
+target_link_libraries(${DATABASE_LIBS}_Base
+        INTERFACE
+        Boost::boost
+)
 ##############################################################################
 
 ##############################################################################

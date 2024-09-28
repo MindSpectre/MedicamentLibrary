@@ -31,7 +31,7 @@ namespace drug_lib::common::database
     class FieldConditions final
     {
     public:
-        virtual ~FieldConditions() = default;
+        ~FieldConditions() = default;
 
         void add_condition(FieldCondition condition)
         {
@@ -46,8 +46,8 @@ namespace drug_lib::common::database
         // Implement begin(), end(), empty(), and size() methods
         auto begin() { return conditions_.begin(); }
         auto end() { return conditions_.end(); }
-        auto begin() const { return conditions_.cbegin(); }
-        auto end() const { return conditions_.cend(); }
+        [[nodiscard]] auto begin() const { return conditions_.cbegin(); }
+        [[nodiscard]] auto end() const { return conditions_.cend(); }
         [[nodiscard]] bool empty() const { return conditions_.empty(); }
         [[nodiscard]] size_t size() const { return conditions_.size(); }
 
