@@ -14,6 +14,7 @@ target_include_directories(${DATABASE_LIBS}_Base
 target_link_libraries(${DATABASE_LIBS}_Base
         INTERFACE
         Boost::boost
+        JsonCpp::JsonCpp
 )
 ##############################################################################
 

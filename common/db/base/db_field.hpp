@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
+#include <json/value.h>
 
 namespace drug_lib::common::database
 {
@@ -65,6 +66,10 @@ namespace drug_lib::common::database
             {
                 return std::to_string(value_);
             }
+            else if constexpr (std::is_same_v<T, Json::Value>)
+            {
+                return value_.toStyledString();
+            }
             else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
             {
                 // Convert time_point to string in ISO 8601 format
@@ -99,6 +104,10 @@ namespace drug_lib::common::database
             else if constexpr (std::is_same_v<T, std::string>)
             {
                 return "TEXT";
+            }
+            else if constexpr (std::is_same_v<T, Json::Value>)
+            {
+                return "json_b";
             }
             else if constexpr (std::is_same_v<T, bool>)
             {

@@ -1,27 +1,34 @@
 #pragma once
 
 #include <db_field.hpp>
-#include <json/json.h>
 #include <boost/container/flat_map.hpp>
+#include <json/json.h>
 
-#include "../../common/db/exceptions/exceptions.hpp"
 
 namespace drug_lib::data
 {
+    namespace properties
+    {
+        const std::string properties = "properties";
+        const std::string prescription = "prescription";
+        const std::string def_property = "def_property";
+    }
+
     class DataProperty
     {
     protected:
-        std::string name_;
         bool status_ = false;
 
     public:
         virtual ~DataProperty() = default;
+
+
         [[nodiscard]] virtual Json::Value get_info() const = 0;
 
-        [[nodiscard]] std::string get_name() const
-        {
-            return name_;
-        }
+        virtual void set_info(const Json::Value&) = 0;
+
+        [[nodiscard]] virtual std::string get_name() const = 0;
+
 
         void enable()
         {
@@ -90,25 +97,10 @@ namespace drug_lib::data
                     result[name] = property->get_info();
                 }
             }
-            return std::make_shared<common::database::Field<Json::Value>>("properties", result);
+            return std::make_shared<common::database::Field<Json::Value>>(properties::properties, result);
         }
 
     private:
         boost::container::flat_map<std::string, std::shared_ptr<DataProperty>> m_data;
     };
-
-    class PropertyFactoryRegister final
-    {
-    };
-
-    class PropertyFactory final
-    {
-    public:
-        template <typename T>
-        static std::shared_ptr<DataProperty> create()
-        {
-            return std::make_shared<T>();
-        }
-    };
 }
-

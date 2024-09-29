@@ -1,55 +1,58 @@
-# COMMON_PREFIX = Data
-set(COMMON_PREFIX DrugLib_Data_Objects)
+# DATA_OBJECTS = Data
+set(DATA_OBJECTS DrugLib_Data_Objects)
 
 ##############################################################################
 # Objects: Medicaments
 ##############################################################################
-add_library(${COMMON_PREFIX}_Medicaments
-        medicaments/source/medicaments.cpp
+add_library(${DATA_OBJECTS}_Medicaments
+        properties/medicaments/source/medicaments.cpp
 )
-target_link_libraries(${COMMON_PREFIX}_Medicaments PRIVATE
+target_link_libraries(${DATA_OBJECTS}_Medicaments PUBLIC
         DrugLib_Common_Database_Base
         ${DATA_LIBS}_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${COMMON_PREFIX}_Medicaments
+target_include_directories(${DATA_OBJECTS}_Medicaments
         PUBLIC
-        medicaments/include
-        medicaments/
+        properties/medicaments/include
+        properties/medicaments/
 )
+
 ##############################################################################
 
 
 ##############################################################################
 # Objects: Organizations
 ##############################################################################
-add_library(${COMMON_PREFIX}_Organizations
-        organizations/source/organizations.cpp
+add_library(${DATA_OBJECTS}_Organizations
+        properties/organizations/source/organizations.cpp
 )
-target_link_libraries(${COMMON_PREFIX}_Organizations PRIVATE
+target_link_libraries(${DATA_OBJECTS}_Organizations PUBLIC
         DrugLib_Common_Database_Base
+        ${DATA_LIBS}_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${COMMON_PREFIX}_Organizations
+target_include_directories(${DATA_OBJECTS}_Organizations
         PUBLIC
-        organizations/include
-        organizations/
+        properties/organizations/include
+        properties/organizations/
 )
 ##############################################################################
 
 ##############################################################################
 # Objects: Patients
 ##############################################################################
-add_library(${COMMON_PREFIX}_Patients
-        patients/source/patients.cpp
+add_library(${DATA_OBJECTS}_Patients
+        properties/patients/source/patients.cpp
 )
-target_link_libraries(${COMMON_PREFIX}_Patients PRIVATE
+target_link_libraries(${DATA_OBJECTS}_Patients PUBLIC
         DrugLib_Common_Database_Base
+        ${DATA_LIBS}_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${COMMON_PREFIX}_Patients
+target_include_directories(${DATA_OBJECTS}_Patients
         PUBLIC
-        patients/include
-        patients/
+        properties/patients/include
+        properties/patients/
 )
 ##############################################################################
