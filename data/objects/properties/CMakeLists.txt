@@ -43,15 +43,15 @@ target_include_directories(${DATA_OBJECTS_PROPERTIES}_Organizations
 ##############################################################################
 # Objects: Patients
 ##############################################################################
-add_library(${DATA_OBJECTS}_Patients
+add_library(${DATA_OBJECTS_PROPERTIES}_Patients
         patients/source/patients.cpp
         data_property.hpp
 )
-target_link_libraries(${DATA_OBJECTS}_Patients PUBLIC
+target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Patients PUBLIC
         DrugLib_Common_Database_Base
         JsonCpp::JsonCpp
 )
-target_include_directories(${DATA_OBJECTS}_Patients
+target_include_directories(${DATA_OBJECTS_PROPERTIES}_Patients
         PUBLIC
         patients/include
         patients/

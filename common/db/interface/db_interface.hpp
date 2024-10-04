@@ -4,8 +4,9 @@
 #include <functional>
 #include <memory>
 #include <string_view>
-#include <vector>
 #include <type_traits>
+#include <vector>
+
 #include "db_conditions.hpp"
 #include "db_field.hpp"
 #include "db_record.hpp"

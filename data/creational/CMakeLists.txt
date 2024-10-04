@@ -1,0 +1,15 @@
+add_library(${DATA_LIBS}_PropertyFactory
+        creational/property_factory/source/property_factory.cpp
+        creational/property_factory/include/property_factory.hpp
+)
+target_link_libraries(${DATA_LIBS}_PropertyFactory
+        PUBLIC
+        ${DATA_LIBS}_Objects_Properties_Medicaments
+        ${DATA_LIBS}_Objects_Properties_Organizations
+        ${DATA_LIBS}_Objects_Properties_Patients
+)
+target_include_directories(${DATA_LIBS}_PropertyFactory
+        PUBLIC
+        creational/property_factory/
+        creational/property_factory/include
+)
