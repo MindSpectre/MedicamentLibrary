@@ -30,9 +30,14 @@ namespace drug_lib::common::database
             return fields_[name];
         }
 
-        [[nodiscard]] std::shared_ptr<FieldBase> at(const std::string& name) const
+        [[nodiscard]] const std::shared_ptr<FieldBase>& at(const std::string& name) const
         {
             return fields_.at(name);
+        }
+
+        [[nodiscard]] std::shared_ptr<FieldBase> pull(const std::string& name)
+        {
+            return std::move(fields_.at(name));
         }
 
         // Implement begin() and end() methods
