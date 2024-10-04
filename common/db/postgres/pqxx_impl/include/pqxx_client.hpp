@@ -93,7 +93,7 @@ namespace drug_lib::common::database
                    std::string_view db_name,
                    std::string_view login,
                    std::string_view password);
-
+        explicit PqxxClient(const PqxxConnectParams& pr);
         ~PqxxClient() override = default;
 
         // Transaction Methods
@@ -109,13 +109,13 @@ namespace drug_lib::common::database
         [[nodiscard]] bool check_table(std::string_view table_name) const override;
 
         // Data Manipulation
-        template <typename Rows>
+        template <interfaces::RecordContainer Rows>
         void add_data(std::string_view table_name, Rows&& rows)
         {
             add_data_impl(table_name, std::forward<Rows>(rows));
         }
 
-        template <typename Rows>
+        template <interfaces::RecordContainer Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
@@ -164,7 +164,7 @@ namespace drug_lib::common::database
                               const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
-        boost::container::flat_map<std::string, int> type_oids_;
+        boost::container::flat_map<std::string, int32_t> type_oids_;
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
 
         std::shared_ptr<pqxx::connection> conn_;
@@ -173,22 +173,53 @@ namespace drug_lib::common::database
         std::unique_ptr<pqxx::work> shared_transaction_;
 
         void _oid_preprocess();
-        std::shared_ptr<FieldBase> process_field(const pqxx::field& field) const;
+        [[nodiscard]] std::unique_ptr<FieldBase> process_field(pqxx::field&& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
         void execute_query(const std::string& query_string, const pqxx::params& params = {}) const;
-        std::pair<std::string, pqxx::params> construct_insert_query(
-            std::string_view table_name,
-            const std::vector<Record>& rows) const;
 
+        template <interfaces::RecordContainer Rec>
         std::pair<std::string, pqxx::params> construct_insert_query(
             std::string_view table_name,
-            std::vector<Record>&& rows) const;
+            Rec&& rows) const
+        {
+            if (rows.empty())
+            {
+                throw exceptions::QueryException("No data provided for insert.", errors::DbErrorCode::INVALID_QUERY);
+            }
+
+            const std::string table = escape_identifier(table_name);
+            std::ostringstream query_stream;
+            query_stream << "INSERT INTO " << table << " (";
+
+            // Get field names from the first record
+            const auto& first_record = rows.front();
+            std::vector<std::string> field_names;
+            for (const auto& field_name : first_record | std::views::keys)
+            {
+                field_names.push_back(field_name);
+                query_stream << escape_identifier(field_names.back()) << ", ";
+            }
+            std::string query = query_stream.str();
+            query.erase(query.size() - 2); // Remove last comma and space
+            query += ") VALUES ";
+
+            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), field_names);
+            return {query, params};
+        }
 
         std::string escape_identifier(std::string_view identifier) const;
 
         std::unique_ptr<pqxx::work> initialize_transaction();
 
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
+
+        void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;
+
+        static pqxx::params build_params_impl(std::string& query, const std::vector<Record>& rows,
+                                              const std::vector<std::string>& field_names);
+
+        static pqxx::params build_params_impl(std::string& query, std::vector<Record>&& rows,
+                                              const std::vector<std::string>& field_names);
     };
 }

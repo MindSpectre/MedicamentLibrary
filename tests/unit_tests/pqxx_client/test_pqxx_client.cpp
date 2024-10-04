@@ -201,9 +201,9 @@ TEST_F(PqxxClientTest, RemoveDataTest)
     // Remove data
     FieldConditions conditions;
     conditions.add_condition(FieldCondition(
-        std::make_shared<Field<int>>("id", 0),
+        std::make_unique<Field<int>>("id", 0),
         "=",
-        std::make_shared<Field<int>>("", 1)
+        std::make_unique<Field<int>>("", 1)
     ));
 
     EXPECT_NO_THROW(db_client->remove_data(test_table, conditions));

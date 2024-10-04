@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 #include <vector>
-
+#include <type_traits>
 #include "db_conditions.hpp"
 #include "db_field.hpp"
 #include "db_record.hpp"
@@ -13,6 +13,8 @@
 namespace drug_lib::common::database::interfaces
 {
     using namespace drug_lib::common::database;
+    template <typename T>
+    concept RecordContainer = std::is_same_v<std::remove_cvref_t<T>, std::vector<Record>>;
 
     class DbInterface
     {
@@ -33,14 +35,14 @@ namespace drug_lib::common::database::interfaces
                                             std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) = 0;
 
         // Data Manipulation using Perfect Forwarding
-        template <typename Rows>
+        template <RecordContainer Rows>
         void add_data(std::string_view table_name, Rows&& rows)
         {
             add_data_impl(table_name, std::forward<Rows>(rows));
         }
 
         // Upsert Data using Perfect Forwarding
-        template <typename Rows>
+        template <RecordContainer Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
 

@@ -52,6 +52,12 @@ namespace drug_lib::common::database
         }
     }
 
+
+    PqxxClient::PqxxClient(const PqxxConnectParams& pr)
+        : PqxxClient(pr.get_host(), pr.get_port(), pr.get_login(), pr.get_password(), pr.get_db_name())
+    {
+    }
+
     // Utility method to check if an identifier is valid
     bool PqxxClient::is_valid_identifier(const std::string_view identifier)
     {
@@ -119,11 +125,79 @@ namespace drug_lib::common::database
         return DatabaseException(pqxxerr.what(), db_err::UNKNOWN_ERROR);
     }
 
+    void PqxxClient::build_conflict_clause(std::string& query,
+                                           const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const
+    {
+        query.pop_back();
+        // Build ON CONFLICT clause
+        std::ostringstream conflict_stream;
+        conflict_stream << " ON CONFLICT (";
+        for (const auto& field : conflict_fields_)
+        {
+            conflict_stream << escape_identifier(field->get_name()) << ", ";
+        }
+        std::string conflict_clause = conflict_stream.str();
+        conflict_clause.erase(conflict_clause.size() - 2); // Remove last comma and space
+        conflict_clause += ") DO UPDATE SET ";
+
+        // Build SET clause
+        for (const auto& field : replace_fields)
+        {
+            std::string name = escape_identifier(field->get_name());
+            conflict_clause.append(name).append(" = EXCLUDED.").append(name).append(", ");
+        }
+        conflict_clause.erase(conflict_clause.size() - 2); // Remove last comma and space
+
+        query += conflict_clause + ";";
+    }
+
+    pqxx::params PqxxClient::build_params_impl(std::string& query, const std::vector<Record>& rows,
+                                               const std::vector<std::string>& field_names)
+    {
+        pqxx::params params;
+        int param_counter = 1;
+        for (const auto& record : rows)
+        {
+            query += "(";
+            for (const auto& field_name : field_names)
+            {
+                query += "$" + std::to_string(param_counter++) + ", ";
+                params.append(record.at(field_name)->to_string());
+            }
+            query.erase(query.size() - 2); // Remove last comma and space
+            query += "), ";
+        }
+        query.erase(query.size() - 2); // Remove last comma and space
+        query += ";";
+        return params;
+    }
+
+    pqxx::params PqxxClient::build_params_impl(std::string& query, std::vector<Record>&& rows,
+                                               const std::vector<std::string>& field_names)
+    {
+        pqxx::params params;
+        int param_counter = 1;
+        for (const auto& record : rows)
+        {
+            query += "(";
+            for (const auto& field_name : field_names)
+            {
+                query += "$" + std::to_string(param_counter++) + ", ";
+                params.append(record.at(field_name)->move_to_string());
+            }
+            query.erase(query.size() - 2); // Remove last comma and space
+            query += "), ";
+        }
+        query.erase(query.size() - 2); // Remove last comma and space
+        query += ";";
+        return params;
+    }
+
 
     // Utility method to execute a query
     void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params) const
     {
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         try
         {
             pqxx::work txn(*conn_);
@@ -139,7 +213,7 @@ namespace drug_lib::common::database
     // Transaction Methods
     void PqxxClient::start_transaction()
     {
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         if (in_transaction_)
         {
             throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
@@ -157,7 +231,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::commit_transaction()
     {
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         if (!in_transaction_)
         {
             throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
@@ -175,7 +249,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::rollback_transaction()
     {
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         if (!in_transaction_)
         {
             throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
@@ -249,7 +323,7 @@ namespace drug_lib::common::database
         const std::string table = conn_->esc(std::string(table_name));
         const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = " + conn_->
             quote(table) + ");";
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         try
         {
             pqxx::nontransaction ntx(*conn_);
@@ -281,27 +355,7 @@ namespace drug_lib::common::database
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        query.pop_back();
-        // Build ON CONFLICT clause
-        std::ostringstream conflict_stream;
-        conflict_stream << " ON CONFLICT (";
-        for (const auto& field : conflict_fields_)
-        {
-            conflict_stream << escape_identifier(field->get_name()) << ", ";
-        }
-        std::string conflict_clause = conflict_stream.str();
-        conflict_clause.erase(conflict_clause.size() - 2); // Remove last comma and space
-        conflict_clause += ") DO UPDATE SET ";
-
-        // Build SET clause
-        for (const auto& field : replace_fields)
-        {
-            std::string name = escape_identifier(field->get_name());
-            conflict_clause.append(name).append(" = EXCLUDED.").append(name).append(", ");
-        }
-        conflict_clause.erase(conflict_clause.size() - 2); // Remove last comma and space
-
-        query += conflict_clause + ";";
+        build_conflict_clause(query, replace_fields);
         execute_query(query, params);
     }
 
@@ -309,7 +363,9 @@ namespace drug_lib::common::database
                                       std::vector<Record>&& rows,
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
-        upsert_data_impl(table_name, rows, replace_fields);
+        auto [query, params] = construct_insert_query(table_name, rows);
+        build_conflict_clause(query, replace_fields);
+        execute_query(query, params);
     }
 
     void PqxxClient::_oid_preprocess()
@@ -330,58 +386,65 @@ namespace drug_lib::common::database
         }
     }
 
-    std::shared_ptr<FieldBase> PqxxClient::process_field(const pqxx::field& field) const
+    std::unique_ptr<FieldBase> PqxxClient::process_field(pqxx::field&& field) const
     {
-        std::shared_ptr<FieldBase> field_ptr;
+        std::unique_ptr<FieldBase> field_ptr;
 
-        // Get the field's PostgresSQL type OID
+        // Get the field's PostgreSQL type OID
         const auto type_oid = field.type();
-        // Determine the C++ type based on the PostgresSQL type OID
-        if (type_oid == type_oids_.at("int4"))
+        // Determine the C++ type based on the PostgreSQL type OID and create the appropriate Field object
+        if (type_oid == type_oids_.at("int4")) // 32-bit integer
         {
             auto value = field.as<int32_t>();
-            field_ptr = std::make_shared<Field<int>>(field.name(), value);
+            field_ptr = std::make_unique<Field<int>>(field.name(), value);
             return field_ptr;
         }
 
-        if (type_oid == type_oids_.at("int8")) // Bigint
+        if (type_oid == type_oids_.at("int8")) // 64-bit integer (Bigint)
         {
             auto value = field.as<int64_t>();
-            field_ptr = std::make_shared<Field<int64_t>>(field.name(), value);
+            field_ptr = std::make_unique<Field<int64_t>>(field.name(), value);
             return field_ptr;
         }
-        // case type_oids_["float4"]: // Real
-        if (type_oid == type_oids_.at("float8")) // Double precision
+
+        // Handle float types
+        if (type_oid == type_oids_.at("float8")) // Double precision (64-bit float)
         {
             auto value = field.as<double>();
-            field_ptr = std::make_shared<Field<double>>(field.name(), value);
+            field_ptr = std::make_unique<Field<double>>(field.name(), value);
             return field_ptr;
         }
-        if (type_oid == type_oids_.at("text")) // Text
-        // case type_oids_["varchar"]: // Varchar
-        // case type_oids_["bpchar"]: // Char
+
+        // Handle string types (text, varchar, char)
+        if (type_oid == type_oids_.at("text")) // Text type
         {
             auto value = field.as<std::string>();
-            field_ptr = std::make_shared<Field<std::string>>(field.name(), value);
+            field_ptr = std::make_unique<Field<std::string>>(field.name(), std::move(value));
             return field_ptr;
         }
-        if (type_oid == type_oids_.at("bool")) // Boolean
+
+        // Handle boolean type
+        if (type_oid == type_oids_.at("bool")) // Boolean type
         {
             auto value = field.as<bool>();
-            field_ptr = std::make_shared<Field<bool>>(field.name(), value);
+            field_ptr = std::make_unique<Field<bool>>(field.name(), value);
             return field_ptr;
-        } // Timestamp without time zone
-        if (type_oid == type_oids_.at("timestamptz") || type_oids_.at("timestamp")) // Timestamp with time zone
+        }
+
+        // Handle timestamp types (with or without timezone)
+        if (type_oid == type_oids_.at("timestamptz") || type_oid == type_oids_.at("timestamp")) // Timestamp type
         {
             const auto value = field.as<std::string>();
             // Parse the timestamp string into std::chrono::system_clock::time_point
             std::istringstream iss(value);
             std::tm tm = {};
-            iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-            auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-            field_ptr = std::make_shared<Field<std::chrono::system_clock::time_point>>(field.name(), tp);
+            iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S"); // Parse the string to fill the tm structure
+            auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm)); // Convert to time_point
+            field_ptr = std::make_unique<Field<std::chrono::system_clock::time_point>>(field.name(), tp);
             return field_ptr;
         }
+
+        // Return the field pointer (nullptr if no matching type was found)
         return field_ptr;
     }
 
@@ -413,14 +476,13 @@ namespace drug_lib::common::database
             try
             {
                 pqxx::work txn(*conn_);
-                pqxx::result res = txn.exec_params(query, params);
-                for (const auto& row : res)
+                for (pqxx::result res = txn.exec_params(query, params); auto&& row : res)
                 {
                     Record record;
-                    for (const auto& field : row)
+                    for (auto&& field : row)
                     {
-                        auto field_ptr = process_field(field);
-                        record.add_field(field_ptr);
+                        auto field_ptr = process_field(std::move(field));
+                        record.add_field(std::move(field_ptr));
                     }
                     results.push_back(std::move(record));
                 }
@@ -438,14 +500,13 @@ namespace drug_lib::common::database
             try
             {
                 pqxx::work txn(*conn_);
-                pqxx::result res = txn.exec(query);
-                for (const auto& row : res)
+                for (pqxx::result res = txn.exec(query); auto&& row : res)
                 {
                     Record record;
-                    for (const auto& field : row)
+                    for (auto&& field : row)
                     {
-                        auto field_ptr = process_field(field);
-                        record.add_field(field_ptr);
+                        auto field_ptr = process_field(std::move(field));
+                        record.add_field(std::move(field_ptr));
                     }
                     results.push_back(std::move(record));
                 }
@@ -460,6 +521,7 @@ namespace drug_lib::common::database
     }
 
     // Remove Data
+    // TODO: Possibly should append moveable
     void PqxxClient::remove_data(
         const std::string_view table_name,
         const FieldConditions& conditions)
@@ -501,7 +563,7 @@ namespace drug_lib::common::database
         const std::string table = escape_identifier(table_name);
         const std::string field_name = escape_identifier(field->get_name());
         const std::string query = "SELECT COUNT(" + field_name + ") FROM " + table + ";";
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         try
         {
             pqxx::nontransaction ntx(*conn_);
@@ -531,7 +593,7 @@ namespace drug_lib::common::database
             " WHERE to_tsvector('simple', json_data::text) @@ to_tsquery('simple', $1);";
         pqxx::params params;
         params.append(std::string(fts_query_params));
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         try
         {
             pqxx::nontransaction ntx(*conn_);
@@ -542,10 +604,10 @@ namespace drug_lib::common::database
             for (const auto& row : res)
             {
                 Record record;
-                for (const auto& field : row)
+                for (auto&& field : row)
                 {
-                    const auto field_ptr = process_field(field);
-                    record.add_field(field_ptr);
+                    auto field_ptr = process_field(std::move(field));
+                    record.add_field(std::move(field_ptr));
                 }
                 results.push_back(std::move(record));
             }
@@ -581,13 +643,13 @@ namespace drug_lib::common::database
                 std::chrono::high_resolution_clock::now();
             query_exec_time = end_time - start_time;
 
-            for (const auto& row : res)
+            for (auto&& row : res)
             {
                 Record record;
-                for (const auto& field : row)
+                for (auto&& field : row)
                 {
-                    const auto field_ptr = process_field(field);
-                    record.add_field(field_ptr);
+                    auto field_ptr = process_field(std::move(field));
+                    record.add_field(std::move(field_ptr));
                 }
                 batch_results.push_back(std::move(record));
 
@@ -609,56 +671,5 @@ namespace drug_lib::common::database
         {
             throw adapt_exception(e);
         }
-    }
-
-    // Construct Insert Query
-    std::pair<std::string, pqxx::params> PqxxClient::construct_insert_query(
-        const std::string_view table_name,
-        const std::vector<Record>& rows) const
-    {
-        if (rows.empty())
-        {
-            throw QueryException("No data provided for insert.", db_err::INVALID_QUERY);
-        }
-
-        const std::string table = escape_identifier(table_name);
-        std::ostringstream query_stream;
-        query_stream << "INSERT INTO " << table << " (";
-
-        // Get field names from the first record
-        const auto& first_record = rows.front();
-        std::vector<std::string> field_names;
-        for (const auto& [field_name, _] : first_record)
-        {
-            field_names.push_back(field_name);
-            query_stream << escape_identifier(field_names.back()) << ", ";
-        }
-        std::string query = query_stream.str();
-        query.erase(query.size() - 2); // Remove last comma and space
-        query += ") VALUES ";
-
-        pqxx::params params;
-        int param_counter = 1;
-        for (const auto& record : rows)
-        {
-            query += "(";
-            for (const auto& field_name : field_names)
-            {
-                query += "$" + std::to_string(param_counter++) + ", ";
-                params.append(record.at(field_name)->to_string());
-            }
-            query.erase(query.size() - 2); // Remove last comma and space
-            query += "), ";
-        }
-        query.erase(query.size() - 2); // Remove last comma and space
-        query += ";";
-        return {query, params};
-    }
-
-    std::pair<std::string, pqxx::params> PqxxClient::construct_insert_query(
-        const std::string_view table_name,
-        std::vector<Record>&& rows) const
-    {
-        return construct_insert_query(table_name, rows);
     }
 }
