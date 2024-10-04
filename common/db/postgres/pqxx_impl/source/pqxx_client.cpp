@@ -472,7 +472,7 @@ namespace drug_lib::common::database
             std::string query = query_stream.str();
             query.erase(query.size() - 5); // Remove last ' AND '
             query += ";";
-            std::lock_guard<std::mutex> lock(conn_mutex_);
+            std::lock_guard lock(conn_mutex_);
             try
             {
                 pqxx::work txn(*conn_);
@@ -496,7 +496,7 @@ namespace drug_lib::common::database
         {
             // No conditions, select all
             std::string query = query_stream.str() + ";";
-            std::lock_guard<std::mutex> lock(conn_mutex_);
+            std::lock_guard lock(conn_mutex_);
             try
             {
                 pqxx::work txn(*conn_);
@@ -553,6 +553,8 @@ namespace drug_lib::common::database
         }
     }
 
+    //TODO: gotta be review with field conditions
+
     // Get Record Count
     int PqxxClient::get_count(const std::string_view table_name,
                               const std::shared_ptr<FieldBase>& field,
@@ -578,6 +580,8 @@ namespace drug_lib::common::database
             throw adapt_exception(e);
         }
     }
+
+    //TODO: Uncovered
 
     // Full-Text Search Methods
     std::vector<Record> PqxxClient::get_data_fts(
@@ -620,6 +624,7 @@ namespace drug_lib::common::database
         return results;
     }
 
+    //TODO: Uncovered
     bool PqxxClient::get_data_fts_batched(
         const std::string_view table_name,
         const std::string_view fts_query_params,
@@ -633,7 +638,7 @@ namespace drug_lib::common::database
             " WHERE to_tsvector('simple', json_data::text) @@ to_tsquery('simple', $1);";
         pqxx::params params;
         params.append(std::string(fts_query_params));
-        std::lock_guard<std::mutex> lock(conn_mutex_);
+        std::lock_guard lock(conn_mutex_);
         try
         {
             std::vector<Record> batch_results;

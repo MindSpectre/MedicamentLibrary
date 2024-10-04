@@ -25,4 +25,4 @@ target_include_directories(${DAL}_CrudInterface
 
 ##############################################################################
 
-add_subdirectory(handbooks)
+#add_subdirectory(handbooks)

@@ -1,4 +1,6 @@
 #pragma once
+#include <functional>
+#include <iostream>
 
 namespace drug_lib::common::database::behavioral::strategies
 {

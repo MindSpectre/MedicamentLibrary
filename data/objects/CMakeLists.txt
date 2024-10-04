@@ -1,58 +1,15 @@
 # DATA_OBJECTS = Data
-set(DATA_OBJECTS DrugLib_Data_Objects)
-
-##############################################################################
-# Objects: Medicaments
-##############################################################################
-add_library(${DATA_OBJECTS}_Medicaments
-        properties/medicaments/source/medicaments.cpp
+add_library(DrugLib_Data_Objects
+        base/source/objects.cpp
+        base/include/objects.hpp
 )
-target_link_libraries(${DATA_OBJECTS}_Medicaments PUBLIC
-        DrugLib_Common_Database_Base
-        ${DATA_LIBS}_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${DATA_OBJECTS}_Medicaments
+target_link_libraries(DrugLib_Data_Objects
         PUBLIC
-        properties/medicaments/include
-        properties/medicaments/
+        DrugLib_Data_PropertyFactory
 )
-
-##############################################################################
-
-
-##############################################################################
-# Objects: Organizations
-##############################################################################
-add_library(${DATA_OBJECTS}_Organizations
-        properties/organizations/source/organizations.cpp
-)
-target_link_libraries(${DATA_OBJECTS}_Organizations PUBLIC
-        DrugLib_Common_Database_Base
-        ${DATA_LIBS}_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${DATA_OBJECTS}_Organizations
+target_include_directories(DrugLib_Data_Objects
         PUBLIC
-        properties/organizations/include
-        properties/organizations/
+        base/include
+        base/
 )
-##############################################################################
-
-##############################################################################
-# Objects: Patients
-##############################################################################
-add_library(${DATA_OBJECTS}_Patients
-        properties/patients/source/patients.cpp
-)
-target_link_libraries(${DATA_OBJECTS}_Patients PUBLIC
-        DrugLib_Common_Database_Base
-        ${DATA_LIBS}_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${DATA_OBJECTS}_Patients
-        PUBLIC
-        properties/patients/include
-        properties/patients/
-)
-##############################################################################
+add_subdirectory(properties)

@@ -26,7 +26,7 @@ namespace drug_lib::dao
         virtual void update(const RecordType& record) = 0;
         virtual void update(const std::vector<RecordType>& record) = 0;
         virtual void remove(const common::database::FieldConditions& conditions) = 0;
-        virtual std::vector<RecordType>& get(const drug_lib::common::database::FieldConditions& conditions) = 0;
+        virtual std::vector<RecordType>& get(const common::database::FieldConditions& conditions) = 0;
         virtual void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect) = 0;
         virtual void drop_connection() = 0;
         virtual std::shared_ptr<common::database::interfaces::DbInterface> get_connection() = 0;

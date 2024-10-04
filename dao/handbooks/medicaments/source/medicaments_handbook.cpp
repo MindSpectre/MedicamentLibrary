@@ -46,7 +46,7 @@ namespace drug_lib::dao
         connect_.reset();
     }
 
-    std::shared_ptr<drug_lib::common::database::interfaces::DbInterface> drug_lib::dao::MedicamentsHandbook::
+    std::shared_ptr<common::database::interfaces::DbInterface> MedicamentsHandbook::
     get_connection()
     {
         return connect_;

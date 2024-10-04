@@ -10,7 +10,7 @@
 
 using namespace drug_lib::common::database;
 
-class PqxxClientTest : public ::testing::Test
+class PqxxClientTest : public testing::Test
 {
 protected:
     // Database connection parameters

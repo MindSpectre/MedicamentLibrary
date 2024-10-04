@@ -9,14 +9,14 @@ namespace drug_lib::common::database::creational
     class DbInterfaceFactory
     {
     public:
-        static std::shared_ptr<interfaces::DbInterface> create_pqxx_client()
+        static std::shared_ptr<interfaces::DbInterface> create_pqxx_client(const PqxxConnectParams& _params)
         {
-            return std::make_shared<interfaces::DbInterface>();
+            return std::make_shared<PqxxClient>(_params);
         }
 
-        static std::shared_ptr<interfaces::DbInterface> create_mock_database()
-        {
-            return std::make_shared<interfaces::DbInterface>();
-        }
+        // static std::shared_ptr<interfaces::DbInterface> create_mock_database()
+        // {
+        //     return std::make_shared<interfaces::DbInterface>();
+        // }
     };
 }

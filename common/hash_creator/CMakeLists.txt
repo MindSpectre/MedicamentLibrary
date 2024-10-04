@@ -1,13 +1,13 @@
 # PARENT_PROJECT_NAME = DrugLib.Common
 
-set(TARGET ${PARENT_PROJECT_NAME}.HashCreator)
+set(TARGET ${COMMON_LIBS}_HashCreator)
 
 ##############################################################################
 # Hash Creator Interface
 ##############################################################################
-add_library(${TARGET}.Interface INTERFACE)
+add_library(${TARGET}_Interface INTERFACE)
 
-target_include_directories(${TARGET}.Interface
+target_include_directories(${TARGET}_Interface
         INTERFACE
         interface
 )
@@ -15,18 +15,18 @@ target_include_directories(${TARGET}.Interface
 ##############################################################################
 # Hash Utilities: SHA256
 ##############################################################################
-add_library(${TARGET}.sha_256
+add_library(${TARGET}_SHA256
         sha_256/source/sha_256.cpp
 )
 
-target_include_directories(${TARGET}.sha_256 PUBLIC
+target_include_directories(${TARGET}_SHA256 PUBLIC
         sha_256/include
         sha_256/source
 )
 
-target_link_libraries(${TARGET}.sha_256
+target_link_libraries(${TARGET}_SHA256
         PUBLIC
-        ${TARGET}.Interface
+        ${TARGET}_Interface
         OpenSSL::SSL
         OpenSSL::Crypto
 )
@@ -36,17 +36,18 @@ target_link_libraries(${TARGET}.sha_256
 ##############################################################################
 # Hash Creator Factory
 ##############################################################################
-add_library(${TARGET}.Factory STATIC
+add_library(${TARGET}_Factory STATIC
         factory/hash_creator_factory.cpp
+        interface/hash_creator_interface.hpp
 )
 
-target_include_directories(${TARGET}.Factory PUBLIC
+target_include_directories(${TARGET}_Factory PUBLIC
         factory
 )
 
-target_link_libraries(${TARGET}.Factory
+target_link_libraries(${TARGET}_Factory
         PUBLIC
-        ${TARGET}.sha_256
-        ${TARGET}.Interface
+        ${TARGET}_SHA256
+        ${TARGET}_Interface
 )
 ##############################################################################

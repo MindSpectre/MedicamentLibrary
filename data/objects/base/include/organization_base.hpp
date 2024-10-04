@@ -1,11 +1,7 @@
 #pragma once
 
-#include "db_field.hpp"
-#include  <json/json.h>
-
 #include "common_obj.hpp"
-#include "db_conditions.hpp"
-#include "db_record.hpp"
+#include "property_factory.hpp"
 
 namespace drug_lib::data::objects
 {
@@ -30,17 +26,21 @@ namespace drug_lib::data::objects
                 {
                     id_ = field->as<int32_t>();
                 }
-                if (field_name == "name")
+                else if (field_name == "name")
                 {
                     name_ = field->as<std::string>();
                 }
-                if (field_name == "country")
+                else if (field_name == "country")
                 {
                     country_ = field->as<std::string>();
                 }
-                if (field_name == properties::properties)
+                else if (field_name == properties::properties)
                 {
                     create_collection(field);
+                }
+                else
+                {
+                    throw std::invalid_argument("Unknown field name: " + field_name);
                 }
             }
         }
