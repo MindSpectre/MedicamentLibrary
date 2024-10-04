@@ -1,6 +1,9 @@
+##############################################################################
+# Data: Behavioral Property factory
+##############################################################################
 add_library(${DATA_LIBS}_PropertyFactory
-        creational/property_factory/source/property_factory.cpp
-        creational/property_factory/include/property_factory.hpp
+        property_factory/source/property_factory.cpp
+        property_factory/include/property_factory.hpp
 )
 target_link_libraries(${DATA_LIBS}_PropertyFactory
         PUBLIC
@@ -10,6 +13,7 @@ target_link_libraries(${DATA_LIBS}_PropertyFactory
 )
 target_include_directories(${DATA_LIBS}_PropertyFactory
         PUBLIC
-        creational/property_factory/
-        creational/property_factory/include
+        property_factory/
+        property_factory/include
 )
+##############################################################################

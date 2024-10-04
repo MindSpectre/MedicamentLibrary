@@ -1,5 +1,3 @@
-# DATABASE_LIBS = DrugLib.Common
-
 set(DATABASE_LIBS ${COMMON_LIBS}_Database)
 
 ##############################################################################

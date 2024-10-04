@@ -1,6 +1,6 @@
-# DATA_OBJECTS = Data
-add_subdirectory(properties)
-
+##############################################################################
+# Objects: Final usable objects
+##############################################################################
 add_library(DrugLib_Data_Objects
         base/source/objects.cpp
         base/include/objects.hpp
@@ -14,3 +14,5 @@ target_include_directories(DrugLib_Data_Objects
         base/include
         base/
 )
+##############################################################################
+add_subdirectory(properties)
