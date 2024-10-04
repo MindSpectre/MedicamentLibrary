@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "db_field.hpp"
-
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
+
+#include "db_field.hpp"
 
 namespace drug_lib::common::database
 {

@@ -2,10 +2,11 @@
 
 #pragma once
 
-#include "db_field.hpp"
 #include <memory>
 #include <string>
 #include <boost/container/flat_map.hpp>
+
+#include "db_field.hpp"
 
 namespace drug_lib::common::database
 {

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "db_record.hpp"
 
 namespace drug_lib::data::objects

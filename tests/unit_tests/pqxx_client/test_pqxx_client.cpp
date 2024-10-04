@@ -1,12 +1,13 @@
 // pqxx_client_test.cpp
 
-#include <gtest/gtest.h>
 #include <chrono>
 #include <functional>
-#include "pqxx_client.hpp"
+#include <gtest/gtest.h>
+
+#include "db_conditions.hpp"
 #include "db_field.hpp"
 #include "db_record.hpp"
-#include "db_conditions.hpp"
+#include "pqxx_client.hpp"
 
 using namespace drug_lib::common::database;
 
