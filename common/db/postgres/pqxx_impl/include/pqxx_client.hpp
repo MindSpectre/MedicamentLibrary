@@ -88,6 +88,14 @@ namespace drug_lib::common::database
     class PqxxClient final : public interfaces::DbInterface
     {
     public:
+        static void create_database(std::string_view host,
+                                    int port,
+                                    std::string_view db_name,
+                                    std::string_view login,
+                                    std::string_view password);
+        static void create_database(const PqxxConnectParams& pr);
+        void drop_connect() override;
+
         PqxxClient(std::string_view host,
                    int port,
                    std::string_view db_name,
@@ -103,6 +111,10 @@ namespace drug_lib::common::database
 
         void make_unique_constraint(std::string_view table_name,
                                     std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) override;
+        void setup_full_text_search(
+            std::string_view table_name,
+            std::vector<std::shared_ptr<FieldBase>> fields) override;
+
         // Table Management
         void create_table(std::string_view table_name, const Record& field_list) override;
         void remove_table(std::string_view table_name) override;
@@ -144,6 +156,7 @@ namespace drug_lib::common::database
             std::string_view fts_query_params,
             std::chrono::duration<double>& query_exec_time) const override;
 
+
         bool get_data_fts_batched(
             std::string_view table_name,
             std::string_view fts_query_params,
@@ -166,26 +179,26 @@ namespace drug_lib::common::database
     private:
         boost::container::flat_map<std::string, int32_t> type_oids_;
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
-
+        std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
-        mutable std::mutex conn_mutex_;
+        mutable std::recursive_mutex conn_mutex_;
         bool in_transaction_;
-        std::unique_ptr<pqxx::work> shared_transaction_;
+        std::shared_ptr<pqxx::work> shared_transaction_;
 
         void _oid_preprocess();
-        [[nodiscard]] std::unique_ptr<FieldBase> process_field(pqxx::field&& field) const;
+        [[nodiscard]] std::shared_ptr<FieldBase> process_field(pqxx::field&& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
-        void execute_query(const std::string& query_string, const pqxx::params& params = {}) const;
+        void execute_query(const std::string& query_string, const pqxx::params& params = {});
 
         template <interfaces::RecordContainer Rec>
         std::pair<std::string, pqxx::params> construct_insert_query(
-            std::string_view table_name,
+            const std::string_view table_name,
             Rec&& rows) const
         {
             if (rows.empty())
             {
-                throw exceptions::QueryException("No data provided for insert.", errors::DbErrorCode::INVALID_QUERY);
+                throw exceptions::QueryException("No data provided for insert.", errors::db_error_code::INVALID_QUERY);
             }
 
             const std::string table = escape_identifier(table_name);
@@ -210,8 +223,8 @@ namespace drug_lib::common::database
 
         std::string escape_identifier(std::string_view identifier) const;
 
-        std::unique_ptr<pqxx::work> initialize_transaction();
-
+        std::shared_ptr<pqxx::work> initialize_transaction();
+        void finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
         void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;

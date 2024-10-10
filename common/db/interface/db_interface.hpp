@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -35,7 +36,9 @@ namespace drug_lib::common::database::interfaces
 
         virtual void make_unique_constraint(std::string_view table_name,
                                             std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) = 0;
-
+        virtual void setup_full_text_search(
+            std::string_view table_name,
+            std::vector<std::shared_ptr<FieldBase>> fields) = 0;
         // Data Manipulation using Perfect Forwarding
         template <RecordContainer Rows>
         void add_data(std::string_view table_name, Rows&& rows)
