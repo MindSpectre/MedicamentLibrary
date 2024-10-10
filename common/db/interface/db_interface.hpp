@@ -27,6 +27,7 @@ namespace drug_lib::common::database::interfaces
         virtual void commit_transaction() = 0;
         virtual void rollback_transaction() = 0;
 
+        virtual void drop_connect() = 0;
         // Table Management
         virtual void create_table(std::string_view table_name, const Record& field_list) = 0;
         virtual void remove_table(std::string_view table_name) = 0;
