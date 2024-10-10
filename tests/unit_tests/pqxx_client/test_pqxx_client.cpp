@@ -43,9 +43,16 @@ protected:
         Record fields;
         fields.add_field(std::make_shared<Field<int>>("id", 0));
         fields.add_field(std::make_shared<Field<std::string>>("name", ""));
-        fields.add_field(std::make_shared<Field<bool>>("active", false));
+        fields.add_field(std::make_shared<Field<std::string>>("description", ""));
         db_client->create_table(test_table, fields);
         db_client->make_unique_constraint(test_table, {std::make_shared<Field<int>>("id", 0)});
+        // Set up full-text search on 'name' and 'description' fields
+        std::vector<std::shared_ptr<FieldBase>> fts_fields = {
+            std::make_shared<Field<std::string>>("name", ""),
+            std::make_shared<Field<std::string>>("description", "")
+        };
+
+        db_client->setup_full_text_search(test_table, std::move(fts_fields));
     }
 
     void TearDown() override
@@ -59,6 +66,7 @@ protected:
         db_client.reset();
     }
 };
+
 
 TEST_F(PqxxClientTest, TransactionTest)
 {
@@ -83,7 +91,7 @@ TEST_F(PqxxClientTest, TableManagementTest)
     Record fields;
     fields.add_field(std::make_shared<Field<int>>("id", 0));
     fields.add_field(std::make_shared<Field<std::string>>("name", ""));
-    fields.add_field(std::make_shared<Field<bool>>("active", false));
+    fields.add_field(std::make_shared<Field<std::string>>("description", ""));
 
     EXPECT_NO_THROW(db_client->create_table(test_table, fields));
     EXPECT_TRUE(db_client->check_table(test_table));
@@ -97,13 +105,13 @@ TEST_F(PqxxClientTest, AddDataTest)
     Record record1;
     record1.add_field(std::make_shared<Field<int>>("id", 1));
     record1.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
-    record1.add_field(std::make_shared<Field<bool>>("active", true));
+    record1.add_field(std::make_shared<Field<std::string>>("description", "P"));
     records.push_back(std::move(record1));
 
     Record record2;
     record2.add_field(std::make_shared<Field<int>>("id", 2));
     record2.add_field(std::make_shared<Field<std::string>>("name", "Bob"));
-    record2.add_field(std::make_shared<Field<bool>>("active", false));
+    record2.add_field(std::make_shared<Field<std::string>>("description", "L"));
     records.push_back(std::move(record2));
 
     // Add data to the table
@@ -120,17 +128,14 @@ TEST_F(PqxxClientTest, AddDataTest)
     {
         const auto id = rec.at("id")->as<int32_t>();
         const auto name = rec.at("name")->as<std::string>();
-        const bool active = std::dynamic_pointer_cast<Field<bool>>(rec.at("active"))->value();
 
         if (id == 1)
         {
             EXPECT_EQ(name, "Alice");
-            EXPECT_TRUE(active);
         }
         else if (id == 2)
         {
             EXPECT_EQ(name, "Bob");
-            EXPECT_FALSE(active);
         }
         else
         {
@@ -147,7 +152,7 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     Record record1;
     record1.add_field(std::make_shared<Field<int>>("id", 1));
     record1.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
-    record1.add_field(std::make_shared<Field<bool>>("active", true));
+    record1.add_field(std::make_shared<Field<std::string>>("description", ""));
     records.push_back(std::move(record1));
 
     // Add initial data
@@ -159,13 +164,13 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     Record record_upsert;
     record_upsert.add_field(std::make_shared<Field<int>>("id", 1));
     record_upsert.add_field(std::make_shared<Field<std::string>>("name", "Alice Updated"));
-    record_upsert.add_field(std::make_shared<Field<bool>>("active", false));
+    record_upsert.add_field(std::make_shared<Field<std::string>>("description", "XXX"));
     upsert_records.push_back(std::move(record_upsert));
 
     // Conflict and replace fields
     const std::vector<std::shared_ptr<FieldBase>> replace_fields = {
         std::make_shared<Field<std::string>>("name", ""),
-        std::make_shared<Field<bool>>("active", false)
+        std::make_shared<Field<std::string>>("description", "")
     };
 
     EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
@@ -179,11 +184,10 @@ TEST_F(PqxxClientTest, UpsertDataTest)
     const auto& rec = results.front();
     const auto id = rec.at("id")->as<int32_t>();
     const auto name = rec.at("name")->as<std::string>();
-    const auto active = rec.at("active")->as<bool>();
-
+    const auto description = rec.at("description")->as<std::string>();
     EXPECT_EQ(id, 1);
     EXPECT_EQ(name, "Alice Updated");
-    EXPECT_FALSE(active);
+    EXPECT_EQ(description, "XXX");
 }
 
 TEST_F(PqxxClientTest, RemoveDataTest)
@@ -194,7 +198,7 @@ TEST_F(PqxxClientTest, RemoveDataTest)
     Record record1;
     record1.add_field(std::make_shared<Field<int>>("id", 1));
     record1.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
-    record1.add_field(std::make_shared<Field<bool>>("active", true));
+    record1.add_field(std::make_shared<Field<std::string>>("description", ""));
     records.push_back(std::move(record1));
 
     EXPECT_NO_THROW(db_client->add_data(test_table, records));
@@ -224,7 +228,7 @@ TEST_F(PqxxClientTest, GetCountTest)
         Record record;
         record.add_field(std::make_shared<Field<int>>("id", i));
         record.add_field(std::make_shared<Field<std::string>>("name", "User" + std::to_string(i)));
-        record.add_field(std::make_shared<Field<bool>>("active", i % 2 == 0));
+        record.add_field(std::make_shared<Field<std::string>>("description", ""));
         records.push_back(std::move(record));
     }
 
@@ -237,9 +241,74 @@ TEST_F(PqxxClientTest, GetCountTest)
     EXPECT_EQ(count, 5);
 }
 
+TEST_F(PqxxClientTest, FullTextSearchTest)
+{
+    // Add data to the table
+    std::vector<Record> records;
+
+    Record record1;
+    record1.add_field(std::make_shared<Field<int>>("id", 1));
+    record1.add_field(std::make_shared<Field<std::string>>("name", "Apple"));
+    record1.add_field(std::make_shared<Field<std::string>>("description", "A sweet red fruit"));
+    records.push_back(std::move(record1));
+
+    Record record2;
+    record2.add_field(std::make_shared<Field<int>>("id", 2));
+    record2.add_field(std::make_shared<Field<std::string>>("name", "Banana"));
+    record2.add_field(std::make_shared<Field<std::string>>("description", "A long yellow fruit"));
+    records.push_back(std::move(record2));
+
+    Record record3;
+    record3.add_field(std::make_shared<Field<int>>("id", 3));
+    record3.add_field(std::make_shared<Field<std::string>>("name", "Carrot"));
+    record3.add_field(std::make_shared<Field<std::string>>("description", "An orange root vegetable"));
+    records.push_back(std::move(record3));
+
+    // Insert records into the database
+    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+
+    // Perform full-text search
+    std::chrono::duration<double> query_time{};
+    std::string search_query = "fruit";
+    auto results = db_client->get_data_fts(test_table, search_query, query_time);
+
+    // Verify the results
+    EXPECT_EQ(results.size(), 2);
+
+    std::set<int> expected_ids = {1, 2};
+    std::set<int> result_ids;
+    for (const auto& rec : results)
+    {
+        int id = rec.at("id")->as<int32_t>();
+        result_ids.insert(id);
+    }
+
+    EXPECT_EQ(result_ids, expected_ids);
+
+    // Search for 'yellow'
+    search_query = "yellow";
+    results = db_client->get_data_fts(test_table, search_query, query_time);
+
+    EXPECT_EQ(results.size(), 1);
+    EXPECT_EQ(results.front().at("name")->as<std::string>(), "Banana");
+
+    // Search for 'vegetable'
+    search_query = "vegetable";
+    results = db_client->get_data_fts(test_table, search_query, query_time);
+
+    EXPECT_EQ(results.size(), 1);
+    EXPECT_EQ(results.front().at("name")->as<std::string>(), "Carrot");
+
+    // Search for a term not present
+    search_query = "berry";
+    results = db_client->get_data_fts(test_table, search_query, query_time);
+
+    EXPECT_TRUE(results.empty());
+}
+
+
 int main()
 {
     ::testing::InitGoogleTest();
     return RUN_ALL_TESTS();
 }
-
