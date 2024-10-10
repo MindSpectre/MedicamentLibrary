@@ -4,13 +4,17 @@
 add_library(DrugLib_Data_Objects
         base/source/objects.cpp
         base/include/objects.hpp
+        base/include/organization.hpp
+        base/include/medicament.hpp
+        base/include/patient.hpp
+        base/include/common_obj.hpp
 )
 target_link_libraries(DrugLib_Data_Objects
-        PRIVATE
+        PUBLIC
         DrugLib_Data_PropertyFactory
 )
 target_include_directories(DrugLib_Data_Objects
-        PRIVATE
+        PUBLIC
         base/include
         base/
 )

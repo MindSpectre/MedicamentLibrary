@@ -1,1 +1,1 @@
-#include "patients.hpp"
+#include "patient_properties.hpp"

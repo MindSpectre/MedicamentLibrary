@@ -4,7 +4,7 @@ set(DATA_OBJECTS_PROPERTIES DrugLib_Data_Objects_Properties)
 # Objects: Medicaments properties
 ##############################################################################
 add_library(${DATA_OBJECTS_PROPERTIES}_Medicaments
-        medicaments/source/medicaments.cpp
+        medicaments/source/medicament_properties.cpp
         data_property.hpp
 )
 target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Medicaments PUBLIC
@@ -25,7 +25,7 @@ target_include_directories(${DATA_OBJECTS_PROPERTIES}_Medicaments
 # Objects: Organizations properties
 ##############################################################################
 add_library(${DATA_OBJECTS_PROPERTIES}_Organizations
-        organizations/source/organizations.cpp
+        organizations/source/organization_properties.cpp
         data_property.hpp
 )
 target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Organizations PUBLIC
@@ -44,7 +44,7 @@ target_include_directories(${DATA_OBJECTS_PROPERTIES}_Organizations
 # Objects: Patients properties
 ##############################################################################
 add_library(${DATA_OBJECTS_PROPERTIES}_Patients
-        patients/source/patients.cpp
+        patients/source/patient_properties.cpp
         data_property.hpp
 )
 target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Patients PUBLIC

@@ -1,1 +1,1 @@
-#include "organizations.hpp"
+#include "organization_properties.hpp"
