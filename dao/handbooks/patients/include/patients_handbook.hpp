@@ -1,26 +1,22 @@
 #pragma once
 
 #include "handbook.hpp"
-#include "patients.hpp"
+#include "patient.hpp"
 
-namespace drug_lib::dao 
+namespace drug_lib::dao
 {
     using namespace drug_lib::data;
-    class PatientsHandbook : public HandbookBase<objects::PatientBase>  
+
+    class PatientsHandbook final : public HandbookBase<objects::Patient>
     {
-    private:
-        /* data */
     public:
-        PatientsHandbook(/* args */);
-        ~PatientsHandbook();
+        ~PatientsHandbook() override;
+        void remove_all() override;
+        std::vector<objects::Patient> get_all() override;
+
+        PatientsHandbook()
+        {
+            table_name_ = handbook_tables_name::Patients;
+        }
     };
-    
-    PatientsHandbook::PatientsHandbook(/* args */)
-    {
-    }
-    
-    PatientsHandbook::~PatientsHandbook()
-    {
-    }
-    
 }
