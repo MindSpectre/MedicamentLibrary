@@ -15,7 +15,8 @@ namespace drug_lib::common::database
     using namespace exceptions;
     using db_err = errors::db_error_code;
 
-    void PqxxClient::create_database(std::string_view host, int port, std::string_view db_name, std::string_view login,
+    void PqxxClient::create_database(std::string_view host, uint32_t port, std::string_view db_name,
+                                     std::string_view login,
                                      std::string_view password)
     // Build the connection string to connect to the 'template1' database
     {
@@ -72,7 +73,7 @@ namespace drug_lib::common::database
     }
 
     PqxxClient::PqxxClient(const std::string_view host,
-                           const int port,
+                           const uint32_t port,
                            const std::string_view db_name,
                            const std::string_view login,
                            const std::string_view password)
@@ -237,7 +238,7 @@ namespace drug_lib::common::database
                                                const std::vector<std::string>& field_names)
     {
         pqxx::params params;
-        int param_counter = 1;
+        uint32_t param_counter = 1;
         for (const auto& record : rows)
         {
             query += "(";
@@ -258,7 +259,7 @@ namespace drug_lib::common::database
                                                const std::vector<std::string>& field_names)
     {
         pqxx::params params;
-        int param_counter = 1;
+        uint32_t param_counter = 1;
         for (const auto& record : rows)
         {
             query += "(";
@@ -282,8 +283,9 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            const auto txn = initialize_transaction();
+            const auto& txn = initialize_transaction();
             txn->exec_params(query_string, params);
+
             finish_transaction(txn);
         }
         catch (const std::exception& e)
@@ -497,7 +499,7 @@ namespace drug_lib::common::database
                 "SELECT typname, oid FROM pg_type WHERE typname IN ('bool', 'int2', 'int4', 'int8', 'float4', 'float8', 'text', 'varchar', 'bpchar', 'timestamp', 'timestamptz')");
             for (const auto& row : r)
             {
-                type_oids_.insert({row["typname"].c_str(), row["oid"].as<int>()});
+                type_oids_.insert({row["typname"].c_str(), row["oid"].as<uint32_t>()});
             }
         }
         catch (const std::exception& e)
@@ -582,7 +584,7 @@ namespace drug_lib::common::database
         {
             pqxx::params params;
             query_stream << " WHERE ";
-            int param_index = 1;
+            uint32_t param_index = 1;
             for (const auto& condition : conditions)
             {
                 std::string field_name = escape_identifier(condition.field()->get_name());
@@ -634,7 +636,7 @@ namespace drug_lib::common::database
             query_stream << "DELETE FROM " << table;
 
             query_stream << " WHERE ";
-            int param_index = 1;
+            uint32_t param_index = 1;
             for (const auto& condition : conditions)
             {
                 std::string field_name = escape_identifier(condition.field()->get_name());
@@ -653,9 +655,9 @@ namespace drug_lib::common::database
         execute_query(query, params);
     }
 
-    int PqxxClient::count(std::string_view table_name,
-                          const FieldConditions& conditions,
-                          std::chrono::duration<double>& query_exec_time) const
+    uint32_t PqxxClient::count(std::string_view table_name,
+                               const FieldConditions& conditions,
+                               std::chrono::duration<double>& query_exec_time) const
     {
         const auto start_time = std::chrono::high_resolution_clock::now();
         const std::string table = escape_identifier(table_name);
@@ -668,7 +670,7 @@ namespace drug_lib::common::database
         if (!conditions.empty())
         {
             pqxx::params params;
-            int param_index = 1;
+            uint32_t param_index = 1;
             query_stream << " WHERE ";
             for (const auto& condition : conditions)
             {
@@ -687,7 +689,7 @@ namespace drug_lib::common::database
                 pqxx::nontransaction ntx(*conn_);
                 const pqxx::result res = ntx.exec_params(query, params);
                 query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
-                return res[0][0].as<int>();
+                return res[0][0].as<uint32_t>();
             }
             catch (const std::exception& e)
             {
@@ -706,7 +708,7 @@ namespace drug_lib::common::database
                 pqxx::nontransaction ntx(*conn_);
                 const pqxx::result res = ntx.exec(query);
                 query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
-                return res[0][0].as<int>();
+                return res[0][0].as<uint32_t>();
             }
             catch (const std::exception& e)
             {

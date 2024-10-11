@@ -1,16 +1,16 @@
 // pqxx_client.hpp
 #pragma once
 
-#include <pqxx/pqxx>
 #include <memory>
+#include <mutex>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <mutex>
-#include <regex>
+#include <boost/container/flat_map.hpp>
+#include <pqxx/pqxx>
 #include "db_interface.hpp"
 #include "exceptions.hpp"
-#include <boost/container/flat_map.hpp>
 
 namespace drug_lib::common::database
 {
@@ -18,7 +18,7 @@ namespace drug_lib::common::database
     {
     public:
         PqxxConnectParams(const std::string_view host,
-                          const int port,
+                          const uint32_t port,
                           const std::string_view db_name,
                           const std::string_view login,
                           const std::string_view password): host_(host), port_(port), db_name_(db_name),
@@ -37,12 +37,12 @@ namespace drug_lib::common::database
             host_ = host;
         }
 
-        [[nodiscard]] int get_port() const
+        [[nodiscard]] uint32_t get_port() const
         {
             return port_;
         }
 
-        void set_port(const int port)
+        void set_port(const uint32_t port)
         {
             port_ = port;
         }
@@ -90,7 +90,7 @@ namespace drug_lib::common::database
 
     private:
         std::string_view host_;
-        int port_;
+        uint32_t port_;
         std::string_view db_name_;
         std::string_view login_;
         std::string_view password_;
@@ -100,7 +100,7 @@ namespace drug_lib::common::database
     {
     public:
         static void create_database(std::string_view host,
-                                    int port,
+                                    uint32_t port,
                                     std::string_view db_name,
                                     std::string_view login,
                                     std::string_view password);
@@ -108,7 +108,7 @@ namespace drug_lib::common::database
         void drop_connect() override;
 
         PqxxClient(std::string_view host,
-                   int port,
+                   uint32_t port,
                    std::string_view db_name,
                    std::string_view login,
                    std::string_view password);
@@ -157,9 +157,9 @@ namespace drug_lib::common::database
             const FieldConditions& conditions) override;
 
         // Get Record Count
-        [[nodiscard]] int count(std::string_view table_name,
-                                const FieldConditions& conditions,
-                                std::chrono::duration<double>& query_exec_time) const override;
+        [[nodiscard]] uint32_t count(std::string_view table_name,
+                                     const FieldConditions& conditions,
+                                     std::chrono::duration<double>& query_exec_time) const override;
 
         // Full-Text Search Methods
         [[nodiscard]] std::vector<Record> get_data_fts(
@@ -188,7 +188,7 @@ namespace drug_lib::common::database
                               const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
-        boost::container::flat_map<std::string, int32_t> type_oids_;
+        boost::container::flat_map<std::string, uint32_t> type_oids_;
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
         std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;

@@ -3,7 +3,6 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -50,7 +49,6 @@ namespace drug_lib::common::database::interfaces
         template <RecordContainer Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
-
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
             upsert_data_impl(table_name, std::forward<Rows>(rows), replace_fields);
@@ -66,9 +64,9 @@ namespace drug_lib::common::database::interfaces
             std::string_view table_name,
             const FieldConditions& conditions) = 0;
 
-        [[nodiscard]] virtual int count(std::string_view table_name,
-                                        const FieldConditions& conditions,
-                                        std::chrono::duration<double>& query_exec_time) const = 0;
+        [[nodiscard]] virtual uint32_t count(std::string_view table_name,
+                                             const FieldConditions& conditions,
+                                             std::chrono::duration<double>& query_exec_time) const = 0;
 
         // Full-Text Search Methods
         [[nodiscard]] virtual std::vector<Record> get_data_fts(
@@ -89,12 +87,10 @@ namespace drug_lib::common::database::interfaces
 
         virtual void upsert_data_impl(std::string_view table_name,
                                       const std::vector<Record>& rows,
-
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields) = 0;
 
         virtual void upsert_data_impl(std::string_view table_name,
                                       std::vector<Record>&& rows,
-
                                       const std::vector<std::shared_ptr<FieldBase>>& replace_fields) = 0;
     };
 }
