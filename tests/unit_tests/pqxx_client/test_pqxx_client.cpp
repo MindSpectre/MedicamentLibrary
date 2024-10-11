@@ -144,7 +144,37 @@ TEST_F(PqxxClientTest, AddDataTest)
     }
 }
 
-TEST_F(PqxxClientTest, UpsertDataTest)
+TEST_F(PqxxClientTest, AddDataSpeedTest)
+{
+    // Create sample data
+    std::vector<Record> records;
+    constexpr uint32_t flush = 1 << 14;
+    constexpr uint32_t limit_ = flush * 8;
+    const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
+    for (uint32_t i = 1; i <= limit_; i++)
+    {
+        Record record1;
+        record1.add_field(std::make_shared<Field<int32_t>>("id", i));
+        record1.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
+        record1.add_field(std::make_shared<Field<std::string>>("description", "P"));
+        records.push_back(std::move(record1));
+        if (records.size() >= flush)
+        {
+            EXPECT_NO_THROW(db_client->add_data(test_table, std::move(records)));
+
+            records.resize(0);
+            records.reserve(flush);
+        }
+    }
+    const std::chrono::time_point<std::chrono::system_clock> finish_time = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time);
+    const FieldConditions conditions;
+    const auto results = db_client->get_data(test_table, conditions);
+
+    EXPECT_EQ(results.size(), limit_);
+}
+
+TEST_F(PqxxClientTest, UpsertDataTestFullRecord)
 {
     // Initial data
     std::vector<Record> records;
@@ -163,13 +193,12 @@ TEST_F(PqxxClientTest, UpsertDataTest)
 
     Record record_upsert;
     record_upsert.add_field(std::make_shared<Field<int>>("id", 1));
-    record_upsert.add_field(std::make_shared<Field<std::string>>("name", "Alice Updated"));
-    record_upsert.add_field(std::make_shared<Field<std::string>>("description", "XXX"));
+    record_upsert.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
+    record_upsert.add_field(std::make_shared<Field<std::string>>("description", "Alice Updated"));
     upsert_records.push_back(std::move(record_upsert));
 
     // Conflict and replace fields
     const std::vector<std::shared_ptr<FieldBase>> replace_fields = {
-        std::make_shared<Field<std::string>>("name", ""),
         std::make_shared<Field<std::string>>("description", "")
     };
 
@@ -177,17 +206,62 @@ TEST_F(PqxxClientTest, UpsertDataTest)
 
     // Retrieve data and verify
     const FieldConditions conditions;
-    const auto results = db_client->get_data(test_table, conditions);
+    auto results = db_client->get_data(test_table, conditions);
 
     EXPECT_EQ(results.size(), 1);
 
-    const auto& rec = results.front();
-    const auto id = rec.at("id")->as<int32_t>();
-    const auto name = rec.at("name")->as<std::string>();
-    const auto description = rec.at("description")->as<std::string>();
+    auto& rec = results.front();
+    auto id = rec.at("id")->as<int32_t>();
+    auto name = rec.at("name")->as<std::string>();
+    auto description = rec.at("description")->as<std::string>();
     EXPECT_EQ(id, 1);
-    EXPECT_EQ(name, "Alice Updated");
-    EXPECT_EQ(description, "XXX");
+    EXPECT_EQ(name, "Alice");
+    EXPECT_EQ(description, "Alice Updated");
+}
+
+TEST_F(PqxxClientTest, UpsertDataTestPartial)
+{
+    // Initial data
+    std::vector<Record> records;
+
+    Record record1;
+    record1.add_field(std::make_shared<Field<int>>("id", 1));
+    record1.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
+    record1.add_field(std::make_shared<Field<std::string>>("description", ""));
+    records.push_back(std::move(record1));
+
+    // Add initial data
+    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+
+    // Upsert data
+    std::vector<Record> upsert_records;
+
+    Record record_upsert;
+    record_upsert.add_field(std::make_shared<Field<int>>("id", 1));
+    // CHANGES HERE //
+    record_upsert.add_field(std::make_shared<Field<std::string>>("description", "Alice Updated"));
+    upsert_records.push_back(std::move(record_upsert));
+
+    // Conflict and replace fields
+    const std::vector<std::shared_ptr<FieldBase>> replace_fields = {
+        std::make_shared<Field<std::string>>("description", "")
+    };
+
+    EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
+
+    // Retrieve data and verify
+    const FieldConditions conditions;
+    auto results = db_client->get_data(test_table, conditions);
+
+    EXPECT_EQ(results.size(), 1);
+
+    auto& rec = results.front();
+    auto id = rec.at("id")->as<int32_t>();
+    auto name = rec.at("name")->as<std::string>();
+    auto description = rec.at("description")->as<std::string>();
+    EXPECT_EQ(id, 1);
+    EXPECT_EQ(name, "Alice");
+    EXPECT_EQ(description, "Alice Updated");
 }
 
 TEST_F(PqxxClientTest, RemoveDataTest)
@@ -206,9 +280,9 @@ TEST_F(PqxxClientTest, RemoveDataTest)
     // Remove data
     FieldConditions conditions;
     conditions.add_condition(FieldCondition(
-        std::make_unique<Field<int>>("id", 0),
+        std::make_unique<Field<int32_t>>("id", 0),
         "=",
-        std::make_unique<Field<int>>("", 1)
+        std::make_unique<Field<int32_t>>("", 1)
     ));
 
     EXPECT_NO_THROW(db_client->remove_data(test_table, conditions));
@@ -242,10 +316,10 @@ TEST_F(PqxxClientTest, GetCountTest)
         "=",
         std::make_unique<Field<int>>("", 1)
     ));
-    const int count = db_client->count(test_table, conditions, query_time);
+    const uint32_t count = db_client->count(test_table, conditions, query_time);
 
     EXPECT_EQ(count, 1);
-    const int count_all = db_client->count(test_table, {}, query_time);
+    const uint32_t count_all = db_client->count(test_table, {}, query_time);
     EXPECT_EQ(count_all, 5);
 }
 
