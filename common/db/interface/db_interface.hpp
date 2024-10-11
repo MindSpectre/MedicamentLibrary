@@ -66,10 +66,9 @@ namespace drug_lib::common::database::interfaces
             std::string_view table_name,
             const FieldConditions& conditions) = 0;
 
-        // Get Record Count
-        [[nodiscard]] virtual int get_count(std::string_view table_name,
-                                            const std::shared_ptr<FieldBase>& field,
-                                            std::chrono::duration<double>& query_exec_time) const = 0;
+        [[nodiscard]] virtual int count(std::string_view table_name,
+                                        const FieldConditions& conditions,
+                                        std::chrono::duration<double>& query_exec_time) const = 0;
 
         // Full-Text Search Methods
         [[nodiscard]] virtual std::vector<Record> get_data_fts(

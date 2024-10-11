@@ -236,9 +236,17 @@ TEST_F(PqxxClientTest, GetCountTest)
 
     // Get count
     std::chrono::duration<double> query_time{};
-    const int count = db_client->get_count(test_table, std::make_shared<Field<int>>("id", 0), query_time);
+    FieldConditions conditions;
+    conditions.add_condition(FieldCondition(
+        std::make_unique<Field<int>>("id", 0),
+        "=",
+        std::make_unique<Field<int>>("", 1)
+    ));
+    const int count = db_client->count(test_table, conditions, query_time);
 
-    EXPECT_EQ(count, 5);
+    EXPECT_EQ(count, 1);
+    const int count_all = db_client->count(test_table, {}, query_time);
+    EXPECT_EQ(count_all, 5);
 }
 
 TEST_F(PqxxClientTest, FullTextSearchTest)

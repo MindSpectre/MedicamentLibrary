@@ -76,6 +76,7 @@ namespace drug_lib::common::database
         {
             password_ = password;
         }
+
         [[nodiscard]] std::string make_connect_string() const
         {
             std::ostringstream conn_str;
@@ -85,8 +86,8 @@ namespace drug_lib::common::database
                 << " password=" << password_
                 << " dbname=" << db_name_;
             return conn_str.str();
-
         }
+
     private:
         std::string_view host_;
         int port_;
@@ -156,9 +157,9 @@ namespace drug_lib::common::database
             const FieldConditions& conditions) override;
 
         // Get Record Count
-        [[nodiscard]] int get_count(std::string_view table_name,
-                                    const std::shared_ptr<FieldBase>& field,
-                                    std::chrono::duration<double>& query_exec_time) const override;
+        [[nodiscard]] int count(std::string_view table_name,
+                                const FieldConditions& conditions,
+                                std::chrono::duration<double>& query_exec_time) const override;
 
         // Full-Text Search Methods
         [[nodiscard]] std::vector<Record> get_data_fts(

@@ -620,8 +620,6 @@ namespace drug_lib::common::database
         return results;
     }
 
-    // Remove Data
-    // TODO: Possibly should append moveable
     void PqxxClient::remove_data(
         const std::string_view table_name,
         const FieldConditions& conditions)
@@ -655,33 +653,68 @@ namespace drug_lib::common::database
         execute_query(query, params);
     }
 
-    //TODO: gotta be review with field conditions
-
-    // Get Record Count
-    int PqxxClient::get_count(const std::string_view table_name,
-                              const std::shared_ptr<FieldBase>& field,
-                              std::chrono::duration<double>& query_exec_time) const
+    int PqxxClient::count(std::string_view table_name,
+                          const FieldConditions& conditions,
+                          std::chrono::duration<double>& query_exec_time) const
     {
-        const std::chrono::time_point<std::chrono::system_clock> start_time =
-            std::chrono::high_resolution_clock::now();
+        const auto start_time = std::chrono::high_resolution_clock::now();
         const std::string table = escape_identifier(table_name);
-        const std::string field_name = escape_identifier(field->get_name());
-        const std::string query = "SELECT COUNT(" + field_name + ") FROM " + table + ";";
-        std::lock_guard lock(conn_mutex_);
-        try
+        std::ostringstream query_stream;
+
+        // Start building the query
+        query_stream << "SELECT COUNT(*) FROM " << table;
+
+        // Add conditions if any
+        if (!conditions.empty())
         {
-            pqxx::nontransaction ntx(*conn_);
-            const pqxx::result res = ntx.exec(query);
-            const std::chrono::time_point<std::chrono::system_clock> end_time =
-                std::chrono::high_resolution_clock::now();
-            query_exec_time = end_time - start_time;
-            return res[0][0].as<int>();
+            pqxx::params params;
+            int param_index = 1;
+            query_stream << " WHERE ";
+            for (const auto& condition : conditions)
+            {
+                std::string field_name = escape_identifier(condition.field()->get_name());
+                query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+                params.append(condition.value()->to_string());
+            }
+            std::string query = query_stream.str();
+            query.erase(query.size() - 5); // Remove last ' AND '
+            query += ";";
+
+            // Execute the query
+            std::lock_guard lock(conn_mutex_);
+            try
+            {
+                pqxx::nontransaction ntx(*conn_);
+                const pqxx::result res = ntx.exec_params(query, params);
+                query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
+                return res[0][0].as<int>();
+            }
+            catch (const std::exception& e)
+            {
+                throw adapt_exception(e);
+            }
         }
-        catch (const std::exception& e)
+        else
         {
-            throw adapt_exception(e);
+            // No conditions, count all rows
+            std::string query = query_stream.str() + ";";
+
+            // Execute the query
+            std::lock_guard lock(conn_mutex_);
+            try
+            {
+                pqxx::nontransaction ntx(*conn_);
+                const pqxx::result res = ntx.exec(query);
+                query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
+                return res[0][0].as<int>();
+            }
+            catch (const std::exception& e)
+            {
+                throw adapt_exception(e);
+            }
         }
     }
+
 
     // Full-Text Search Methods
     std::vector<Record> PqxxClient::get_data_fts(
