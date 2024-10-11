@@ -112,8 +112,15 @@ namespace drug_lib::common::database
 
 
     PqxxClient::PqxxClient(const PqxxConnectParams& pr)
-        : PqxxClient(pr.get_host(), pr.get_port(), pr.get_login(), pr.get_password(), pr.get_db_name())
+        : in_transaction_(false)
     {
+        conn_ = std::make_shared<pqxx::connection>(pr.make_connect_string());
+        if (!conn_->is_open())
+        {
+            throw ConnectionException("Failed to open database connection.",
+                                      db_err::CONNECTION_FAILED);
+        }
+        _oid_preprocess();
     }
 
     // Utility method to check if an identifier is valid

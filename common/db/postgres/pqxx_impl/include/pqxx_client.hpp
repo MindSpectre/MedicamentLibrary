@@ -76,7 +76,17 @@ namespace drug_lib::common::database
         {
             password_ = password;
         }
+        [[nodiscard]] std::string make_connect_string() const
+        {
+            std::ostringstream conn_str;
+            conn_str << "host=" << host_
+                << " port=" << port_
+                << " user=" << login_
+                << " password=" << password_
+                << " dbname=" << db_name_;
+            return conn_str.str();
 
+        }
     private:
         std::string_view host_;
         int port_;
