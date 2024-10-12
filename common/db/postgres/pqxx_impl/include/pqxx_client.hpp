@@ -131,21 +131,6 @@ namespace drug_lib::common::database
         void remove_table(std::string_view table_name) override;
         [[nodiscard]] bool check_table(std::string_view table_name) override;
 
-        // Data Manipulation
-        template <interfaces::RecordContainer Rows>
-        void add_data(std::string_view table_name, Rows&& rows)
-        {
-            insert_implementation(table_name, std::forward<Rows>(rows));
-        }
-
-        template <interfaces::RecordContainer Rows>
-        void upsert_data(std::string_view table_name,
-                         Rows&& rows,
-                         const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
-        {
-            upsert_implementation(table_name, std::forward<Rows>(rows), replace_fields);
-        }
-
         // Data Retrieval
         [[nodiscard]] std::vector<Record> select(
             std::string_view table_name,

@@ -46,7 +46,7 @@ namespace drug_lib::dao
             }
         }
 
-        std::vector<RecordType> get(const common::database::FieldConditions& conditions) const
+        [[nodiscard]] std::vector<RecordType> get(const common::database::FieldConditions& conditions) const
         {
             const auto result = connect_->select(table_name_, conditions);
             std::vector<RecordType> records;

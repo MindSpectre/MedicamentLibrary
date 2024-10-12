@@ -622,7 +622,7 @@ namespace drug_lib::common::database
     {
         if (conditions.empty())
         {
-            throw QueryException("Invalid number of conditions. For removing all data call another function",
+            throw QueryException("Invalid number of conditions. For selecting all data call another function",
                                  db_err::INVALID_QUERY);
         }
         std::vector<Record> results;
