@@ -11,8 +11,10 @@ target_link_libraries(InstallmentCheck
 )
 
 SET(UNIT_TESTING_TARGET ${PROJECT_NAME}_Tests_Unit)
-enable_testing()
 
+##############################################################################
+# Test PQxx Client DB
+##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_PqxxClient
         unit_tests/pqxx_client/test_pqxx_client.cpp
 )
@@ -22,3 +24,4 @@ target_link_libraries(${UNIT_TESTING_TARGET}_PqxxClient
         GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
 )
 add_test(DbUnitTests ${UNIT_TESTING_TARGET}_PqxxClient)
+##############################################################################

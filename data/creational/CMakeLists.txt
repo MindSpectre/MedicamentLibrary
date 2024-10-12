@@ -1,0 +1,19 @@
+##############################################################################
+# Data: Behavioral Property factory
+##############################################################################
+add_library(${DATA_LIBS}_PropertyFactory
+        property_factory/source/property_factory.cpp
+        property_factory/include/property_factory.hpp
+)
+target_link_libraries(${DATA_LIBS}_PropertyFactory
+        PUBLIC
+        ${DATA_LIBS}_Objects_Properties_Medicaments
+        ${DATA_LIBS}_Objects_Properties_Organizations
+        ${DATA_LIBS}_Objects_Properties_Patients
+)
+target_include_directories(${DATA_LIBS}_PropertyFactory
+        PUBLIC
+        property_factory/
+        property_factory/include
+)
+##############################################################################

@@ -2,10 +2,11 @@
 
 #pragma once
 
-#include "db_field.hpp"
 #include <memory>
 #include <string>
 #include <boost/container/flat_map.hpp>
+
+#include "db_field.hpp"
 
 namespace drug_lib::common::database
 {
@@ -30,9 +31,14 @@ namespace drug_lib::common::database
             return fields_[name];
         }
 
-        [[nodiscard]] std::shared_ptr<FieldBase> at(const std::string& name) const
+        [[nodiscard]] const std::shared_ptr<FieldBase>& at(const std::string& name) const
         {
             return fields_.at(name);
+        }
+
+        [[nodiscard]] std::shared_ptr<FieldBase> pull(const std::string& name)
+        {
+            return std::move(fields_.at(name));
         }
 
         // Implement begin() and end() methods

@@ -2,30 +2,30 @@
 
 #pragma once
 
-#include "db_field.hpp"
-
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
+
+#include "db_field.hpp"
 
 namespace drug_lib::common::database
 {
     class FieldCondition
     {
     public:
-        FieldCondition(std::shared_ptr<FieldBase> field, std::string op, std::shared_ptr<FieldBase> value)
+        FieldCondition(std::unique_ptr<FieldBase> field, std::string op, std::unique_ptr<FieldBase> value)
             : field_(std::move(field)), op_(std::move(op)), value_(std::move(value))
         {
         }
 
-        [[nodiscard]] std::shared_ptr<FieldBase> field() const { return field_; }
+        [[nodiscard]] const std::unique_ptr<FieldBase>& field() const { return field_; }
         [[nodiscard]] const std::string& op() const { return op_; }
-        [[nodiscard]] const std::shared_ptr<FieldBase>& value() const { return value_; }
+        [[nodiscard]] const std::unique_ptr<FieldBase>& value() const { return value_; }
 
     private:
-        std::shared_ptr<FieldBase> field_;
+        std::unique_ptr<FieldBase> field_;
         std::string op_;
-        std::shared_ptr<FieldBase> value_;
+        std::unique_ptr<FieldBase> value_;
     };
 
     class FieldConditions final

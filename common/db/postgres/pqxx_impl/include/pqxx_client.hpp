@@ -1,16 +1,16 @@
 // pqxx_client.hpp
 #pragma once
 
-#include <pqxx/pqxx>
 #include <memory>
+#include <mutex>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <mutex>
-#include <regex>
+#include <boost/container/flat_map.hpp>
+#include <pqxx/pqxx>
 #include "db_interface.hpp"
 #include "exceptions.hpp"
-#include <boost/container/flat_map.hpp>
 
 namespace drug_lib::common::database
 {
@@ -18,7 +18,7 @@ namespace drug_lib::common::database
     {
     public:
         PqxxConnectParams(const std::string_view host,
-                          const int port,
+                          const uint32_t port,
                           const std::string_view db_name,
                           const std::string_view login,
                           const std::string_view password): host_(host), port_(port), db_name_(db_name),
@@ -37,12 +37,12 @@ namespace drug_lib::common::database
             host_ = host;
         }
 
-        [[nodiscard]] int get_port() const
+        [[nodiscard]] uint32_t get_port() const
         {
             return port_;
         }
 
-        void set_port(const int port)
+        void set_port(const uint32_t port)
         {
             port_ = port;
         }
@@ -77,9 +77,20 @@ namespace drug_lib::common::database
             password_ = password;
         }
 
+        [[nodiscard]] std::string make_connect_string() const
+        {
+            std::ostringstream conn_str;
+            conn_str << "host=" << host_
+                << " port=" << port_
+                << " user=" << login_
+                << " password=" << password_
+                << " dbname=" << db_name_;
+            return conn_str.str();
+        }
+
     private:
         std::string_view host_;
-        int port_;
+        uint32_t port_;
         std::string_view db_name_;
         std::string_view login_;
         std::string_view password_;
@@ -88,12 +99,20 @@ namespace drug_lib::common::database
     class PqxxClient final : public interfaces::DbInterface
     {
     public:
+        static void create_database(std::string_view host,
+                                    uint32_t port,
+                                    std::string_view db_name,
+                                    std::string_view login,
+                                    std::string_view password);
+        static void create_database(const PqxxConnectParams& pr);
+        void drop_connect() override;
+
         PqxxClient(std::string_view host,
-                   int port,
+                   uint32_t port,
                    std::string_view db_name,
                    std::string_view login,
                    std::string_view password);
-
+        explicit PqxxClient(const PqxxConnectParams& pr);
         ~PqxxClient() override = default;
 
         // Transaction Methods
@@ -103,92 +122,123 @@ namespace drug_lib::common::database
 
         void make_unique_constraint(std::string_view table_name,
                                     std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) override;
+        void setup_full_text_search(
+            std::string_view table_name,
+            std::vector<std::shared_ptr<FieldBase>> fields) override;
+
         // Table Management
         void create_table(std::string_view table_name, const Record& field_list) override;
         void remove_table(std::string_view table_name) override;
-        [[nodiscard]] bool check_table(std::string_view table_name) const override;
+        [[nodiscard]] bool check_table(std::string_view table_name) override;
 
         // Data Manipulation
-        template <typename Rows>
+        template <interfaces::RecordContainer Rows>
         void add_data(std::string_view table_name, Rows&& rows)
         {
-            add_data_impl(table_name, std::forward<Rows>(rows));
+            insert_implementation(table_name, std::forward<Rows>(rows));
         }
 
-        template <typename Rows>
+        template <interfaces::RecordContainer Rows>
         void upsert_data(std::string_view table_name,
                          Rows&& rows,
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
-            upsert_data_impl(table_name, std::forward<Rows>(rows), replace_fields);
+            upsert_implementation(table_name, std::forward<Rows>(rows), replace_fields);
         }
 
         // Data Retrieval
-        [[nodiscard]] std::vector<Record> get_data(
+        [[nodiscard]] std::vector<Record> select(
             std::string_view table_name,
             const FieldConditions& conditions) const override;
-
+        [[nodiscard]] std::vector<Record> select(
+            std::string_view table_name) const override;
         // Remove Data
-        void remove_data(
+        void remove(
             std::string_view table_name,
             const FieldConditions& conditions) override;
-
+        void truncate(
+            std::string_view table_name) override;
         // Get Record Count
-        [[nodiscard]] int get_count(std::string_view table_name,
-                                    const std::shared_ptr<FieldBase>& field,
-                                    std::chrono::duration<double>& query_exec_time) const override;
-
+        [[nodiscard]] uint32_t count(std::string_view table_name,
+                                     const FieldConditions& conditions) const override;
+        [[nodiscard]] uint32_t count(std::string_view table_name) const override;
         // Full-Text Search Methods
         [[nodiscard]] std::vector<Record> get_data_fts(
             std::string_view table_name,
-            std::string_view fts_query_params,
-            std::chrono::duration<double>& query_exec_time) const override;
-
-        bool get_data_fts_batched(
-            std::string_view table_name,
-            std::string_view fts_query_params,
-            std::chrono::duration<double>& query_exec_time,
-            const std::function<void(const std::vector<Record>&)>& on_result) const override;
+            const std::string& fts_query_params) const override;
 
     protected:
         // Implementation Methods for Data Manipulation
-        void add_data_impl(std::string_view table_name, const std::vector<Record>& rows) override;
-        void add_data_impl(std::string_view table_name, std::vector<Record>&& rows) override;
+        void insert_implementation(std::string_view table_name, const std::vector<Record>& rows) override;
+        void insert_implementation(std::string_view table_name, std::vector<Record>&& rows) override;
 
-        void upsert_data_impl(std::string_view table_name,
-                              const std::vector<Record>& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
+        void upsert_implementation(std::string_view table_name,
+                                   const std::vector<Record>& rows,
+                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
-        void upsert_data_impl(std::string_view table_name,
-                              std::vector<Record>&& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
+        void upsert_implementation(std::string_view table_name,
+                                   std::vector<Record>&& rows,
+                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
-        boost::container::flat_map<std::string, int> type_oids_;
+        boost::container::flat_map<std::string, uint32_t> type_oids_;
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
-
+        std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
-        mutable std::mutex conn_mutex_;
+        mutable std::recursive_mutex conn_mutex_;
+        mutable std::shared_ptr<pqxx::work> shared_transaction_;
         bool in_transaction_;
-        std::unique_ptr<pqxx::work> shared_transaction_;
 
         void _oid_preprocess();
-        std::shared_ptr<FieldBase> process_field(const pqxx::field& field) const;
+        [[nodiscard]] std::shared_ptr<FieldBase> process_field(pqxx::field&& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
-        void execute_query(const std::string& query_string, const pqxx::params& params = {}) const;
-        std::pair<std::string, pqxx::params> construct_insert_query(
-            std::string_view table_name,
-            const std::vector<Record>& rows) const;
 
+        void execute_query(const std::string& query_string, const pqxx::params& params) const;
+        void execute_query(const std::string& query_string) const;
+        pqxx::result execute_query_with_result(const std::string& query_string, const pqxx::params& params) const;
+        pqxx::result execute_query_with_result(const std::string& query_string) const;
+
+        template <interfaces::RecordContainer Rec>
         std::pair<std::string, pqxx::params> construct_insert_query(
-            std::string_view table_name,
-            std::vector<Record>&& rows) const;
+            const std::string_view table_name,
+            Rec&& rows) const
+        {
+            if (rows.empty())
+            {
+                throw exceptions::QueryException("No data provided for insert.", errors::db_error_code::INVALID_QUERY);
+            }
+            const std::string table = escape_identifier(table_name);
+            std::ostringstream query_stream;
+            query_stream << "INSERT INTO " << table << " (";
+            // Get field names from the first record
+            const auto& first_record = rows.front();
+            std::vector<std::string> field_names;
+            for (const auto& field_name : first_record | std::views::keys)
+            {
+                field_names.push_back(field_name);
+                query_stream << escape_identifier(field_names.back()) << ", ";
+            }
+            std::string query = query_stream.str();
+            query.erase(query.size() - 2); // Remove last comma and space
+            query += ") VALUES ";
+
+            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), field_names);
+            return {query, params};
+        }
 
         std::string escape_identifier(std::string_view identifier) const;
 
-        std::unique_ptr<pqxx::work> initialize_transaction();
-
+        std::shared_ptr<pqxx::work> initialize_transaction() const;
+        void finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
+
+        void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;
+
+        static pqxx::params build_params_impl(std::string& query, const std::vector<Record>& rows,
+                                              const std::vector<std::string>& field_names);
+
+        static pqxx::params build_params_impl(std::string& query, std::vector<Record>&& rows,
+                                              const std::vector<std::string>& field_names);
     };
 }

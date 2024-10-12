@@ -1,11 +1,14 @@
-# DATABASE_LIBS = DrugLib.Common
-
 set(DATABASE_LIBS ${COMMON_LIBS}_Database)
 
 ##############################################################################
 # Database main classes NECESSARY UTILITY
 ##############################################################################
-add_library(${DATABASE_LIBS}_Base INTERFACE)
+add_library(${DATABASE_LIBS}_Base INTERFACE
+        base/db_conditions.hpp
+        base/db_field.hpp
+        base/db_record.hpp
+        base/db_serializer.hpp
+)
 
 target_include_directories(${DATABASE_LIBS}_Base
         INTERFACE
@@ -14,6 +17,7 @@ target_include_directories(${DATABASE_LIBS}_Base
 target_link_libraries(${DATABASE_LIBS}_Base
         INTERFACE
         Boost::boost
+        JsonCpp::JsonCpp
 )
 ##############################################################################
 

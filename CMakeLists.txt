@@ -3,14 +3,21 @@ cmake_minimum_required(VERSION 3.20)
 project(DrugLib LANGUAGES CXX)
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
 
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+set(CMAKE_HAVE_THREADS_LIBRARY 1)
+set(CMAKE_USE_WIN32_THREADS_INIT 0)
+set(CMAKE_USE_PTHREADS_INIT 1)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 # Add options to enable or disable Boost and Qt5
 option(USE_BOOST "Enable Boost library" ON)
 option(USE_QT5 "Enable Qt5 library" OFF)
 option(USE_PROTOBUF "Enable Ptotobuf" OFF)
+option(USE_TESTS "Tests activated" ON)
 # Global compiler options (if necessary)
 # It's better to set these per-target
 # add_compile_options(-pthread -pipe -Wall -fPIC -Werror=return-type)
@@ -19,7 +26,7 @@ option(USE_PROTOBUF "Enable Ptotobuf" OFF)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenSSL 3.0.0 REQUIRED)
-find_package(GTest CONFIG REQUIRED)
+
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
@@ -53,7 +60,18 @@ if (USE_PROTOBUF)
         message(FATAL_ERROR "Protobuf libraries not found, but USE_PROTOBUF is ON.")
     endif ()
 endif ()
-
+##############################################################################
+# TESTS
+##############################################################################
+if (USE_TESTS)
+    message("Tests are enabled")
+    enable_testing()
+    find_package(GTest CONFIG REQUIRED)
+    if (NOT GTest_FOUND)
+        message(FATAL_ERROR "Gtest libraries not found, but Tests are activated.")
+    endif ()
+    add_subdirectory(tests)
+endif ()
 ##############################################################################
 
 add_subdirectory(common)
@@ -62,4 +80,4 @@ add_subdirectory(data)
 
 add_subdirectory(dao)
 
-add_subdirectory(tests)
+

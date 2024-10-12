@@ -1,5 +1,6 @@
 #pragma once
 #include "strategy_base.hpp"
+#include <queue>
 
 namespace drug_lib::common::database::behavioral::strategies
 {

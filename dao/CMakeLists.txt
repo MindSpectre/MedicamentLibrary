@@ -8,7 +8,7 @@ set(DAL ${PROJECT_NAME}_Dao)
 ##############################################################################
 add_library(${DAL}_CrudInterface
         INTERFACE
-        crud_interface/
+        crud_interface/handbook.hpp
 )
 
 target_link_libraries(${DAL}_CrudInterface
@@ -16,6 +16,7 @@ target_link_libraries(${DAL}_CrudInterface
         JsonCpp::JsonCpp
         DrugLib_Common_Database_Base
         DrugLib_Common_Database_PqxxClient
+        DrugLib_Data_Objects
 )
 target_include_directories(${DAL}_CrudInterface
         INTERFACE

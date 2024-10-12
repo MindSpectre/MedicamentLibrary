@@ -1,11 +1,12 @@
 #pragma once
 
-#include <string>
-#include <type_traits>
+#include <chrono>
+#include <iomanip>
 #include <memory>
 #include <sstream>
-#include <iomanip>
-#include <chrono>
+#include <string>
+#include <type_traits>
+#include <json/value.h>
 
 namespace drug_lib::common::database
 {
@@ -20,6 +21,10 @@ namespace drug_lib::common::database
 
         /// @brief Converts the field value to a string for SQL queries
         [[nodiscard]] virtual std::string to_string() const = 0;
+
+        /// @brief Converts the field value to a string for SQL queries
+        /// @return moveable
+        [[nodiscard]] virtual std::string move_to_string() = 0;
 
         /// @brief Gets the SQL data type of the field
         [[nodiscard]] virtual std::string get_sql_type() const = 0;
@@ -65,6 +70,10 @@ namespace drug_lib::common::database
             {
                 return std::to_string(value_);
             }
+            else if constexpr (std::is_same_v<T, Json::Value>)
+            {
+                return value_.toStyledString();
+            }
             else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
             {
                 // Convert time_point to string in ISO 8601 format
@@ -73,6 +82,41 @@ namespace drug_lib::common::database
                 std::ostringstream oss;
                 oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");
                 return oss.str();
+            }
+            else
+            {
+                static_assert(sizeof(T) == 0, "Unsupported field type for to_string()");
+            }
+            return {};
+        }
+
+        /// @brief Converts the field value to a string for SQL queries
+        [[nodiscard]] std::string move_to_string() override
+        {
+            if constexpr (std::is_same_v<T, std::string>)
+            {
+                return std::move(value_); // Move the string instead of copying
+            }
+            else if constexpr (std::is_same_v<T, bool>)
+            {
+                return value_ ? "TRUE" : "FALSE";
+            }
+            else if constexpr (std::is_arithmetic_v<T>)
+            {
+                return std::to_string(value_); // No need to move arithmetic types
+            }
+            else if constexpr (std::is_same_v<T, Json::Value>)
+            {
+                return value_.toStyledString(); // Move the JSON string representation
+            }
+            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+            {
+                // Convert time_point to string in ISO 8601 format
+                const std::time_t time = std::chrono::system_clock::to_time_t(value_);
+                const std::tm* tm_ptr = std::localtime(&time);
+                std::ostringstream oss;
+                oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");
+                return oss.str(); // No need to move, it's a local object
             }
             else
             {
@@ -99,6 +143,10 @@ namespace drug_lib::common::database
             else if constexpr (std::is_same_v<T, std::string>)
             {
                 return "TEXT";
+            }
+            else if constexpr (std::is_same_v<T, Json::Value>)
+            {
+                return "JSONB";
             }
             else if constexpr (std::is_same_v<T, bool>)
             {
@@ -127,7 +175,8 @@ namespace drug_lib::common::database
         static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
 
         // Attempt to dynamic cast this object to a Field<T> type
-        const auto* derived = std::dynamic_pointer_cast<const Field<T>>(this);
+        const auto* derived = dynamic_cast<const Field<T>*>(this);
+
 
         if (!derived)
         {

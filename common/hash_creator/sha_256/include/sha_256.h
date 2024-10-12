@@ -1,10 +1,12 @@
 #pragma once
-#pragma GCC system_header
-#include "hash_creator_interface.hpp"
 
+#include "hash_creator_interface.hpp"
+#include <openssl/sha.h>
+
+//TODO: Class are deprecated. gotta be reviewed
 namespace drug_lib::common::hash_creator
 {
-    class SHA256Function : public HashCreator
+    class SHA256Function final : public HashCreator
     {
     private:
         SHA256_CTX sha256{};
@@ -15,13 +17,13 @@ namespace drug_lib::common::hash_creator
             SHA256_Init(&sha256);
         }
 
-        ~SHA256Function() override= default;
+        ~SHA256Function() override = default;
 
         /// @brief Создает 16 битный хэш для полученой соли и данной строки
         /// @param data Cамо сообщение
         /// @param salt соль
         /// @return 16 битный хэш с использованием ключа соли и сообщения
-        std::string hash_function(const std::string &data, const std::string &salt) override
+        std::string hash_function(const std::string& data, const std::string& salt) override
         {
             std::string preparedData = key + data + key;
             unsigned char hash[SHA256_DIGEST_LENGTH];
@@ -37,5 +39,4 @@ namespace drug_lib::common::hash_creator
             return {hash_hex};
         }
     };
-
 }

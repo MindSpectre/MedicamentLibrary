@@ -10,21 +10,21 @@ namespace drug_lib::common::database::exceptions
     class DatabaseException : public std::runtime_error
     {
     protected:
-        errors::DbErrorCode m_error_code = errors::DbErrorCode::UNKNOWN_ERROR;
+        errors::db_error_code m_error_code = errors::db_error_code::UNKNOWN_ERROR;
 
     public:
-        explicit DatabaseException(const std::string& message, const errors::DbErrorCode error_code) :
+        explicit DatabaseException(const std::string& message, const errors::db_error_code error_code) :
             std::runtime_error(message), m_error_code(error_code)
         {
         }
 
-        [[nodiscard]] errors::DbErrorCode get_error() const { return m_error_code; }
+        [[nodiscard]] errors::db_error_code get_error() const { return m_error_code; }
     };
 
     class ConnectionException final : public DatabaseException
     {
     public:
-        explicit ConnectionException(const std::string& message, const errors::DbErrorCode code)
+        explicit ConnectionException(const std::string& message, const errors::db_error_code code)
             : DatabaseException("ConnectionException: " + message, code)
         {
         }
@@ -33,7 +33,7 @@ namespace drug_lib::common::database::exceptions
     class QueryException final : public DatabaseException
     {
     public:
-        explicit QueryException(const std::string& message, const errors::DbErrorCode code)
+        explicit QueryException(const std::string& message, const errors::db_error_code code)
             : DatabaseException("QueryException: " + message, code)
         {
         }
@@ -42,7 +42,7 @@ namespace drug_lib::common::database::exceptions
     class TransactionException final : public DatabaseException
     {
     public:
-        explicit TransactionException(const std::string& message, const errors::DbErrorCode code)
+        explicit TransactionException(const std::string& message, const errors::db_error_code code)
             : DatabaseException("TransactionException: " + message, code)
         {
         }
@@ -51,7 +51,7 @@ namespace drug_lib::common::database::exceptions
     class InvalidIdentifierException final : public DatabaseException
     {
     public:
-        explicit InvalidIdentifierException(const std::string& message, const errors::DbErrorCode code)
+        explicit InvalidIdentifierException(const std::string& message, const errors::db_error_code code)
             : DatabaseException("InvalidIdentifierException: " + message, code)
         {
         }

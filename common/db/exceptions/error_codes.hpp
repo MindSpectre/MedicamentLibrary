@@ -2,7 +2,7 @@
 
 namespace drug_lib::common::database::errors
 {
-    enum class DbErrorCode
+    enum class db_error_code
     {
         // Success Codes (2xx)
         SUCCESS = 200, // No error, operation succeeded
@@ -32,47 +32,47 @@ namespace drug_lib::common::database::errors
         UNKNOWN_ERROR = 601 // An unknown or unspecified error occurred
     };
 
-    inline std::string decode_error(const DbErrorCode code)
+    inline std::string decode_error(const db_error_code code)
     {
         switch (code)
         {
-        case DbErrorCode::SUCCESS:
+        case db_error_code::SUCCESS:
             return "200: Operation succeeded.";
-        case DbErrorCode::INVALID_QUERY:
+        case db_error_code::INVALID_QUERY:
             return "400: Invalid query syntax.";
-        case DbErrorCode::RECORD_NOT_FOUND:
+        case db_error_code::RECORD_NOT_FOUND:
             return "404: No records found.";
-        case DbErrorCode::DUPLICATE_RECORD:
+        case db_error_code::DUPLICATE_RECORD:
             return "409: Duplicate record exists.";
-        case DbErrorCode::CONSTRAINT_VIOLATION:
+        case db_error_code::CONSTRAINT_VIOLATION:
             return "422: Constraint violation occurred.";
-        case DbErrorCode::PERMISSION_DENIED:
+        case db_error_code::PERMISSION_DENIED:
             return "403: Permission denied.";
-        case DbErrorCode::DATA_CONVERSION_ERROR:
+        case db_error_code::DATA_CONVERSION_ERROR:
             return "412: Data conversion error.";
-        case DbErrorCode::CONNECTION_FAILED:
+        case db_error_code::CONNECTION_FAILED:
             return "500: Failed to connect to the database.";
-        case DbErrorCode::DISCONNECTION_FAILED:
+        case db_error_code::DISCONNECTION_FAILED:
             return "501: Failed to disconnect from the database.";
-        case DbErrorCode::QUERY_EXECUTION_FAILED:
+        case db_error_code::QUERY_EXECUTION_FAILED:
             return "502: Failed to execute the query.";
-        case DbErrorCode::PREPARED_STATEMENT_FAILED:
+        case db_error_code::PREPARED_STATEMENT_FAILED:
             return "503: Failed to prepare the statement.";
-        case DbErrorCode::TRANSACTION_START_FAILED:
+        case db_error_code::TRANSACTION_START_FAILED:
             return "504: Failed to start the transaction.";
-        case DbErrorCode::TRANSACTION_COMMIT_FAILED:
+        case db_error_code::TRANSACTION_COMMIT_FAILED:
             return "505: Failed to commit the transaction.";
-        case DbErrorCode::TRANSACTION_ROLLBACK_FAILED:
+        case db_error_code::TRANSACTION_ROLLBACK_FAILED:
             return "506: Failed to rollback the transaction.";
-        case DbErrorCode::CONNECTION_TIMEOUT:
+        case db_error_code::CONNECTION_TIMEOUT:
             return "507: Connection to the database timed out.";
-        case DbErrorCode::CONNECTION_POOL_EXHAUSTED:
+        case db_error_code::CONNECTION_POOL_EXHAUSTED:
             return "508: Connection pool exhausted.";
-        case DbErrorCode::DEADLOCK_DETECTED:
+        case db_error_code::DEADLOCK_DETECTED:
             return "509: Deadlock detected.";
-        case DbErrorCode::NULL_POINTER_EXCEPTION:
+        case db_error_code::NULL_POINTER_EXCEPTION:
             return "600: Null pointer exception.";
-        case DbErrorCode::UNKNOWN_ERROR:
+        case db_error_code::UNKNOWN_ERROR:
             return "601: Unknown database error.";
         default:
             return "Unrecognized error code.";

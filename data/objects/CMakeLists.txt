@@ -1,55 +1,22 @@
-# COMMON_PREFIX = Data
-set(COMMON_PREFIX DrugLib_Data_Objects)
-
 ##############################################################################
-# Objects: Medicaments
+# Objects: Final usable objects
 ##############################################################################
-add_library(${COMMON_PREFIX}_Medicaments
-        medicaments/source/medicaments.cpp
+add_library(DrugLib_Data_Objects
+        base/source/objects.cpp
+        base/include/objects.hpp
+        base/include/organization.hpp
+        base/include/medicament.hpp
+        base/include/patient.hpp
+        base/include/common_obj.hpp
 )
-target_link_libraries(${COMMON_PREFIX}_Medicaments PRIVATE
-        DrugLib_Common_Database_Base
-        ${DATA_LIBS}_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${COMMON_PREFIX}_Medicaments
+target_link_libraries(DrugLib_Data_Objects
         PUBLIC
-        medicaments/include
-        medicaments/
+        DrugLib_Data_PropertyFactory
 )
-##############################################################################
-
-
-##############################################################################
-# Objects: Organizations
-##############################################################################
-add_library(${COMMON_PREFIX}_Organizations
-        organizations/source/organizations.cpp
-)
-target_link_libraries(${COMMON_PREFIX}_Organizations PRIVATE
-        DrugLib_Common_Database_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${COMMON_PREFIX}_Organizations
+target_include_directories(DrugLib_Data_Objects
         PUBLIC
-        organizations/include
-        organizations/
+        base/include
+        base/
 )
 ##############################################################################
-
-##############################################################################
-# Objects: Patients
-##############################################################################
-add_library(${COMMON_PREFIX}_Patients
-        patients/source/patients.cpp
-)
-target_link_libraries(${COMMON_PREFIX}_Patients PRIVATE
-        DrugLib_Common_Database_Base
-        JsonCpp::JsonCpp
-)
-target_include_directories(${COMMON_PREFIX}_Patients
-        PUBLIC
-        patients/include
-        patients/
-)
-##############################################################################
+add_subdirectory(properties)

@@ -16,7 +16,7 @@ target_link_libraries(${Handbooks}_Medicaments
         JsonCpp::JsonCpp
         DrugLib_Dao_CrudInterface
         DrugLib_Common_Database_PqxxClient
-        DrugLib_Data_Objects_Medicaments
+        DrugLib_Data_Objects
 )
 target_include_directories(${Handbooks}_Medicaments
         PUBLIC
