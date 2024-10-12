@@ -14,64 +14,7 @@ namespace drug_lib::common::database
 {
     using namespace exceptions;
     using db_err = errors::db_error_code;
-
-    void PqxxClient::create_database(std::string_view host, uint32_t port, std::string_view db_name,
-                                     std::string_view login,
-                                     std::string_view password)
-    // Build the connection string to connect to the 'template1' database
-    {
-        std::ostringstream conn_str;
-        conn_str << "host=" << host
-            << " port=" << port
-            << " user=" << login
-            << " password=" << password
-            << " dbname=template1"; // Connect to 'template1' to create a new database
-
-        try
-        {
-            // Establish connection to the 'template1' database
-
-            if (pqxx::connection trivial(conn_str.str()); trivial.is_open())
-            {
-                // Start a non-transactional query to create the database
-                pqxx::nontransaction db_creating(trivial);
-
-                // Prepare the SQL query
-                std::ostringstream query;
-                query << "CREATE DATABASE " << db_name
-                    << " WITH OWNER = " << login << " "
-                    << "ENCODING = 'UTF8' "
-                    << "TEMPLATE template0;"; // Use template0 for a clean database
-
-                // Execute the query
-                db_creating.exec(query.str());
-                db_creating.commit();
-
-                std::cout << "Database " << db_name << " created successfully!" << std::endl;
-            }
-            else
-            {
-                std::cerr << "Connection to the database failed." << std::endl;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error creating database: " << e.what() << std::endl;
-            throw; // Rethrow the exception if needed
-        }
-    }
-
-
-    void PqxxClient::create_database(const PqxxConnectParams& pr)
-    {
-        create_database(pr.get_host(), pr.get_port(), pr.get_login(), pr.get_password(), pr.get_db_name());
-    }
-
-    void PqxxClient::drop_connect()
-    {
-        conn_->close();
-    }
-
+    //Constructrs
     PqxxClient::PqxxClient(const std::string_view host,
                            const uint32_t port,
                            const std::string_view db_name,
@@ -141,7 +84,67 @@ namespace drug_lib::common::database
         return conn_->quote_name(std::string(identifier));
     }
 
-    std::shared_ptr<pqxx::work> PqxxClient::initialize_transaction()
+    // Static create postgreSQL Database
+    void PqxxClient::create_database(std::string_view host, uint32_t port, std::string_view db_name,
+                                     std::string_view login,
+                                     std::string_view password)
+    // Build the connection string to connect to the 'template1' database
+    {
+        std::ostringstream conn_str;
+        conn_str << "host=" << host
+            << " port=" << port
+            << " user=" << login
+            << " password=" << password
+            << " dbname=template1"; // Connect to 'template1' to create a new database
+
+        try
+        {
+            // Establish connection to the 'template1' database
+
+            if (pqxx::connection trivial(conn_str.str()); trivial.is_open())
+            {
+                // Start a non-transactional query to create the database
+                pqxx::nontransaction db_creating(trivial);
+
+                // Prepare the SQL query
+                std::ostringstream query;
+                query << "CREATE DATABASE " << db_name
+                    << " WITH OWNER = " << login << " "
+                    << "ENCODING = 'UTF8' "
+                    << "TEMPLATE template0;"; // Use template0 for a clean database
+
+                // Execute the query
+                db_creating.exec(query.str());
+                db_creating.commit();
+
+                std::cout << "Database " << db_name << " created successfully!" << std::endl;
+            }
+            else
+            {
+                std::cerr << "Connection to the database failed." << std::endl;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error creating database: " << e.what() << std::endl;
+            throw; // Rethrow the exception if needed
+        }
+    }
+
+
+    void PqxxClient::create_database(const PqxxConnectParams& pr)
+    {
+        create_database(pr.get_host(), pr.get_port(), pr.get_login(), pr.get_password(), pr.get_db_name());
+    }
+
+    //
+    void PqxxClient::drop_connect()
+    {
+        conn_->close();
+    }
+
+
+    std::shared_ptr<pqxx::work> PqxxClient::initialize_transaction() const
     {
         if (in_transaction_)
         {
@@ -278,7 +281,7 @@ namespace drug_lib::common::database
 
 
     // Utility method to execute a query
-    void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params)
+    void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params) const
     {
         std::lock_guard lock(conn_mutex_);
         try
@@ -294,126 +297,14 @@ namespace drug_lib::common::database
         }
     }
 
-    // Transaction Methods
-    void PqxxClient::start_transaction()
+    void PqxxClient::execute_query(const std::string& query_string) const
     {
-        std::lock_guard lock(conn_mutex_);
-        if (in_transaction_)
-        {
-            throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
-        }
-        try
-        {
-            shared_transaction_ = std::make_shared<pqxx::work>(*conn_);
-            in_transaction_ = true;
-        }
-        catch (const pqxx::sql_error& e)
-        {
-            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
-        }
-    }
-
-    void PqxxClient::commit_transaction()
-    {
-        std::lock_guard lock(conn_mutex_);
-        if (!in_transaction_)
-        {
-            throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
-        }
-        try
-        {
-            shared_transaction_->commit();
-            shared_transaction_.reset();
-            in_transaction_ = false;
-        }
-        catch (const pqxx::sql_error& e)
-        {
-            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
-        }
-    }
-
-    void PqxxClient::rollback_transaction()
-    {
-        std::lock_guard lock(conn_mutex_);
-        if (!in_transaction_)
-        {
-            throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
-        }
-        try
-        {
-            shared_transaction_->abort();
-            shared_transaction_.reset();
-            in_transaction_ = false;
-        }
-        catch (const pqxx::sql_error& e)
-        {
-            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
-        }
-    }
-
-    void PqxxClient::make_unique_constraint(const std::string_view table_name,
-                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields)
-    {
-        conflict_fields_ = std::move(conflict_fields);
-        const std::string table = escape_identifier(table_name);
-        std::ostringstream query_stream;
-        std::ostringstream sub_query;
-        query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
-        std::ostringstream name_constraint;
-        sub_query << " UNIQUE (";
-        for (auto&& column : conflict_fields_)
-        {
-            sub_query << escape_identifier(column->get_name()) << ",";
-            name_constraint << column->get_name() << "_";
-        }
-        name_constraint << table_name;
-        std::string query = query_stream.str();
-        query.append(escape_identifier(name_constraint.str())).append(sub_query.str());
-        query.pop_back();
-        query += ");";
-
-        execute_query(query, pqxx::params{});
-    }
-
-    // Table Management
-    void PqxxClient::create_table(const std::string_view table_name, const Record& field_list)
-    {
-        const std::string table = escape_identifier(table_name);
-        std::ostringstream query_stream;
-        query_stream << "CREATE TABLE " << table << " (";
-
-        for (const auto& [field_name, field_value] : field_list)
-        {
-            std::string name = escape_identifier(field_name);
-            std::string type = field_value->get_sql_type();
-            query_stream << name << " " << type << ", ";
-        }
-
-        std::string query = query_stream.str();
-        query.erase(query.size() - 2); // Remove last comma and space
-        query += ");";
-
-        execute_query(query, pqxx::params{});
-    }
-
-    void PqxxClient::remove_table(const std::string_view table_name)
-    {
-        const std::string table = escape_identifier(table_name);
-        const std::string query = "DROP TABLE IF EXISTS " + table + ";";
-        execute_query(query, pqxx::params{});
-    }
-
-    bool PqxxClient::check_table(const std::string_view table_name) const
-    {
-        const std::string table = conn_->esc(std::string(table_name));
-        const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = " + conn_->
-            quote(table) + ");";
         std::lock_guard lock(conn_mutex_);
         try
         {
-            pqxx::nontransaction ntx(*conn_);
-            const pqxx::result res = ntx.exec(query);
-            return res[0][0].as<bool>();
+            const auto& txn = initialize_transaction();
+            txn->exec(query_string);
+            finish_transaction(txn);
         }
         catch (const std::exception& e)
         {
@@ -421,68 +312,32 @@ namespace drug_lib::common::database
         }
     }
 
-    // Data Manipulation Implementation
-    void PqxxClient::add_data_impl(const std::string_view table_name, const std::vector<Record>& rows)
+    pqxx::result PqxxClient::execute_query_with_result(const std::string& query_string,
+                                                       const pqxx::params& params) const
     {
-        auto [query, params] = construct_insert_query(table_name, rows);
-        execute_query(query, params);
-    }
-
-    void PqxxClient::add_data_impl(const std::string_view table_name, std::vector<Record>&& rows)
-    {
-        auto [query, params] = construct_insert_query(table_name, rows);
-        execute_query(query, params);
-    }
-
-    // Upsert Data Implementation
-    void PqxxClient::upsert_data_impl(const std::string_view table_name,
-                                      const std::vector<Record>& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
-    {
-        auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
-        execute_query(query, params);
-    }
-
-    void PqxxClient::upsert_data_impl(const std::string_view table_name,
-                                      std::vector<Record>&& rows,
-                                      const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
-    {
-        auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
-        execute_query(query, params);
-    }
-
-    void PqxxClient::setup_full_text_search(
-        std::string_view table_name,
-        std::vector<std::shared_ptr<FieldBase>> fields)
-    {
-        if (fields.empty())
-        {
-            throw std::invalid_argument("Field list for full-text search cannot be empty.");
-        }
-        fts_fields_ = std::move(fields);
         std::lock_guard lock(conn_mutex_);
-
         try
         {
-            const std::string table = escape_identifier(table_name);
+            const auto& txn = initialize_transaction();
+            const pqxx::result response = txn->exec_params(query_string, params);
+            finish_transaction(txn);
+            return response;
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
 
-            // Build the concatenated fields expression
-            std::ostringstream fields_stream;
-            for (const auto& field : fts_fields_)
-            {
-                fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
-            }
-            std::string fields_concatenated = fields_stream.str();
-            fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
-
-            // Create the functional index
-            std::ostringstream index_query;
-            index_query << "CREATE INDEX IF NOT EXISTS idx_" << table_name << "_fts ON " << table
-                << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
-
-            execute_query(index_query.str(), pqxx::params{});
+    pqxx::result PqxxClient::execute_query_with_result(const std::string& query_string) const
+    {
+        std::lock_guard lock(conn_mutex_);
+        try
+        {
+            const auto& txn = initialize_transaction();
+            const pqxx::result response = txn->exec(query_string);
+            finish_transaction(txn);
+            return response;
         }
         catch (const std::exception& e)
         {
@@ -570,161 +425,341 @@ namespace drug_lib::common::database
         return field_ptr;
     }
 
-    // Data Retrieval
-    std::vector<Record> PqxxClient::get_data(
-        std::string_view table_name,
-        const FieldConditions& conditions) const
+    void PqxxClient::make_unique_constraint(const std::string_view table_name,
+                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields)
     {
-        std::vector<Record> results;
-        std::string table = escape_identifier(table_name);
+        conflict_fields_ = std::move(conflict_fields);
+        const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
-        query_stream << "SELECT * FROM " << table;
-        std::string query;
-        if (!conditions.empty())
+        std::ostringstream sub_query;
+        query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
+        std::ostringstream name_constraint;
+        sub_query << " UNIQUE (";
+        for (auto&& column : conflict_fields_)
         {
-            pqxx::params params;
-            query_stream << " WHERE ";
-            uint32_t param_index = 1;
-            for (const auto& condition : conditions)
-            {
-                std::string field_name = escape_identifier(condition.field()->get_name());
-                query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-                params.append(condition.value()->to_string());
-            }
-            query = query_stream.str();
-            query.erase(query.size() - 5); // Remove last ' AND '
-            query += ";";
+            sub_query << escape_identifier(column->get_name()) << ",";
+            name_constraint << column->get_name() << "_";
         }
-        else
-        {
-            // No conditions, select all
-            query = query_stream.str() + ";";
-        }
+        name_constraint << table_name;
+        std::string query = query_stream.str();
+        query.append(escape_identifier(name_constraint.str())).append(sub_query.str());
+        query.pop_back();
+        query += ");";
+
+        execute_query(query);
+    }
+
+    // Transaction Methods
+    void PqxxClient::start_transaction()
+    {
         std::lock_guard lock(conn_mutex_);
+        if (in_transaction_)
+        {
+            throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
+        }
         try
         {
-            pqxx::nontransaction txn(*conn_);
-            for (pqxx::result res = txn.exec(query); auto&& row : res)
+            shared_transaction_ = std::make_shared<pqxx::work>(*conn_);
+            in_transaction_ = true;
+        }
+        catch (const pqxx::sql_error& e)
+        {
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
+        }
+    }
+
+    void PqxxClient::commit_transaction()
+    {
+        std::lock_guard lock(conn_mutex_);
+        if (!in_transaction_)
+        {
+            throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
+        }
+        try
+        {
+            shared_transaction_->commit();
+            shared_transaction_.reset();
+            in_transaction_ = false;
+        }
+        catch (const pqxx::sql_error& e)
+        {
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
+        }
+    }
+
+    void PqxxClient::rollback_transaction()
+    {
+        std::lock_guard lock(conn_mutex_);
+        if (!in_transaction_)
+        {
+            throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
+        }
+        try
+        {
+            shared_transaction_->abort();
+            shared_transaction_.reset();
+            in_transaction_ = false;
+        }
+        catch (const pqxx::sql_error& e)
+        {
+            throw TransactionException(e.what(), db_err::QUERY_EXECUTION_FAILED);
+        }
+    }
+
+
+    // Table Management
+    void PqxxClient::create_table(const std::string_view table_name, const Record& field_list)
+    {
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        query_stream << "CREATE TABLE " << table << " (";
+
+        for (const auto& [field_name, field_value] : field_list)
+        {
+            std::string name = escape_identifier(field_name);
+            std::string type = field_value->get_sql_type();
+            query_stream << name << " " << type << ", ";
+        }
+
+        std::string query = query_stream.str();
+        query.erase(query.size() - 2); // Remove last comma and space
+        query += ");";
+
+        execute_query(query);
+    }
+
+    void PqxxClient::remove_table(const std::string_view table_name)
+    {
+        const std::string table = escape_identifier(table_name);
+        const std::string query = "DROP TABLE IF EXISTS " + table + ";";
+        execute_query(query);
+    }
+
+    bool PqxxClient::check_table(const std::string_view table_name)
+    {
+        const std::string table = conn_->esc(std::string(table_name));
+        const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = " + conn_->
+            quote(table) + ");";
+        const pqxx::result res = execute_query_with_result(query);
+        return res[0][0].as<bool>();
+    }
+
+    // Data Manipulation Implementation
+    void PqxxClient::insert_implementation(const std::string_view table_name, const std::vector<Record>& rows)
+    {
+        auto [query, params] = construct_insert_query(table_name, rows);
+        execute_query(query, params);
+    }
+
+    void PqxxClient::insert_implementation(const std::string_view table_name, std::vector<Record>&& rows)
+    {
+        auto [query, params] = construct_insert_query(table_name, rows);
+        execute_query(query, params);
+    }
+
+    // Upsert Data Implementation
+    void PqxxClient::upsert_implementation(const std::string_view table_name,
+                                           const std::vector<Record>& rows,
+                                           const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
+    {
+        auto [query, params] = construct_insert_query(table_name, rows);
+        build_conflict_clause(query, replace_fields);
+        execute_query(query, params);
+    }
+
+    void PqxxClient::upsert_implementation(const std::string_view table_name,
+                                           std::vector<Record>&& rows,
+                                           const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
+    {
+        auto [query, params] = construct_insert_query(table_name, rows);
+        build_conflict_clause(query, replace_fields);
+        execute_query(query, params);
+    }
+
+    void PqxxClient::setup_full_text_search(
+        std::string_view table_name,
+        std::vector<std::shared_ptr<FieldBase>> fields)
+    {
+        if (fields.empty())
+        {
+            throw QueryException("Invalid number of fts fields. Expected at least one element",
+                                 db_err::INVALID_QUERY);
+        }
+        fts_fields_ = std::move(fields);
+        std::lock_guard lock(conn_mutex_);
+
+        try
+        {
+            const std::string table = escape_identifier(table_name);
+
+            // Build the concatenated fields expression
+            std::ostringstream fields_stream;
+            for (const auto& field : fts_fields_)
             {
-                Record record;
-                for (auto&& field : row)
-                {
-                    auto field_ptr = process_field(std::move(field));
-                    record.add_field(std::move(field_ptr));
-                }
-                results.push_back(std::move(record));
+                fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
             }
+            std::string fields_concatenated = fields_stream.str();
+            fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+
+            // Create the functional index
+            std::ostringstream index_query;
+            index_query << "CREATE INDEX IF NOT EXISTS idx_" << table_name << "_fts ON " << table
+                << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
+
+            execute_query(index_query.str());
         }
         catch (const std::exception& e)
         {
             throw adapt_exception(e);
         }
+    }
+
+
+    // Data Retrieval
+    std::vector<Record> PqxxClient::select(
+        const std::string_view table_name,
+        const FieldConditions& conditions) const
+    {
+        if (conditions.empty())
+        {
+            throw QueryException("Invalid number of conditions. For removing all data call another function",
+                                 db_err::INVALID_QUERY);
+        }
+        std::vector<Record> results;
+        std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+
+        pqxx::params params;
+        query_stream << "SELECT * FROM " << table;
+        query_stream << " WHERE ";
+        uint32_t param_index = 1;
+        for (const auto& condition : conditions)
+        {
+            std::string field_name = escape_identifier(condition.field()->get_name());
+            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+            params.append(condition.value()->to_string());
+        }
+        std::string query = query_stream.str();
+        query.erase(query.size() - 5); // Remove last ' AND '
+        query += ";";
+
+        for (pqxx::result res = execute_query_with_result(query); auto&& row : std::move(res))
+        {
+            Record record;
+            for (auto&& field : row)
+            {
+                auto field_ptr = process_field(std::move(field));
+                record.add_field(std::move(field_ptr));
+            }
+            results.push_back(std::move(record));
+        }
+
         return results;
     }
 
-    void PqxxClient::remove_data(
+    std::vector<Record> PqxxClient::select(const std::string_view table_name) const
+    {
+        std::vector<Record> results;
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        query_stream << "SELECT * FROM " << table << ";";
+        for (pqxx::result res = execute_query_with_result(query_stream.str()); auto&& row : std::move(res))
+        {
+            Record record;
+            for (auto&& field : row)
+            {
+                auto field_ptr = process_field(std::move(field));
+                record.add_field(std::move(field_ptr));
+            }
+            results.push_back(std::move(record));
+        }
+
+        return results;
+    }
+
+    void PqxxClient::truncate(const std::string_view table_name)
+    {
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        query_stream << "TRUNCATE TABLE " << table << ";";
+        execute_query(query_stream.str());
+    }
+
+    void PqxxClient::remove(
         const std::string_view table_name,
         const FieldConditions& conditions)
     {
+        if (conditions.empty())
+        {
+            throw QueryException("Invalid number of conditions. For removing all data call another function",
+                                 db_err::INVALID_QUERY);
+        }
         const std::string table = escape_identifier(table_name);
-
         std::ostringstream query_stream;
         pqxx::params params;
-        std::string query;
-        if (!conditions.empty())
-        {
-            query_stream << "DELETE FROM " << table;
+        query_stream << "DELETE FROM " << table;
 
-            query_stream << " WHERE ";
-            uint32_t param_index = 1;
-            for (const auto& condition : conditions)
-            {
-                std::string field_name = escape_identifier(condition.field()->get_name());
-                query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-                params.append(condition.value()->to_string());
-            }
-            query = query_stream.str();
-            query.erase(query.size() - 5); // Remove last ' AND '
-            query += ";";
-        }
-        else
+        query_stream << " WHERE ";
+        uint32_t param_index = 1;
+        for (const auto& condition : conditions)
         {
-            query_stream << "TRUNCATE TABLE " << table << ";";
-            query = query_stream.str();
+            std::string field_name = escape_identifier(condition.field()->get_name());
+            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+            params.append(condition.value()->to_string());
         }
+        std::string query = query_stream.str();
+        query.erase(query.size() - 5); // Remove last ' AND '
+        query += ";";
+
         execute_query(query, params);
     }
 
-    uint32_t PqxxClient::count(std::string_view table_name,
-                               const FieldConditions& conditions,
-                               std::chrono::duration<double>& query_exec_time) const
+    uint32_t PqxxClient::count(const std::string_view table_name) const
     {
-        const auto start_time = std::chrono::high_resolution_clock::now();
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
+        query_stream << "SELECT COUNT(*) FROM " << table << ";";
+        // Execute the query
+        const pqxx::result res = execute_query_with_result(query_stream.str());
 
+        return res[0][0].as<uint32_t>();
+    }
+
+    uint32_t PqxxClient::count(const std::string_view table_name,
+                               const FieldConditions& conditions) const
+    {
+        if (conditions.empty())
+        {
+            throw QueryException("Invalid number of conditions. For count all data call another function",
+                                 db_err::INVALID_QUERY);
+        }
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
         // Start building the query
         query_stream << "SELECT COUNT(*) FROM " << table;
-
         // Add conditions if any
-        if (!conditions.empty())
+        pqxx::params params;
+        uint32_t param_index = 1;
+        query_stream << " WHERE ";
+        for (const auto& condition : conditions)
         {
-            pqxx::params params;
-            uint32_t param_index = 1;
-            query_stream << " WHERE ";
-            for (const auto& condition : conditions)
-            {
-                std::string field_name = escape_identifier(condition.field()->get_name());
-                query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-                params.append(condition.value()->to_string());
-            }
-            std::string query = query_stream.str();
-            query.erase(query.size() - 5); // Remove last ' AND '
-            query += ";";
-
-            // Execute the query
-            std::lock_guard lock(conn_mutex_);
-            try
-            {
-                pqxx::nontransaction ntx(*conn_);
-                const pqxx::result res = ntx.exec_params(query, params);
-                query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
-                return res[0][0].as<uint32_t>();
-            }
-            catch (const std::exception& e)
-            {
-                throw adapt_exception(e);
-            }
+            std::string field_name = escape_identifier(condition.field()->get_name());
+            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+            params.append(condition.value()->to_string());
         }
-        else
-        {
-            // No conditions, count all rows
-            std::string query = query_stream.str() + ";";
-
-            // Execute the query
-            std::lock_guard lock(conn_mutex_);
-            try
-            {
-                pqxx::nontransaction ntx(*conn_);
-                const pqxx::result res = ntx.exec(query);
-                query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
-                return res[0][0].as<uint32_t>();
-            }
-            catch (const std::exception& e)
-            {
-                throw adapt_exception(e);
-            }
-        }
+        std::string query = query_stream.str();
+        query.erase(query.size() - 5); // Remove last ' AND '
+        query += ";";
+        const pqxx::result res = execute_query_with_result(query, params);
+        return res[0][0].as<uint32_t>();
     }
 
 
     // Full-Text Search Methods
     std::vector<Record> PqxxClient::get_data_fts(
         std::string_view table_name,
-        std::string_view fts_query_params,
-        std::chrono::duration<double>& query_exec_time) const
+        const std::string& fts_query_params) const
     {
-        const auto start_time = std::chrono::high_resolution_clock::now();
         std::vector<Record> results;
         const std::string table = escape_identifier(table_name);
 
@@ -741,86 +776,18 @@ namespace drug_lib::common::database
             " WHERE to_tsvector('simple', " + fields_str + ") @@ to_tsquery('simple', $1);";
 
         pqxx::params params;
-        params.append(std::string(fts_query_params));
-
-        std::lock_guard lock(conn_mutex_);
-        try
+        params.append(fts_query_params);
+        for (const pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
         {
-            pqxx::nontransaction ntx(*conn_);
-            const pqxx::result res = ntx.exec_params(query, params);
-            query_exec_time = std::chrono::high_resolution_clock::now() - start_time;
-
-            for (const auto& row : res)
+            Record record;
+            for (auto&& field : row)
             {
-                Record record;
-                for (auto&& field : row)
-                {
-                    auto field_ptr = process_field(std::move(field));
-                    record.add_field(std::move(field_ptr));
-                }
-                results.push_back(std::move(record));
+                auto field_ptr = process_field(std::move(field));
+                record.add_field(std::move(field_ptr));
             }
-        }
-        catch (const std::exception& e)
-        {
-            throw adapt_exception(e);
+            results.push_back(std::move(record));
         }
 
         return results;
-    }
-
-
-    //WARNING: UNUSED
-    bool PqxxClient::get_data_fts_batched(
-        const std::string_view table_name,
-        const std::string_view fts_query_params,
-        std::chrono::duration<double>& query_exec_time,
-        const std::function<void(const std::vector<Record>&)>& on_result) const
-    {
-        const std::chrono::time_point<std::chrono::system_clock> start_time =
-            std::chrono::high_resolution_clock::now();
-        const std::string table = escape_identifier(table_name);
-        const std::string query = "SELECT * FROM " + table +
-            " WHERE to_tsvector('simple', json_data::text) @@ to_tsquery('simple', $1);";
-        pqxx::params params;
-        params.append(std::string(fts_query_params));
-        std::lock_guard lock(conn_mutex_);
-        try
-        {
-            std::vector<Record> batch_results;
-            pqxx::nontransaction ntx(*conn_);
-            const pqxx::result res = ntx.exec_params(query, params);
-            const std::chrono::time_point<std::chrono::system_clock> end_time =
-                std::chrono::high_resolution_clock::now();
-            query_exec_time = end_time - start_time;
-
-            for (auto&& row : res)
-            {
-                Record record;
-                for (auto&& field : row)
-                {
-                    auto field_ptr = process_field(std::move(field));
-                    record.add_field(std::move(field_ptr));
-                }
-                batch_results.push_back(std::move(record));
-
-                if (batch_results.size() >= 8)
-                {
-                    on_result(batch_results);
-                    batch_results.clear();
-                }
-            }
-
-            if (!batch_results.empty())
-            {
-                on_result(batch_results);
-            }
-
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            throw adapt_exception(e);
-        }
     }
 }

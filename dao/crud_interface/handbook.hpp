@@ -31,10 +31,24 @@ namespace drug_lib::dao
     protected:
         std::shared_ptr<common::database::interfaces::DbInterface> connect_;
         std::string_view table_name_;
+        std::vector<std::shared_ptr<common::database::FieldBase>> fts_fields_;
+
+        void setup_constraints() const
+        {
+            if (!table_name_.empty())
+            {
+                connect_->make_unique_constraint(table_name_,
+                                                 {std::make_shared<common::database::Field<int32_t>>("id", 0)});
+            }
+            else
+            {
+                throw std::runtime_error("Table name must be set before constraints are applied.");
+            }
+        }
 
         std::vector<RecordType> get(const common::database::FieldConditions& conditions) const
         {
-            const auto result = connect_->get_data(table_name_, conditions);
+            const auto result = connect_->select(table_name_, conditions);
             std::vector<RecordType> records;
             records.reserve(result.size());
             for (const auto& db_record : result)
@@ -48,7 +62,19 @@ namespace drug_lib::dao
 
         void remove(const common::database::FieldConditions& conditions) const
         {
-            connect_->remove_data(table_name_, conditions);
+            connect_->remove(table_name_, conditions);
+        }
+
+        void upsert(const std::vector<RecordType>& records,
+                    const std::vector<std::shared_ptr<common::database::FieldBase>>& replace_fields) const
+        {
+            std::vector<common::database::Record> db_records;
+            db_records.reserve(records.size());
+            for (const auto& record : records)
+            {
+                db_records.push_back(record.to_record());
+            }
+            connect_->upsert(table_name_, db_records, replace_fields);
         }
 
     public:
@@ -56,7 +82,7 @@ namespace drug_lib::dao
 
         void insert(const RecordType& record)
         {
-            connect_->add_data(table_name_, record.to_record());
+            connect_->insert(table_name_, {record.to_record()});
         }
 
         // Insert multiple records
@@ -68,16 +94,12 @@ namespace drug_lib::dao
             {
                 db_records.push_back(record.to_record());
             }
-            connect_->add_data(table_name_, db_records);
+            connect_->insert(table_name_, db_records);
         }
 
-        void update(const RecordType& record)
-        {
-        }
+        virtual void update_all_fields(const RecordType& record) = 0;
 
-        void update(const std::vector<RecordType>& record)
-        {
-        }
+        virtual void update_all_fields(const std::vector<RecordType>& records) = 0;
 
         virtual void remove_all() = 0;
         virtual std::vector<RecordType> get_all() = 0;

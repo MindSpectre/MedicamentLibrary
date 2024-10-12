@@ -26,4 +26,12 @@ namespace drug_lib::dao
     {
         return get({});
     }
+
+    void OrganizationsHandbook::update_all_fields(const objects::Organization& record)
+    {
+    }
+
+    void OrganizationsHandbook::update_all_fields(const std::vector<objects::Organization>& records)
+    {
+    }
 }

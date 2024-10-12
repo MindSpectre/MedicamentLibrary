@@ -129,13 +129,13 @@ namespace drug_lib::common::database
         // Table Management
         void create_table(std::string_view table_name, const Record& field_list) override;
         void remove_table(std::string_view table_name) override;
-        [[nodiscard]] bool check_table(std::string_view table_name) const override;
+        [[nodiscard]] bool check_table(std::string_view table_name) override;
 
         // Data Manipulation
         template <interfaces::RecordContainer Rows>
         void add_data(std::string_view table_name, Rows&& rows)
         {
-            add_data_impl(table_name, std::forward<Rows>(rows));
+            insert_implementation(table_name, std::forward<Rows>(rows));
         }
 
         template <interfaces::RecordContainer Rows>
@@ -143,49 +143,42 @@ namespace drug_lib::common::database
                          Rows&& rows,
                          const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
         {
-            upsert_data_impl(table_name, std::forward<Rows>(rows), replace_fields);
+            upsert_implementation(table_name, std::forward<Rows>(rows), replace_fields);
         }
 
         // Data Retrieval
-        [[nodiscard]] std::vector<Record> get_data(
+        [[nodiscard]] std::vector<Record> select(
             std::string_view table_name,
             const FieldConditions& conditions) const override;
-
+        [[nodiscard]] std::vector<Record> select(
+            std::string_view table_name) const override;
         // Remove Data
-        void remove_data(
+        void remove(
             std::string_view table_name,
             const FieldConditions& conditions) override;
-
+        void truncate(
+            std::string_view table_name) override;
         // Get Record Count
         [[nodiscard]] uint32_t count(std::string_view table_name,
-                                     const FieldConditions& conditions,
-                                     std::chrono::duration<double>& query_exec_time) const override;
-
+                                     const FieldConditions& conditions) const override;
+        [[nodiscard]] uint32_t count(std::string_view table_name) const override;
         // Full-Text Search Methods
         [[nodiscard]] std::vector<Record> get_data_fts(
             std::string_view table_name,
-            std::string_view fts_query_params,
-            std::chrono::duration<double>& query_exec_time) const override;
-
-
-        bool get_data_fts_batched(
-            std::string_view table_name,
-            std::string_view fts_query_params,
-            std::chrono::duration<double>& query_exec_time,
-            const std::function<void(const std::vector<Record>&)>& on_result) const override;
+            const std::string& fts_query_params) const override;
 
     protected:
         // Implementation Methods for Data Manipulation
-        void add_data_impl(std::string_view table_name, const std::vector<Record>& rows) override;
-        void add_data_impl(std::string_view table_name, std::vector<Record>&& rows) override;
+        void insert_implementation(std::string_view table_name, const std::vector<Record>& rows) override;
+        void insert_implementation(std::string_view table_name, std::vector<Record>&& rows) override;
 
-        void upsert_data_impl(std::string_view table_name,
-                              const std::vector<Record>& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
+        void upsert_implementation(std::string_view table_name,
+                                   const std::vector<Record>& rows,
+                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
-        void upsert_data_impl(std::string_view table_name,
-                              std::vector<Record>&& rows,
-                              const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
+        void upsert_implementation(std::string_view table_name,
+                                   std::vector<Record>&& rows,
+                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
         boost::container::flat_map<std::string, uint32_t> type_oids_;
@@ -193,14 +186,18 @@ namespace drug_lib::common::database
         std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
         mutable std::recursive_mutex conn_mutex_;
+        mutable std::shared_ptr<pqxx::work> shared_transaction_;
         bool in_transaction_;
-        std::shared_ptr<pqxx::work> shared_transaction_;
 
         void _oid_preprocess();
         [[nodiscard]] std::shared_ptr<FieldBase> process_field(pqxx::field&& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
-        void execute_query(const std::string& query_string, const pqxx::params& params = {});
+
+        void execute_query(const std::string& query_string, const pqxx::params& params) const;
+        void execute_query(const std::string& query_string) const;
+        pqxx::result execute_query_with_result(const std::string& query_string, const pqxx::params& params) const;
+        pqxx::result execute_query_with_result(const std::string& query_string) const;
 
         template <interfaces::RecordContainer Rec>
         std::pair<std::string, pqxx::params> construct_insert_query(
@@ -211,11 +208,9 @@ namespace drug_lib::common::database
             {
                 throw exceptions::QueryException("No data provided for insert.", errors::db_error_code::INVALID_QUERY);
             }
-
             const std::string table = escape_identifier(table_name);
             std::ostringstream query_stream;
             query_stream << "INSERT INTO " << table << " (";
-
             // Get field names from the first record
             const auto& first_record = rows.front();
             std::vector<std::string> field_names;
@@ -234,7 +229,7 @@ namespace drug_lib::common::database
 
         std::string escape_identifier(std::string_view identifier) const;
 
-        std::shared_ptr<pqxx::work> initialize_transaction();
+        std::shared_ptr<pqxx::work> initialize_transaction() const;
         void finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 

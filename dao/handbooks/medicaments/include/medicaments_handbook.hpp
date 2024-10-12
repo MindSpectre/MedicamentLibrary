@@ -17,6 +17,17 @@ namespace drug_lib::dao
         MedicamentsHandbook()
         {
             table_name_ = handbook_tables_name::Medicaments;
+            setup_constraints();
+            fts_fields_ = {
+
+            };
+            connect_->setup_full_text_search(table_name_, fts_fields_);
         }
+
+        void update_all_fields(const objects::Medicament& record) override;
+        void update_all_fields(const std::vector<objects::Medicament>& records) override;
+
+    private:
+        std::vector<std::shared_ptr<common::database::FieldBase>> medicament_fields_;
     };
 }
