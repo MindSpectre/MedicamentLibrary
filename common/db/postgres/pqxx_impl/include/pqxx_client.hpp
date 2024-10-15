@@ -12,6 +12,7 @@
 #include "db_interface.hpp"
 #include "exceptions.hpp"
 
+
 namespace drug_lib::common::database
 {
     class PqxxConnectParams
@@ -131,21 +132,6 @@ namespace drug_lib::common::database
         void remove_table(std::string_view table_name) override;
         [[nodiscard]] bool check_table(std::string_view table_name) override;
 
-        // Data Manipulation
-        template <interfaces::RecordContainer Rows>
-        void add_data(std::string_view table_name, Rows&& rows)
-        {
-            insert_implementation(table_name, std::forward<Rows>(rows));
-        }
-
-        template <interfaces::RecordContainer Rows>
-        void upsert_data(std::string_view table_name,
-                         Rows&& rows,
-                         const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
-        {
-            upsert_implementation(table_name, std::forward<Rows>(rows), replace_fields);
-        }
-
         // Data Retrieval
         [[nodiscard]] std::vector<Record> select(
             std::string_view table_name,
@@ -223,14 +209,14 @@ namespace drug_lib::common::database
             query.erase(query.size() - 2); // Remove last comma and space
             query += ") VALUES ";
 
-            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), field_names);
+            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), std::move(field_names));
             return {query, params};
         }
 
         std::string escape_identifier(std::string_view identifier) const;
 
         std::shared_ptr<pqxx::work> initialize_transaction() const;
-        void finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const;
+        void finish_transaction(std::shared_ptr<pqxx::work>& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
         void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;

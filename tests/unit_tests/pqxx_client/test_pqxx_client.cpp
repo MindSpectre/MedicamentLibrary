@@ -115,11 +115,10 @@ TEST_F(PqxxClientTest, InsertTest)
     records.push_back(std::move(record2));
 
     // Add data to the table
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Retrieve data and verify
-    const FieldConditions conditions;
-    const auto results = db_client->select(test_table, conditions);
+    const auto results = db_client->select(test_table);
 
     EXPECT_EQ(results.size(), 2);
 
@@ -150,6 +149,7 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
     constexpr uint32_t limit_ = flush * 8;
+    records.reserve(flush);
     const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 1; i <= limit_; i++)
     {
@@ -160,16 +160,13 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
         records.push_back(std::move(record1));
         if (records.size() >= flush)
         {
-            EXPECT_NO_THROW(db_client->add_data(test_table, std::move(records)));
-
-            records.resize(0);
-            records.reserve(flush);
+            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            records.clear();
         }
     }
     const std::chrono::time_point<std::chrono::system_clock> finish_time = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time);
-    const FieldConditions conditions;
-    const auto results = db_client->select(test_table, conditions);
+    const auto results = db_client->select(test_table);
 
     EXPECT_EQ(results.size(), limit_);
 }
@@ -186,7 +183,7 @@ TEST_F(PqxxClientTest, UpsertTestFullRecord)
     records.push_back(std::move(record1));
 
     // Add initial data
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Upsert data
     std::vector<Record> upsert_records;
@@ -202,18 +199,17 @@ TEST_F(PqxxClientTest, UpsertTestFullRecord)
         std::make_shared<Field<std::string>>("description", "")
     };
 
-    EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
+    EXPECT_NO_THROW(db_client->upsert(test_table, upsert_records, replace_fields));
 
     // Retrieve data and verify
-    const FieldConditions conditions;
-    auto results = db_client->select(test_table, conditions);
+    const auto results = db_client->select(test_table);
 
     EXPECT_EQ(results.size(), 1);
 
     auto& rec = results.front();
-    auto id = rec.at("id")->as<int32_t>();
-    auto name = rec.at("name")->as<std::string>();
-    auto description = rec.at("description")->as<std::string>();
+    const auto id = rec.at("id")->as<int32_t>();
+    const auto name = rec.at("name")->as<std::string>();
+    const auto description = rec.at("description")->as<std::string>();
     EXPECT_EQ(id, 1);
     EXPECT_EQ(name, "Alice");
     EXPECT_EQ(description, "Alice Updated");
@@ -231,7 +227,7 @@ TEST_F(PqxxClientTest, UpsertTestPartial)
     records.push_back(std::move(record1));
 
     // Add initial data
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Upsert data
     std::vector<Record> upsert_records;
@@ -247,18 +243,16 @@ TEST_F(PqxxClientTest, UpsertTestPartial)
         std::make_shared<Field<std::string>>("description", "")
     };
 
-    EXPECT_NO_THROW(db_client->upsert_data(test_table, upsert_records, replace_fields));
+    EXPECT_NO_THROW(db_client->upsert(test_table, upsert_records, replace_fields));
 
-    // Retrieve data and verify
-    const FieldConditions conditions;
-    auto results = db_client->select(test_table, conditions);
+    const auto results = db_client->select(test_table);
 
     EXPECT_EQ(results.size(), 1);
 
     auto& rec = results.front();
-    auto id = rec.at("id")->as<int32_t>();
-    auto name = rec.at("name")->as<std::string>();
-    auto description = rec.at("description")->as<std::string>();
+    const auto id = rec.at("id")->as<int32_t>();
+    const auto name = rec.at("name")->as<std::string>();
+    const auto description = rec.at("description")->as<std::string>();
     EXPECT_EQ(id, 1);
     EXPECT_EQ(name, "Alice");
     EXPECT_EQ(description, "Alice Updated");
@@ -275,7 +269,7 @@ TEST_F(PqxxClientTest, RemoveTest)
     record1.add_field(std::make_shared<Field<std::string>>("description", ""));
     records.push_back(std::move(record1));
 
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Remove data
     FieldConditions conditions;
@@ -288,7 +282,7 @@ TEST_F(PqxxClientTest, RemoveTest)
     EXPECT_NO_THROW(db_client->remove(test_table, conditions));
 
     // Verify removal
-    const auto results = db_client->select(test_table, FieldConditions());
+    const auto results = db_client->select(test_table);
     EXPECT_TRUE(results.empty());
 }
 
@@ -306,7 +300,7 @@ TEST_F(PqxxClientTest, CountTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     FieldConditions conditions;
     conditions.add_condition(FieldCondition(
@@ -332,8 +326,8 @@ TEST_F(PqxxClientTest, CountAllTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
-    const uint32_t count_all = db_client->count(test_table, {});
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    const uint32_t count_all = db_client->count(test_table);
     EXPECT_EQ(count_all, 5);
 }
 
@@ -361,7 +355,7 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     records.push_back(std::move(record3));
 
     // Insert records into the database
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     std::string search_query = "fruit";
     auto results = db_client->get_data_fts(test_table, search_query);
@@ -415,7 +409,7 @@ TEST_F(PqxxClientTest, TruncateTableTest)
     record2.add_field(std::make_shared<Field<std::string>>("name", "Alice"));
     record2.add_field(std::make_shared<Field<std::string>>("description", ""));
     records.push_back(std::move(record2));
-    EXPECT_NO_THROW(db_client->add_data(test_table, records));
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Remove data
     FieldConditions conditions;
@@ -428,7 +422,7 @@ TEST_F(PqxxClientTest, TruncateTableTest)
     EXPECT_NO_THROW(db_client->truncate(test_table));
 
     // Verify removal
-    const auto results = db_client->select(test_table, FieldConditions());
+    const auto results = db_client->select(test_table);
     EXPECT_TRUE(results.empty());
 }
 
