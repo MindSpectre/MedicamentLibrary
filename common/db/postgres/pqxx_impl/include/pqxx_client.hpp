@@ -12,6 +12,7 @@
 #include "db_interface.hpp"
 #include "exceptions.hpp"
 
+
 namespace drug_lib::common::database
 {
     class PqxxConnectParams
@@ -208,14 +209,14 @@ namespace drug_lib::common::database
             query.erase(query.size() - 2); // Remove last comma and space
             query += ") VALUES ";
 
-            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), field_names);
+            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), std::move(field_names));
             return {query, params};
         }
 
         std::string escape_identifier(std::string_view identifier) const;
 
         std::shared_ptr<pqxx::work> initialize_transaction() const;
-        void finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const;
+        void finish_transaction(std::shared_ptr<pqxx::work>& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
         void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;

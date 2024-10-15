@@ -149,6 +149,7 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
     constexpr uint32_t limit_ = flush * 8;
+    records.reserve(flush);
     const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 1; i <= limit_; i++)
     {
@@ -160,9 +161,7 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
         if (records.size() >= flush)
         {
             EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
-
-            records.resize(0);
-            records.reserve(flush);
+            records.clear();
         }
     }
     const std::chrono::time_point<std::chrono::system_clock> finish_time = std::chrono::high_resolution_clock::now();

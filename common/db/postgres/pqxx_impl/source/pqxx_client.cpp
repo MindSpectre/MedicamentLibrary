@@ -163,7 +163,7 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::finish_transaction(const std::shared_ptr<pqxx::work>& current_transaction) const
+    void PqxxClient::finish_transaction(std::shared_ptr<pqxx::work>& current_transaction) const
     {
         if (in_transaction_)
         {
@@ -172,6 +172,7 @@ namespace drug_lib::common::database
         try
         {
             current_transaction->commit();
+            current_transaction.reset();
         }
         catch (std::exception& e)
         {
@@ -286,7 +287,7 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            const auto& txn = initialize_transaction();
+            std::shared_ptr<pqxx::work> txn = initialize_transaction();
             txn->exec_params(query_string, params);
 
             finish_transaction(txn);
@@ -302,7 +303,7 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            const auto& txn = initialize_transaction();
+            std::shared_ptr<pqxx::work> txn = initialize_transaction();
             txn->exec(query_string);
             finish_transaction(txn);
         }
@@ -318,7 +319,7 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            const auto& txn = initialize_transaction();
+            std::shared_ptr<pqxx::work> txn = initialize_transaction();
             const pqxx::result response = txn->exec_params(query_string, params);
             finish_transaction(txn);
             return response;
@@ -334,7 +335,7 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            const auto& txn = initialize_transaction();
+            std::shared_ptr<pqxx::work> txn = initialize_transaction();
             const pqxx::result response = txn->exec(query_string);
             finish_transaction(txn);
             return response;
@@ -553,7 +554,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::insert_implementation(const std::string_view table_name, std::vector<Record>&& rows)
     {
-        auto [query, params] = construct_insert_query(table_name, rows);
+        auto [query, params] = construct_insert_query(table_name, std::move(rows));
         execute_query(query, params);
     }
 
