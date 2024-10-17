@@ -122,7 +122,7 @@ namespace drug_lib::common::database
         void rollback_transaction() override;
 
         void make_unique_constraint(std::string_view table_name,
-                                    std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) override;
+                                    std::vector<std::shared_ptr<FieldBase>> conflict_fields) override;
         void setup_full_text_search(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) override;
@@ -172,11 +172,11 @@ namespace drug_lib::common::database
         std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
         mutable std::recursive_mutex conn_mutex_;
-        mutable std::shared_ptr<pqxx::work> shared_transaction_;
+        mutable std::unique_ptr<pqxx::work> open_transaction_;
         bool in_transaction_;
 
         void _oid_preprocess();
-        [[nodiscard]] std::shared_ptr<FieldBase> process_field(pqxx::field&& field) const;
+        [[nodiscard]] std::unique_ptr<FieldBase> process_field(pqxx::field&& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
 
@@ -200,31 +200,42 @@ namespace drug_lib::common::database
             // Get field names from the first record
             const auto& first_record = rows.front();
             std::vector<std::string> field_names;
-            for (const auto& field_name : first_record | std::views::keys)
+            for (const auto& it : first_record)
             {
-                field_names.push_back(field_name);
+                field_names.push_back(it->get_name());
                 query_stream << escape_identifier(field_names.back()) << ", ";
             }
             std::string query = query_stream.str();
             query.erase(query.size() - 2); // Remove last comma and space
             query += ") VALUES ";
 
-            pqxx::params params = build_params_impl(query, std::forward<Rec>(rows), std::move(field_names));
+
+            pqxx::params params;
+            uint32_t param_counter = 1;
+            for (auto&& record : std::forward<Rec>(rows))
+            {
+                query += "(";
+                for (auto&& field : record)
+                {
+                    query += "$" + std::to_string(param_counter++) + ", ";
+
+                    // Call the correct version of to_string() depending on the value category
+                    params.append(std::forward<decltype(field)>(field)->to_string());
+                }
+                query.erase(query.size() - 2); // Remove last comma and space
+                query += "), ";
+            }
+            query.erase(query.size() - 2); // Remove last comma and space
+            query += ";";
             return {query, params};
         }
 
         std::string escape_identifier(std::string_view identifier) const;
 
-        std::shared_ptr<pqxx::work> initialize_transaction() const;
-        void finish_transaction(std::shared_ptr<pqxx::work>& current_transaction) const;
+        std::unique_ptr<pqxx::work> initialize_transaction() const;
+        void finish_transaction(std::unique_ptr<pqxx::work>&& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
         void build_conflict_clause(std::string&, const std::vector<std::shared_ptr<FieldBase>>&) const;
-
-        static pqxx::params build_params_impl(std::string& query, const std::vector<Record>& rows,
-                                              const std::vector<std::string>& field_names);
-
-        static pqxx::params build_params_impl(std::string& query, std::vector<Record>&& rows,
-                                              const std::vector<std::string>& field_names);
     };
 }

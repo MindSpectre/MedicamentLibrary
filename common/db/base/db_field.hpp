@@ -20,11 +20,11 @@ namespace drug_lib::common::database
         [[nodiscard]] virtual const std::string& get_name() const = 0;
 
         /// @brief Converts the field value to a string for SQL queries
-        [[nodiscard]] virtual std::string to_string() const = 0;
+        [[nodiscard]] virtual std::string to_string() const & = 0;
 
         /// @brief Converts the field value to a string for SQL queries
         /// @return moveable
-        [[nodiscard]] virtual std::string move_to_string() = 0;
+        [[nodiscard]] virtual std::string to_string() && = 0;
 
         /// @brief Gets the SQL data type of the field
         [[nodiscard]] virtual std::string get_sql_type() const = 0;
@@ -56,7 +56,7 @@ namespace drug_lib::common::database
         void set_value(T&& value) { value_ = std::move(value); }
 
         /// @brief Converts the field value to a string for SQL queries
-        [[nodiscard]] std::string to_string() const override
+        [[nodiscard]] std::string to_string() const & override
         {
             if constexpr (std::is_same_v<T, std::string>)
             {
@@ -91,7 +91,7 @@ namespace drug_lib::common::database
         }
 
         /// @brief Converts the field value to a string for SQL queries
-        [[nodiscard]] std::string move_to_string() override
+        [[nodiscard]] std::string to_string() && override
         {
             if constexpr (std::is_same_v<T, std::string>)
             {

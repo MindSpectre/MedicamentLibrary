@@ -87,7 +87,7 @@ namespace drug_lib::data
             return result;
         }
 
-        [[nodiscard]] std::shared_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept
+        [[nodiscard]] std::unique_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept
         {
             Json::Value result;
             for (const auto& [name, property] : m_data)
@@ -97,7 +97,7 @@ namespace drug_lib::data
                     result[name] = property->get_info();
                 }
             }
-            return std::make_shared<common::database::Field<Json::Value>>(properties::properties, result);
+            return std::make_unique<common::database::Field<Json::Value>>(properties::properties, result);
         }
 
     private:

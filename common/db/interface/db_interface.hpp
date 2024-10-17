@@ -16,6 +16,8 @@ namespace drug_lib::common::database::interfaces
     using namespace drug_lib::common::database;
     template <typename T>
     concept RecordContainer = std::is_same_v<std::remove_cvref_t<T>, std::vector<Record>>;
+    template <typename T>
+    concept FieldBaseVector = std::is_same_v<std::remove_cvref_t<T>, std::vector<std::unique_ptr<FieldBase>>>;
 
     class DbInterface
     {
@@ -34,7 +36,7 @@ namespace drug_lib::common::database::interfaces
         [[nodiscard]] virtual bool check_table(std::string_view table_name) = 0;
 
         virtual void make_unique_constraint(std::string_view table_name,
-                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields) = 0;
+                                            std::vector<std::shared_ptr<FieldBase>> conflict_fields) = 0;
         virtual void setup_full_text_search(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) = 0;

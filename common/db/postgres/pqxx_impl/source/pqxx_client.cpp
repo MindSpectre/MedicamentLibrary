@@ -14,7 +14,7 @@ namespace drug_lib::common::database
 {
     using namespace exceptions;
     using db_err = errors::db_error_code;
-    //Constructrs
+    //Constructors
     PqxxClient::PqxxClient(const std::string_view host,
                            const uint32_t port,
                            const std::string_view db_name,
@@ -144,16 +144,16 @@ namespace drug_lib::common::database
     }
 
 
-    std::shared_ptr<pqxx::work> PqxxClient::initialize_transaction() const
+    std::unique_ptr<pqxx::work> PqxxClient::initialize_transaction() const
     {
         if (in_transaction_)
         {
-            return shared_transaction_;
+            return std::move(open_transaction_);
         }
 
         try
         {
-            auto one_query_transaction = std::make_shared<pqxx::work>(*conn_);
+            auto one_query_transaction = std::make_unique<pqxx::work>(*conn_);
             return one_query_transaction;
         }
         catch (std::exception& e)
@@ -163,10 +163,11 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::finish_transaction(std::shared_ptr<pqxx::work>& current_transaction) const
+    void PqxxClient::finish_transaction(std::unique_ptr<pqxx::work>&& current_transaction) const
     {
         if (in_transaction_)
         {
+            open_transaction_ = std::move(current_transaction);
             return;
         }
         try
@@ -238,48 +239,6 @@ namespace drug_lib::common::database
         query += conflict_clause + ";";
     }
 
-    pqxx::params PqxxClient::build_params_impl(std::string& query, const std::vector<Record>& rows,
-                                               const std::vector<std::string>& field_names)
-    {
-        pqxx::params params;
-        uint32_t param_counter = 1;
-        for (const auto& record : rows)
-        {
-            query += "(";
-            for (const auto& field_name : field_names)
-            {
-                query += "$" + std::to_string(param_counter++) + ", ";
-                params.append(record.at(field_name)->to_string());
-            }
-            query.erase(query.size() - 2); // Remove last comma and space
-            query += "), ";
-        }
-        query.erase(query.size() - 2); // Remove last comma and space
-        query += ";";
-        return params;
-    }
-
-    pqxx::params PqxxClient::build_params_impl(std::string& query, std::vector<Record>&& rows,
-                                               const std::vector<std::string>& field_names)
-    {
-        pqxx::params params;
-        uint32_t param_counter = 1;
-        for (const auto& record : rows)
-        {
-            query += "(";
-            for (const auto& field_name : field_names)
-            {
-                query += "$" + std::to_string(param_counter++) + ", ";
-                params.append(record.at(field_name)->move_to_string());
-            }
-            query.erase(query.size() - 2); // Remove last comma and space
-            query += "), ";
-        }
-        query.erase(query.size() - 2); // Remove last comma and space
-        query += ";";
-        return params;
-    }
-
 
     // Utility method to execute a query
     void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params) const
@@ -287,10 +246,9 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            std::shared_ptr<pqxx::work> txn = initialize_transaction();
+            std::unique_ptr<pqxx::work> txn = initialize_transaction();
             txn->exec_params(query_string, params);
-
-            finish_transaction(txn);
+            finish_transaction(std::move(txn));
         }
         catch (const std::exception& e)
         {
@@ -303,9 +261,9 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            std::shared_ptr<pqxx::work> txn = initialize_transaction();
+            std::unique_ptr<pqxx::work> txn = initialize_transaction();
             txn->exec(query_string);
-            finish_transaction(txn);
+            finish_transaction(std::move(txn));
         }
         catch (const std::exception& e)
         {
@@ -319,9 +277,9 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            std::shared_ptr<pqxx::work> txn = initialize_transaction();
+            std::unique_ptr<pqxx::work> txn = initialize_transaction();
             const pqxx::result response = txn->exec_params(query_string, params);
-            finish_transaction(txn);
+            finish_transaction(std::move(txn));
             return response;
         }
         catch (const std::exception& e)
@@ -335,9 +293,9 @@ namespace drug_lib::common::database
         std::lock_guard lock(conn_mutex_);
         try
         {
-            std::shared_ptr<pqxx::work> txn = initialize_transaction();
+            std::unique_ptr<pqxx::work> txn = initialize_transaction();
             const pqxx::result response = txn->exec(query_string);
-            finish_transaction(txn);
+            finish_transaction(std::move(txn));
             return response;
         }
         catch (const std::exception& e)
@@ -364,9 +322,9 @@ namespace drug_lib::common::database
         }
     }
 
-    std::shared_ptr<FieldBase> PqxxClient::process_field(pqxx::field&& field) const
+    std::unique_ptr<FieldBase> PqxxClient::process_field(pqxx::field&& field) const
     {
-        std::shared_ptr<FieldBase> field_ptr;
+        std::unique_ptr<FieldBase> field_ptr;
 
         // Get the field's PostgreSQL type OID
         const auto type_oid = field.type();
@@ -374,14 +332,14 @@ namespace drug_lib::common::database
         if (type_oid == type_oids_.at("int4")) // 32-bit integer
         {
             auto value = field.as<int32_t>();
-            field_ptr = std::make_shared<Field<int>>(field.name(), value);
+            field_ptr = std::make_unique<Field<int>>(field.name(), value);
             return field_ptr;
         }
 
         if (type_oid == type_oids_.at("int8")) // 64-bit integer (Bigint)
         {
             auto value = field.as<int64_t>();
-            field_ptr = std::make_shared<Field<int64_t>>(field.name(), value);
+            field_ptr = std::make_unique<Field<int64_t>>(field.name(), value);
             return field_ptr;
         }
 
@@ -389,7 +347,7 @@ namespace drug_lib::common::database
         if (type_oid == type_oids_.at("float8")) // Double precision (64-bit float)
         {
             auto value = field.as<double>();
-            field_ptr = std::make_shared<Field<double>>(field.name(), value);
+            field_ptr = std::make_unique<Field<double>>(field.name(), value);
             return field_ptr;
         }
 
@@ -397,7 +355,7 @@ namespace drug_lib::common::database
         if (type_oid == type_oids_.at("text")) // Text type
         {
             auto value = field.as<std::string>();
-            field_ptr = std::make_shared<Field<std::string>>(field.name(), std::move(value));
+            field_ptr = std::make_unique<Field<std::string>>(field.name(), std::move(value));
             return field_ptr;
         }
 
@@ -405,7 +363,7 @@ namespace drug_lib::common::database
         if (type_oid == type_oids_.at("bool")) // Boolean type
         {
             auto value = field.as<bool>();
-            field_ptr = std::make_shared<Field<bool>>(field.name(), value);
+            field_ptr = std::make_unique<Field<bool>>(field.name(), value);
             return field_ptr;
         }
 
@@ -418,7 +376,7 @@ namespace drug_lib::common::database
             std::tm tm = {};
             iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S"); // Parse the string to fill the tm structure
             auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm)); // Convert to time_point
-            field_ptr = std::make_shared<Field<std::chrono::system_clock::time_point>>(field.name(), tp);
+            field_ptr = std::make_unique<Field<std::chrono::system_clock::time_point>>(field.name(), tp);
             return field_ptr;
         }
 
@@ -427,7 +385,7 @@ namespace drug_lib::common::database
     }
 
     void PqxxClient::make_unique_constraint(const std::string_view table_name,
-                                            std::vector<std::shared_ptr<FieldBase>>&& conflict_fields)
+                                            std::vector<std::shared_ptr<FieldBase>> conflict_fields)
     {
         conflict_fields_ = std::move(conflict_fields);
         const std::string table = escape_identifier(table_name);
@@ -436,7 +394,7 @@ namespace drug_lib::common::database
         query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
         std::ostringstream name_constraint;
         sub_query << " UNIQUE (";
-        for (auto&& column : conflict_fields_)
+        for (const auto& column : conflict_fields_)
         {
             sub_query << escape_identifier(column->get_name()) << ",";
             name_constraint << column->get_name() << "_";
@@ -460,7 +418,7 @@ namespace drug_lib::common::database
         }
         try
         {
-            shared_transaction_ = std::make_shared<pqxx::work>(*conn_);
+            open_transaction_ = std::make_unique<pqxx::work>(*conn_);
             in_transaction_ = true;
         }
         catch (const pqxx::sql_error& e)
@@ -478,8 +436,8 @@ namespace drug_lib::common::database
         }
         try
         {
-            shared_transaction_->commit();
-            shared_transaction_.reset();
+            open_transaction_->commit();
+            open_transaction_.reset();
             in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
@@ -497,8 +455,8 @@ namespace drug_lib::common::database
         }
         try
         {
-            shared_transaction_->abort();
-            shared_transaction_.reset();
+            open_transaction_->abort();
+            open_transaction_.reset();
             in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
@@ -515,10 +473,10 @@ namespace drug_lib::common::database
         std::ostringstream query_stream;
         query_stream << "CREATE TABLE " << table << " (";
 
-        for (const auto& [field_name, field_value] : field_list)
+        for (const auto& field : field_list)
         {
-            std::string name = escape_identifier(field_name);
-            std::string type = field_value->get_sql_type();
+            std::string name = escape_identifier(field->get_name());
+            std::string type = field->get_sql_type();
             query_stream << name << " " << type << ", ";
         }
 
@@ -644,13 +602,13 @@ namespace drug_lib::common::database
         query.erase(query.size() - 5); // Remove last ' AND '
         query += ";";
 
-        for (pqxx::result res = execute_query_with_result(query); auto&& row : std::move(res))
+        for (pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
         {
             Record record;
             for (auto&& field : row)
             {
                 auto field_ptr = process_field(std::move(field));
-                record.add_field(std::move(field_ptr));
+                record.push_back(std::move(field_ptr));
             }
             results.push_back(std::move(record));
         }
@@ -670,7 +628,7 @@ namespace drug_lib::common::database
             for (auto&& field : row)
             {
                 auto field_ptr = process_field(std::move(field));
-                record.add_field(std::move(field_ptr));
+                record.push_back(std::move(field_ptr));
             }
             results.push_back(std::move(record));
         }
@@ -778,17 +736,17 @@ namespace drug_lib::common::database
 
         pqxx::params params;
         params.append(fts_query_params);
-        for (const pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
+
+        for (pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
         {
             Record record;
             for (auto&& field : row)
             {
                 auto field_ptr = process_field(std::move(field));
-                record.add_field(std::move(field_ptr));
+                record.push_back(std::move(field_ptr));
             }
             results.push_back(std::move(record));
         }
-
         return results;
     }
 }
