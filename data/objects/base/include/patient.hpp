@@ -21,18 +21,18 @@ namespace drug_lib::data::objects
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.add_field(std::make_shared<common::database::Field<int32_t>>("id", id_));
-            record.add_field(std::make_shared<common::database::Field<std::string>>("name", name_));
-            record.add_field(std::make_shared<common::database::Field<std::string>>("surname", surname_));
-            record.add_field(collection_.make_properties_field());
+            record.push_back(std::make_unique<common::database::Field<int32_t>>("id", id_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>("name", name_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>("surname", surname_));
+            record.push_back(collection_.make_properties_field());
             return record;
         }
 
         void from_record(const common::database::Record& record) override
         {
-            for (const auto& [field_name, field] : record.fields())
+            for (const auto& field : record.fields())
             {
-                if (field_name == "id")
+                if (const auto& field_name = field->get_name(); field_name == "id")
                 {
                     id_ = field->as<int32_t>();
                 }

@@ -2,8 +2,8 @@
 #pragma once
 
 #include "medicament_properties.hpp"
-#include "patient_properties.hpp"
 #include "organization_properties.hpp"
+#include "patient_properties.hpp"
 
 namespace drug_lib::data
 {
@@ -34,7 +34,7 @@ namespace drug_lib::data
         protected:
             PropertyCollection collection_;
 
-            void create_collection(const std::shared_ptr<common::database::FieldBase>& field)
+            void create_collection(const std::unique_ptr<common::database::FieldBase>& field)
             {
                 auto values = field->as<Json::Value>();
                 for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)

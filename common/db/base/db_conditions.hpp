@@ -14,17 +14,17 @@ namespace drug_lib::common::database
     {
     public:
         FieldCondition(std::unique_ptr<FieldBase> field, std::string op, std::unique_ptr<FieldBase> value)
-            : field_(std::move(field)), op_(std::move(op)), value_(std::move(value))
+            : field_(std::move(field)), operator_(std::move(op)), value_(std::move(value))
         {
         }
 
         [[nodiscard]] const std::unique_ptr<FieldBase>& field() const { return field_; }
-        [[nodiscard]] const std::string& op() const { return op_; }
+        [[nodiscard]] const std::string& op() const { return operator_; }
         [[nodiscard]] const std::unique_ptr<FieldBase>& value() const { return value_; }
 
     private:
         std::unique_ptr<FieldBase> field_;
-        std::string op_;
+        std::string operator_;
         std::unique_ptr<FieldBase> value_;
     };
 
@@ -33,12 +33,12 @@ namespace drug_lib::common::database
     public:
         ~FieldConditions() = default;
 
-        void add_condition(FieldCondition condition)
+        void add_condition(FieldCondition&& condition)
         {
             conditions_.push_back(std::move(condition));
         }
 
-        [[nodiscard]] const std::vector<FieldCondition>& conditions() const
+        [[nodiscard]] const std::vector<FieldCondition>& conditions() const &
         {
             return conditions_;
         }
