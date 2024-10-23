@@ -12,7 +12,6 @@
 #include "db_interface.hpp"
 #include "exceptions.hpp"
 
-
 namespace drug_lib::common::database
 {
     class PqxxConnectParams
@@ -97,6 +96,30 @@ namespace drug_lib::common::database
         std::string_view password_;
     };
 
+    class PqxxViewRecord final : public ViewRecord
+    {
+    public:
+        [[nodiscard]] std::string extract(const int32_t idx) const & override
+        {
+            return std::string{row_[idx].view()};
+        }
+
+        [[nodiscard]] std::string_view view(const int idx) const & override
+        {
+            return row_[idx].view();
+        }
+
+        void set_row(pqxx::row&& row)
+        {
+            row_ = std::move(row);
+        }
+
+        PqxxViewRecord() = default;
+
+    private:
+        pqxx::row row_;
+    };
+
     class PqxxClient final : public interfaces::DbInterface
     {
     public:
@@ -136,8 +159,12 @@ namespace drug_lib::common::database
         [[nodiscard]] std::vector<Record> select(
             std::string_view table_name,
             const FieldConditions& conditions) const override;
+        [[nodiscard]] std::vector<std::unique_ptr<ViewRecord>> view(
+            std::string_view table_name,
+            const FieldConditions& conditions) const override;
         [[nodiscard]] std::vector<Record> select(
             std::string_view table_name) const override;
+        [[nodiscard]] std::vector<std::unique_ptr<ViewRecord>> view(std::string_view table_name) const override;
         // Remove Data
         void remove(
             std::string_view table_name,
@@ -167,7 +194,7 @@ namespace drug_lib::common::database
                                    const std::vector<std::shared_ptr<FieldBase>>& replace_fields) override;
 
     private:
-        boost::container::flat_map<std::string, uint32_t> type_oids_;
+        boost::container::flat_map<uint32_t, std::string> type_oids_; // id, name
         std::vector<std::shared_ptr<FieldBase>> conflict_fields_ = {};
         std::vector<std::shared_ptr<FieldBase>> fts_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
@@ -176,7 +203,7 @@ namespace drug_lib::common::database
         bool in_transaction_;
 
         void _oid_preprocess();
-        [[nodiscard]] std::unique_ptr<FieldBase> process_field(pqxx::field&& field) const;
+        [[nodiscard]] std::unique_ptr<FieldBase> process_field(const pqxx::field& field) const;
         // Utility Methods
         [[nodiscard]] static bool is_valid_identifier(std::string_view identifier);
 

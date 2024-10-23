@@ -9,6 +9,7 @@
 
 #include "db_conditions.hpp"
 #include "db_field.hpp"
+#include "stopwatch.hpp"
 
 namespace drug_lib::common::database
 {
@@ -313,7 +314,7 @@ namespace drug_lib::common::database
                 "SELECT typname, oid FROM pg_type WHERE typname IN ('bool', 'int2', 'int4', 'int8', 'float4', 'float8', 'text', 'varchar', 'bpchar', 'timestamp', 'timestamptz')");
             for (const auto& row : r)
             {
-                type_oids_.insert({row["typname"].c_str(), row["oid"].as<uint32_t>()});
+                type_oids_.insert({row["oid"].as<uint32_t>(), row["typname"].c_str()});
             }
         }
         catch (const std::exception& e)
@@ -322,53 +323,53 @@ namespace drug_lib::common::database
         }
     }
 
-    std::unique_ptr<FieldBase> PqxxClient::process_field(pqxx::field&& field) const
+    std::unique_ptr<FieldBase> PqxxClient::process_field(const pqxx::field& field) const
     {
         std::unique_ptr<FieldBase> field_ptr;
 
         // Get the field's PostgreSQL type OID
-        const auto type_oid = field.type();
-        // Determine the C++ type based on the PostgreSQL type OID and create the appropriate Field object
-        if (type_oid == type_oids_.at("int4")) // 32-bit integer
+        const auto type_oid = type_oids_.find(field.type());
+        if (type_oid == type_oids_.end())
         {
-            auto value = field.as<int32_t>();
-            field_ptr = std::make_unique<Field<int>>(field.name(), value);
+            throw std::invalid_argument("field type not found");
+        }
+
+        // Determine the C++ type based on the PostgreSQL type OID and create the appropriate Field object
+        if (type_oid->second == "int4") // 32-bit integer
+        {
+            field_ptr = std::make_unique<Field<int>>(field.name(), field.as<int32_t>());
+            return field_ptr;
+        }
+        // Handle string types (text, varchar, char)
+        if (type_oid->second == "text") // Text type
+        {
+            field_ptr = std::make_unique<Field<std::string>>(field.name(), field.as<std::string>());
             return field_ptr;
         }
 
-        if (type_oid == type_oids_.at("int8")) // 64-bit integer (Bigint)
+        if (type_oid->second == "int8") // 64-bit integer (Bigint)
         {
-            auto value = field.as<int64_t>();
-            field_ptr = std::make_unique<Field<int64_t>>(field.name(), value);
+            field_ptr = std::make_unique<Field<int64_t>>(field.name(), field.as<int64_t>());
             return field_ptr;
         }
 
         // Handle float types
-        if (type_oid == type_oids_.at("float8")) // Double precision (64-bit float)
+        if (type_oid->second == "float8") // Double precision (64-bit float)
         {
-            auto value = field.as<double>();
-            field_ptr = std::make_unique<Field<double>>(field.name(), value);
+            field_ptr = std::make_unique<Field<double>>(field.name(), field.as<double>());
             return field_ptr;
         }
 
-        // Handle string types (text, varchar, char)
-        if (type_oid == type_oids_.at("text")) // Text type
-        {
-            auto value = field.as<std::string>();
-            field_ptr = std::make_unique<Field<std::string>>(field.name(), std::move(value));
-            return field_ptr;
-        }
 
         // Handle boolean type
-        if (type_oid == type_oids_.at("bool")) // Boolean type
+        if (type_oid->second == "bool") // Boolean type
         {
-            auto value = field.as<bool>();
-            field_ptr = std::make_unique<Field<bool>>(field.name(), value);
+            field_ptr = std::make_unique<Field<bool>>(field.name(), field.as<bool>());
             return field_ptr;
         }
 
         // Handle timestamp types (with or without timezone)
-        if (type_oid == type_oids_.at("timestamptz") || type_oid == type_oids_.at("timestamp")) // Timestamp type
+        if (type_oid->second == "timestamptz" || type_oid->second == "timestamp") // Timestamp type
         {
             const auto value = field.as<std::string>();
             // Parse the timestamp string into std::chrono::system_clock::time_point
@@ -585,6 +586,46 @@ namespace drug_lib::common::database
                                  db_err::INVALID_QUERY);
         }
         std::vector<Record> results;
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+
+        pqxx::params params;
+        query_stream << "SELECT * FROM " << table;
+        query_stream << " WHERE ";
+        uint32_t param_index = 1;
+        for (const auto& condition : conditions)
+        {
+            std::string field_name = escape_identifier(condition.field()->get_name());
+            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+            params.append(condition.value()->to_string());
+        }
+        std::string query = query_stream.str();
+        query.erase(query.size() - 5); // Remove last ' AND '
+        query += ";";
+        const pqxx::result res = execute_query_with_result(query, params);
+        results.reserve(res.size());
+        for (const auto& row : res)
+        {
+            Record record;
+            record.reserve(row.size());
+            for (const auto& field : row)
+            {
+                record.push_back(process_field(field));
+            }
+            results.push_back(std::move(record));
+        }
+        return results;
+    }
+
+    std::vector<std::unique_ptr<ViewRecord>> PqxxClient::view(const std::string_view table_name,
+                                                              const FieldConditions& conditions) const
+    {
+        if (conditions.empty())
+        {
+            throw QueryException("Invalid number of conditions. For selecting all data call another function",
+                                 db_err::INVALID_QUERY);
+        }
+        std::vector<std::unique_ptr<ViewRecord>> results;
         std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
 
@@ -601,18 +642,14 @@ namespace drug_lib::common::database
         std::string query = query_stream.str();
         query.erase(query.size() - 5); // Remove last ' AND '
         query += ";";
-
-        for (pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
+        pqxx::result res = execute_query_with_result(query, params);
+        results.reserve(res.size());
+        for (auto&& row : std::move(res))
         {
-            Record record;
-            for (auto&& field : row)
-            {
-                auto field_ptr = process_field(std::move(field));
-                record.push_back(std::move(field_ptr));
-            }
+            auto record = std::make_unique<PqxxViewRecord>();
+            record->set_row(std::move(row));
             results.push_back(std::move(record));
         }
-
         return results;
     }
 
@@ -622,17 +659,35 @@ namespace drug_lib::common::database
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
         query_stream << "SELECT * FROM " << table << ";";
-        for (pqxx::result res = execute_query_with_result(query_stream.str()); auto&& row : std::move(res))
+        const pqxx::result res = execute_query_with_result(query_stream.str());
+        results.reserve(res.size());
+        for (const auto& row : res)
         {
             Record record;
-            for (auto&& field : row)
+            record.reserve(row.size());
+            for (const auto& field : row)
             {
-                auto field_ptr = process_field(std::move(field));
-                record.push_back(std::move(field_ptr));
+                record.push_back(process_field(field));
             }
             results.push_back(std::move(record));
         }
+        return results;
+    }
 
+    std::vector<std::unique_ptr<ViewRecord>> PqxxClient::view(const std::string_view table_name) const
+    {
+        std::vector<std::unique_ptr<ViewRecord>> results;
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        query_stream << "SELECT * FROM " << table << ";";
+        pqxx::result res = execute_query_with_result(query_stream.str());
+        results.reserve(res.size());
+        for (auto&& row : std::move(res))
+        {
+            auto record = std::make_unique<PqxxViewRecord>();
+            record->set_row(std::move(row));
+            results.push_back(std::move(record));
+        }
         return results;
     }
 
@@ -716,7 +771,7 @@ namespace drug_lib::common::database
 
     // Full-Text Search Methods
     std::vector<Record> PqxxClient::get_data_fts(
-        std::string_view table_name,
+        const std::string_view table_name,
         const std::string& fts_query_params) const
     {
         std::vector<Record> results;
@@ -737,13 +792,12 @@ namespace drug_lib::common::database
         pqxx::params params;
         params.append(fts_query_params);
 
-        for (pqxx::result res = execute_query_with_result(query, params); auto&& row : std::move(res))
+        for (const pqxx::result res = execute_query_with_result(query, params); const auto& row : res)
         {
             Record record;
-            for (auto&& field : row)
+            for (const auto& field : row)
             {
-                auto field_ptr = process_field(std::move(field));
-                record.push_back(std::move(field_ptr));
+                record.push_back(process_field(field));
             }
             results.push_back(std::move(record));
         }

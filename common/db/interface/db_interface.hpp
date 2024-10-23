@@ -58,10 +58,15 @@ namespace drug_lib::common::database::interfaces
 
         // Data Retrieval
         [[nodiscard]] virtual std::vector<Record> select(
+            std::string_view table_name) const = 0;
+        // Data Retrieval
+        [[nodiscard]] virtual std::vector<Record> select(
             std::string_view table_name,
             const FieldConditions& conditions) const = 0;
-        [[nodiscard]] virtual std::vector<Record> select(
-            std::string_view table_name) const = 0;
+        [[nodiscard]] virtual std::vector<std::unique_ptr<ViewRecord>> view(
+            std::string_view table_name,
+            const FieldConditions& conditions) const = 0;
+        [[nodiscard]] virtual std::vector<std::unique_ptr<ViewRecord>> view(std::string_view table_name) const = 0;
         // Remove Data
         virtual void remove(
             std::string_view table_name,
