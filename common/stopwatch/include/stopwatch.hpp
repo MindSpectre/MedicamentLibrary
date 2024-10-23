@@ -203,7 +203,7 @@ namespace drug_lib::common
         // Overload -- operator to remove the last flag
 
     private:
-        bool countdown_from_prev_ = false;
+        bool countdown_from_prev_ = true;
         bool countdown_from_start_ = true;
         std::string running_name_;
 
