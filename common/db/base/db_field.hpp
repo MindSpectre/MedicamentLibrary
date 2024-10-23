@@ -10,7 +10,11 @@
 
 namespace drug_lib::common::database
 {
+    // TODO: Make ReadView for field with unique ptr
+    template <typename T>
+    class Field;
     /// @brief Base class representing a field in the database
+
     class FieldBase
     {
     public:
@@ -30,7 +34,19 @@ namespace drug_lib::common::database
         [[nodiscard]] virtual std::string get_sql_type() const = 0;
 
         template <typename T>
-        T as() const;
+        T as() const
+        {
+            // Ensure that T is a valid type, e.g., int, std::string, etc.
+            static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
+
+            // Attempt to dynamic cast this object to a Field<T> type
+
+            if (const auto* derivedField = dynamic_cast<const Field<T>*>(this))
+            {
+                return derivedField->value();
+            }
+            throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
+        }
     };
 
     /// @brief Represents a field of a specific type in the database
@@ -168,21 +184,45 @@ namespace drug_lib::common::database
         T value_;
     };
 
-    template <typename T>
-    T FieldBase::as() const
+    class ViewingField final : public FieldBase
     {
-        // Ensure that T is a valid type, e.g., int, std::string, etc.
-        static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
-
-        // Attempt to dynamic cast this object to a Field<T> type
-        const auto* derived = dynamic_cast<const Field<T>*>(this);
-
-
-        if (!derived)
+    public:
+        ViewingField(std::string&& name, std::string_view&& value)
+            : name_(std::move(name)), value_(value)
         {
-            throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
         }
 
-        return derived->value();
-    }
+        /// @return Column name of the field
+        [[nodiscard]] const std::string& get_name() const override { return name_; }
+
+        void set_name(const std::string& name) { name_ = name; }
+        void set_name(std::string&& name) { name_ = std::move(name); }
+
+        /// @return Value of the field
+        [[nodiscard]] std::string_view value() const { return value_; }
+        void set_value(const std::string_view& value) { value_ = value; }
+        void set_value(std::string_view&& value) { value_ = value; }
+
+        /// @brief Converts the field value to a string for SQL queries
+        [[nodiscard]] std::string to_string() const & override
+        {
+            return std::string(value_);
+        }
+
+        /// @brief Converts the field value to a string for SQL queries
+        [[nodiscard]] std::string to_string() && override
+        {
+            return std::string(value_);
+        }
+
+        /// @brief Gets the SQL data type of the field
+        [[nodiscard]] std::string get_sql_type() const override
+        {
+            throw std::runtime_error("get_sql_type() called in VIEWING field");
+        }
+
+    private:
+        std::string name_;
+        std::string_view value_;
+    };
 }

@@ -20,6 +20,13 @@ namespace drug_lib::common::database
             fields_.push_back(std::move(field));
         }
 
+        template <typename FieldType, typename... Args>
+        void emplace_back(Args&&... args)
+        {
+            static_assert(std::is_base_of_v<FieldBase, FieldType>, "FieldType must derive from FieldBase");
+            fields_.emplace_back(std::make_unique<FieldType>(std::forward<Args>(args)...));
+        }
+
         void pop_back()
         {
             fields_.pop_back();
@@ -68,6 +75,10 @@ namespace drug_lib::common::database
             return fields_[idx];
         }
 
+        void reserve(const std::size_t sz)
+        {
+            fields_.reserve(sz);
+        }
 
         [[nodiscard]] bool empty() const
         {
@@ -93,5 +104,36 @@ namespace drug_lib::common::database
 
     private:
         std::vector<std::unique_ptr<FieldBase>> fields_;
+    };
+
+
+    class ViewRecord
+    {
+    public:
+        virtual ~ViewRecord() = default;
+        [[nodiscard]] virtual std::string_view view(int32_t idx) const & = 0;
+        [[nodiscard]] virtual std::string extract(int32_t idx) const & = 0;
+    };
+
+    class BaseViewRecord final : public ViewRecord
+    {
+    public:
+        [[nodiscard]] std::string_view view(const int32_t idx) const & override
+        {
+            return views_[idx].value();
+        }
+
+        void add_field(ViewingField&& field)
+        {
+            views_.emplace_back(std::move(field));
+        }
+
+        [[nodiscard]] std::string extract(const int32_t idx) const & override
+        {
+            return std::string{views_[idx].value()};
+        }
+
+    private:
+        std::vector<ViewingField> views_;
     };
 }
