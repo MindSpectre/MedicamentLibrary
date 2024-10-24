@@ -8,6 +8,7 @@
 #include "db_field.hpp"
 #include "db_record.hpp"
 #include "pqxx_client.hpp"
+#include "pqxx_utilities.hpp"
 #include "stopwatch.hpp"
 using namespace drug_lib::common::database;
 
@@ -22,7 +23,7 @@ protected:
     const std::string password = "postgres"; // Replace with your actual password
 
     // Pointer to the PqxxClient
-    std::unique_ptr<PqxxClient> db_client;
+    std::shared_ptr<PqxxClient> db_client;
 
     // Test table name
     std::string test_table = "test_table";
@@ -31,7 +32,7 @@ protected:
     void SetUp() override
     {
         // Initialize the database client
-        db_client = std::make_unique<PqxxClient>(host, port, db_name, username, password);
+        db_client = std::make_shared<PqxxClient>(host, port, db_name, username, password);
 
         // Ensure the test table does not exist before starting
         if (db_client->check_table(test_table))
@@ -599,6 +600,43 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
 
     // Check that the correct number of records were inserted
     EXPECT_EQ(results.size(), limit_ * thread_count);
+}
+
+TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
+{
+    std::vector<std::shared_ptr<FieldBase>> fts_fields;
+    fts_fields.emplace_back(std::make_shared<Field<std::string>>("name", ""));
+    fts_fields.emplace_back(std::make_shared<Field<std::string>>("description", ""));
+
+
+    drug_lib::common::Stopwatch<> stopwatch;
+    constexpr uint32_t flush = 1 << 14; // Number of records per flush
+    constexpr uint32_t limit_ = flush * 8; // Total number of records each thread should handle
+    db_client->drop_full_text_search(test_table);
+    std::vector<Record> records;
+    records.reserve(limit_); // Reserve space for records to avoid reallocations
+    for (uint32_t i = 0; i < limit_; i++)
+    {
+        Record record1;
+        record1.push_back(std::make_unique<Field<int32_t>>("id", i));
+        record1.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
+        record1.push_back(std::make_unique<Field<std::string>>("description", "Pers" + std::to_string(i % 3)));
+        records.push_back(std::move(record1));
+    }
+    stopwatch.start("Multithreading insert with dropping fts");
+    stopwatch.flag("Threading launch: 4 threads");
+    // stopwatch.flag("Thread " + std::to_string(s) + " finished");
+    utilities::bulk_insertion(db_client, test_table, std::move(records), flush, 8);
+    stopwatch.flag("Threading finished: 4 threads");
+    // Fetch the records from the database
+    const auto results = db_client->view(test_table);
+    stopwatch.finish();
+    // Check that the correct number of records were inserted
+    EXPECT_EQ(results.size(), limit_);
+    const std::string search_query = "Pers2";
+    const auto fts_res = db_client->get_data_fts(test_table, search_query);
+    stopwatch.finish();
+    EXPECT_EQ(fts_res.size(), limit_/3);
 }
 
 TEST_F(PqxxClientTest, SelectSpeedTest)

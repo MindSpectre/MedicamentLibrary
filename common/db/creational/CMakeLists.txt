@@ -2,14 +2,14 @@
 # Database interface Factory class
 ##############################################################################
 
-add_library(${DATABASE_LIBS}_Factory
+add_library(${PROJECT_NAME}_Common_Database_Factory
         STATIC
         factory/db_interface_factory.cpp
 
 )
-target_link_libraries(${DATABASE_LIBS}_Factory
+target_link_libraries(${PROJECT_NAME}_Common_Database_Factory
         PUBLIC
-        ${DATABASE_LIBS}_Interface
-        ${DATABASE_LIBS}_PqxxClient
+        ${PROJECT_NAME}_Common_Database_Interface
+        ${PROJECT_NAME}_Common_Database_PqxxClient
 )
 ##############################################################################

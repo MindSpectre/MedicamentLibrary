@@ -1,6 +1,6 @@
 # PARENT_PROJECT_NAME = DrugLib.Common
 
-set(TARGET ${COMMON_LIBS}_HashCreator)
+set(TARGET ${PROJECT_NAME}_Common_HashCreator)
 
 ##############################################################################
 # Hash Creator Interface

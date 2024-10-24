@@ -9,6 +9,7 @@
 
 #include "db_conditions.hpp"
 #include "db_field.hpp"
+#include "pqxx_view_record.hpp"
 #include "stopwatch.hpp"
 
 namespace drug_lib::common::database
@@ -215,13 +216,15 @@ namespace drug_lib::common::database
     }
 
     void PqxxClient::build_conflict_clause(std::string& query,
+                                           const std::string_view table_name,
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const
     {
         query.pop_back();
         // Build ON CONFLICT clause
         std::ostringstream conflict_stream;
+        const auto conflict_fields = conflict_fields_.at(table_name.data());
         conflict_stream << " ON CONFLICT (";
-        for (const auto& field : conflict_fields_)
+        for (const auto& field : conflict_fields)
         {
             conflict_stream << escape_identifier(field->get_name()) << ", ";
         }
@@ -307,6 +310,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::_oid_preprocess()
     {
+        std::lock_guard lock(conn_mutex_);
         try
         {
             pqxx::nontransaction txn(*conn_);
@@ -328,10 +332,14 @@ namespace drug_lib::common::database
         std::unique_ptr<FieldBase> field_ptr;
 
         // Get the field's PostgreSQL type OID
-        const auto type_oid = type_oids_.find(field.type());
-        if (type_oid == type_oids_.end())
+        boost::container::flat_map<unsigned, std::string>::const_iterator type_oid;
         {
-            throw std::invalid_argument("field type not found");
+            std::lock_guard lock(conn_mutex_);
+            type_oid = type_oids_.find(field.type());
+            if (type_oid == type_oids_.end())
+            {
+                throw std::invalid_argument("field type not found");
+            }
         }
 
         // Determine the C++ type based on the PostgreSQL type OID and create the appropriate Field object
@@ -388,14 +396,17 @@ namespace drug_lib::common::database
     void PqxxClient::make_unique_constraint(const std::string_view table_name,
                                             std::vector<std::shared_ptr<FieldBase>> conflict_fields)
     {
-        conflict_fields_ = std::move(conflict_fields);
+        std::lock_guard lock(this->conn_mutex_);
+        std::string tb = table_name.data();
+        this->conflict_fields_[tb] = std::move(conflict_fields);
+        auto conflict_fields_it = this->conflict_fields_.at(tb);
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
         std::ostringstream sub_query;
         query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
         std::ostringstream name_constraint;
         sub_query << " UNIQUE (";
-        for (const auto& column : conflict_fields_)
+        for (const auto& column : conflict_fields_it)
         {
             sub_query << escape_identifier(column->get_name()) << ",";
             name_constraint << column->get_name() << "_";
@@ -412,7 +423,7 @@ namespace drug_lib::common::database
     // Transaction Methods
     void PqxxClient::start_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         if (in_transaction_)
         {
             throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
@@ -430,7 +441,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::commit_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         if (!in_transaction_)
         {
             throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
@@ -449,7 +460,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::rollback_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         if (!in_transaction_)
         {
             throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
@@ -523,7 +534,7 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
+        build_conflict_clause(query, table_name, replace_fields);
         execute_query(query, params);
     }
 
@@ -532,12 +543,29 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
+        build_conflict_clause(query, table_name, replace_fields);
         execute_query(query, params);
     }
 
+    void PqxxClient::create_fts_index_query(const std::string_view table_name, std::ostringstream& index_query) const
+    {
+        const std::string table = escape_identifier(table_name);
+
+        // Build the concatenated fields expression
+        std::ostringstream fields_stream;
+        for (const auto fts_fields = this->fts_fields_.at(table_name.data()); const auto& field : fts_fields)
+        {
+            fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
+        }
+        std::string fields_concatenated = fields_stream.str();
+        fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+
+        index_query << "CREATE INDEX IF NOT EXISTS " << make_fts_index(table_name) << " ON " << table
+            << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
+    }
+
     void PqxxClient::setup_full_text_search(
-        std::string_view table_name,
+        const std::string_view table_name,
         std::vector<std::shared_ptr<FieldBase>> fields)
     {
         if (fields.empty())
@@ -545,26 +573,13 @@ namespace drug_lib::common::database
             throw QueryException("Invalid number of fts fields. Expected at least one element",
                                  db_err::INVALID_QUERY);
         }
-        fts_fields_ = std::move(fields);
-        std::lock_guard lock(conn_mutex_);
+        this->fts_fields_[table_name.data()] = std::move(fields);
+        std::lock_guard lock(this->conn_mutex_);
 
         try
         {
-            const std::string table = escape_identifier(table_name);
-
-            // Build the concatenated fields expression
-            std::ostringstream fields_stream;
-            for (const auto& field : fts_fields_)
-            {
-                fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
-            }
-            std::string fields_concatenated = fields_stream.str();
-            fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
-
-            // Create the functional index
             std::ostringstream index_query;
-            index_query << "CREATE INDEX IF NOT EXISTS idx_" << table_name << "_fts ON " << table
-                << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
+            create_fts_index_query(table_name, index_query);
 
             execute_query(index_query.str());
         }
@@ -574,6 +589,43 @@ namespace drug_lib::common::database
         }
     }
 
+    void PqxxClient::drop_full_text_search(const std::string_view table_name) const
+    {
+        std::lock_guard lock(this->conn_mutex_);
+        try
+        {
+            std::ostringstream index_query;
+            index_query << "DROP INDEX IF EXISTS " << make_fts_index(table_name) << ";";
+            execute_query(index_query.str());
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
+
+    void PqxxClient::remove_full_text_search(const std::string_view table_name)
+    {
+        this->fts_fields_[std::string(table_name)].clear();
+        drop_full_text_search(table_name);
+    }
+
+    void PqxxClient::restore_full_text_search(const std::string_view table_name) const
+    {
+        std::lock_guard lock(this->conn_mutex_);
+
+        try
+        {
+            std::ostringstream index_query;
+            create_fts_index_query(table_name, index_query);
+
+            execute_query(index_query.str());
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
 
     // Data Retrieval
     std::vector<Record> PqxxClient::select(
@@ -626,7 +678,7 @@ namespace drug_lib::common::database
                                  db_err::INVALID_QUERY);
         }
         std::vector<std::unique_ptr<ViewRecord>> results;
-        std::string table = escape_identifier(table_name);
+        const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
 
         pqxx::params params;
@@ -779,7 +831,7 @@ namespace drug_lib::common::database
 
         // Build the concatenated fields expression
         std::ostringstream fields_stream;
-        for (const auto& field : fts_fields_)
+        for (const auto fts_fields = fts_fields_.at(table_name.data()); const auto& field : fts_fields)
         {
             fields_stream << "coalesce(" << field->get_name() << "::text, '') || ' ' || ";
         }
@@ -802,5 +854,12 @@ namespace drug_lib::common::database
             results.push_back(std::move(record));
         }
         return results;
+    }
+
+    std::string PqxxClient::make_fts_index(const std::string_view table_name)
+    {
+        std::ostringstream fts_ind;
+        fts_ind << "fts_" << table_name << "_idx";
+        return fts_ind.str();
     }
 }
