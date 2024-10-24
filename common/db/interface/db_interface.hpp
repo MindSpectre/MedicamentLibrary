@@ -71,7 +71,7 @@ namespace drug_lib::common::database::interfaces
         virtual void remove(
             std::string_view table_name,
             const FieldConditions& conditions) = 0;
-        virtual void truncate(std::string_view table_name) = 0;
+        virtual void truncate_table(std::string_view table_name) = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name,
                                              const FieldConditions& conditions) const = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name) const = 0;

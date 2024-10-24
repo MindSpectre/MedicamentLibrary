@@ -560,7 +560,7 @@ namespace drug_lib::common::database
         std::string fields_concatenated = fields_stream.str();
         fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
 
-        index_query << "CREATE INDEX IF NOT EXISTS " << make_fts_index(table_name) << " ON " << table
+        index_query << "CREATE INDEX IF NOT EXISTS " << make_fts_index_name(table_name) << " ON " << table
             << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
     }
 
@@ -595,7 +595,7 @@ namespace drug_lib::common::database
         try
         {
             std::ostringstream index_query;
-            index_query << "DROP INDEX IF EXISTS " << make_fts_index(table_name) << ";";
+            index_query << "DROP INDEX IF EXISTS " << make_fts_index_name(table_name) << ";";
             execute_query(index_query.str());
         }
         catch (const std::exception& e)
@@ -743,7 +743,7 @@ namespace drug_lib::common::database
         return results;
     }
 
-    void PqxxClient::truncate(const std::string_view table_name)
+    void PqxxClient::truncate_table(const std::string_view table_name)
     {
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
@@ -856,7 +856,7 @@ namespace drug_lib::common::database
         return results;
     }
 
-    std::string PqxxClient::make_fts_index(const std::string_view table_name)
+    std::string PqxxClient::make_fts_index_name(const std::string_view table_name)
     {
         std::ostringstream fts_ind;
         fts_ind << "fts_" << table_name << "_idx";

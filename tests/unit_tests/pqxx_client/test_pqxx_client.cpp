@@ -378,7 +378,7 @@ TEST_F(PqxxClientTest, TruncateTableTest)
         std::make_unique<Field<int32_t>>("", 1)
     ));
 
-    EXPECT_NO_THROW(db_client->truncate(test_table));
+    EXPECT_NO_THROW(db_client->truncate_table(test_table));
 
     // Verify removal
     const auto results = db_client->select(test_table);
@@ -410,7 +410,7 @@ TEST_F(PqxxClientTest, TransactionSimpleTest)
     auto results = db_client->select(test_table);
     EXPECT_EQ(results.size(), 2);
 
-    EXPECT_NO_THROW(db_client->truncate(test_table));;
+    EXPECT_NO_THROW(db_client->truncate_table(test_table));;
 
     EXPECT_EQ(db_client->select(test_table).size(), 0);
     // Test rollback
