@@ -16,7 +16,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 # Add options to enable or disable Boost and Qt5
 option(USE_BOOST "Enable Boost library" ON)
 option(USE_QT5 "Enable Qt5 library" OFF)
-option(USE_PROTOBUF "Enable Ptotobuf" OFF)
+option(USE_PROTOBUF "Enable Protobuf" OFF)
 option(USE_TESTS "Tests activated" ON)
 # Global compiler options (if necessary)
 # It's better to set these per-target

@@ -40,6 +40,14 @@ namespace drug_lib::common::database::interfaces
         virtual void setup_full_text_search(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) = 0;
+        /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
+        virtual void drop_full_text_search(std::string_view table_name) const = 0;
+
+        /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
+        virtual void remove_full_text_search(std::string_view table_name) = 0;
+
+        /// @brief Restore index + reindex. Use previous declared fts fields
+        virtual void restore_full_text_search(std::string_view table_name) const = 0;
         // Data Manipulation using Perfect Forwarding
         template <RecordContainer Rows>
         void insert(std::string_view table_name, Rows&& rows)
@@ -62,23 +70,19 @@ namespace drug_lib::common::database::interfaces
         // Data Retrieval
         [[nodiscard]] virtual std::vector<Record> select(
             std::string_view table_name,
-            const FieldConditions& conditions) const = 0;
+            const Conditions& conditions) const = 0;
         [[nodiscard]] virtual std::vector<std::unique_ptr<ViewRecord>> view(
             std::string_view table_name,
-            const FieldConditions& conditions) const = 0;
+            const Conditions& conditions) const = 0;
         [[nodiscard]] virtual std::vector<std::unique_ptr<ViewRecord>> view(std::string_view table_name) const = 0;
         // Remove Data
         virtual void remove(
             std::string_view table_name,
-            const FieldConditions& conditions) = 0;
-        virtual void truncate(std::string_view table_name) = 0;
+            const Conditions& conditions) = 0;
+        virtual void truncate_table(std::string_view table_name) = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name,
-                                             const FieldConditions& conditions) const = 0;
+                                             const Conditions& conditions) const = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name) const = 0;
-        // Full-Text Search Methods
-        [[nodiscard]] virtual std::vector<Record> get_data_fts(
-            std::string_view table_name,
-            const std::string& fts_query_params) const = 0;
 
     protected:
         // Implementation Methods for Data Manipulation

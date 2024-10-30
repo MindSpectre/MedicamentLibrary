@@ -9,6 +9,7 @@
 
 #include "db_conditions.hpp"
 #include "db_field.hpp"
+#include "pqxx_view_record.hpp"
 #include "stopwatch.hpp"
 
 namespace drug_lib::common::database
@@ -32,8 +33,8 @@ namespace drug_lib::common::database
                 << " password=" << password
                 << " dbname=" << db_name;
 
-            conn_ = std::make_shared<pqxx::connection>(conn_str.str());
-            if (!conn_->is_open())
+            this->conn_ = std::make_shared<pqxx::connection>(conn_str.str());
+            if (!this->conn_->is_open())
             {
                 throw ConnectionException("Failed to open database connection.",
                                           db_err::CONNECTION_FAILED);
@@ -59,8 +60,8 @@ namespace drug_lib::common::database
     PqxxClient::PqxxClient(const PqxxConnectParams& pr)
         : in_transaction_(false)
     {
-        conn_ = std::make_shared<pqxx::connection>(pr.make_connect_string());
-        if (!conn_->is_open())
+        this->conn_ = std::make_shared<pqxx::connection>(pr.make_connect_string());
+        if (!this->conn_->is_open())
         {
             throw ConnectionException("Failed to open database connection.",
                                       db_err::CONNECTION_FAILED);
@@ -82,7 +83,7 @@ namespace drug_lib::common::database
         {
             throw InvalidIdentifierException(std::string(identifier), db_err::INVALID_QUERY);
         }
-        return conn_->quote_name(std::string(identifier));
+        return this->conn_->quote_name(std::string(identifier));
     }
 
     // Static create postgreSQL Database
@@ -141,20 +142,21 @@ namespace drug_lib::common::database
     //
     void PqxxClient::drop_connect()
     {
-        conn_->close();
+        std::lock_guard lock(this->conn_mutex_);
+        this->conn_->close();
     }
 
 
     std::unique_ptr<pqxx::work> PqxxClient::initialize_transaction() const
     {
-        if (in_transaction_)
+        if (this->in_transaction_)
         {
-            return std::move(open_transaction_);
+            return std::move(this->open_transaction_);
         }
 
         try
         {
-            auto one_query_transaction = std::make_unique<pqxx::work>(*conn_);
+            auto one_query_transaction = std::make_unique<pqxx::work>(*this->conn_);
             return one_query_transaction;
         }
         catch (std::exception& e)
@@ -166,9 +168,9 @@ namespace drug_lib::common::database
 
     void PqxxClient::finish_transaction(std::unique_ptr<pqxx::work>&& current_transaction) const
     {
-        if (in_transaction_)
+        if (this->in_transaction_)
         {
-            open_transaction_ = std::move(current_transaction);
+            this->open_transaction_ = std::move(current_transaction);
             return;
         }
         try
@@ -215,13 +217,28 @@ namespace drug_lib::common::database
     }
 
     void PqxxClient::build_conflict_clause(std::string& query,
+                                           const std::string_view table_name,
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const
     {
         query.pop_back();
         // Build ON CONFLICT clause
         std::ostringstream conflict_stream;
+        std::vector<std::shared_ptr<FieldBase>> conflict_fields;
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            try
+            {
+                conflict_fields = this->conflict_fields_.at(table_name.data());
+            }
+            catch (std::out_of_range&)
+            {
+                throw QueryException(
+                    "For this table upsert clause is not set up. Or invalid table name credentials",
+                    db_err::INVALID_DATA);
+            }
+        }
         conflict_stream << " ON CONFLICT (";
-        for (const auto& field : conflict_fields_)
+        for (const auto& field : conflict_fields)
         {
             conflict_stream << escape_identifier(field->get_name()) << ", ";
         }
@@ -240,11 +257,64 @@ namespace drug_lib::common::database
         query += conflict_clause + ";";
     }
 
+    std::string PqxxClient::build_condition_clause(std::string_view table_name, std::ostringstream& query_stream,
+                                                   pqxx::params& params,
+                                                   uint32_t& param_index, const Conditions& conditions) const
+    {
+        query_stream << " WHERE ";
+        const std::vector<FieldCondition>& fields_clause = conditions.fields_conditions();
+        const std::vector<PatternCondition>& patterns_clause = conditions.pattern_conditions();
+        for (const auto& condition : fields_clause)
+        {
+            std::string field_name = escape_identifier(condition.field()->get_name());
+            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
+            params.append(condition.value()->to_string());
+        }
+        if (patterns_clause.empty())
+        {
+            std::string query = query_stream.str();
+            query.erase(query.size() - 5); // Remove last ' AND '
+            query += ";";
+            return query;
+        }
+        std::ostringstream fts_fields_stream;
+        std::vector<std::shared_ptr<FieldBase>> fts_fields;
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            try
+            {
+                fts_fields = this->fts_fields_.at(table_name.data());
+            }
+            catch (std::out_of_range&)
+            {
+                throw QueryException(
+                    "For this table fts index is not set up or disabled. Or invalid table name credentials",
+                    db_err::INVALID_DATA);
+            }
+        }
+        for (const auto& field : fts_fields)
+        {
+            fts_fields_stream << "coalesce(" << field->get_name() << "::text, '') || ' ' || ";
+        }
+        std::string fields_concatenated = fts_fields_stream.str();
+        fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+        std::ostringstream tsquery_stream;
+        for (const auto& pattern : patterns_clause)
+        {
+            tsquery_stream << pattern.get_pattern() << " & ";
+        }
+        std::string tsquery = tsquery_stream.str();
+        tsquery.erase(tsquery.size() - 3); // Remove last " & "
+        query_stream << "to_tsvector('simple', " << fields_concatenated << ") @@ to_tsquery('simple', $"
+            << param_index++ << ");";
+        params.append(tsquery);
+        return query_stream.str();
+    }
 
     // Utility method to execute a query
     void PqxxClient::execute_query(const std::string& query_string, const pqxx::params& params) const
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         try
         {
             std::unique_ptr<pqxx::work> txn = initialize_transaction();
@@ -257,9 +327,10 @@ namespace drug_lib::common::database
         }
     }
 
+
     void PqxxClient::execute_query(const std::string& query_string) const
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         try
         {
             std::unique_ptr<pqxx::work> txn = initialize_transaction();
@@ -275,7 +346,7 @@ namespace drug_lib::common::database
     pqxx::result PqxxClient::execute_query_with_result(const std::string& query_string,
                                                        const pqxx::params& params) const
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         try
         {
             std::unique_ptr<pqxx::work> txn = initialize_transaction();
@@ -291,7 +362,7 @@ namespace drug_lib::common::database
 
     pqxx::result PqxxClient::execute_query_with_result(const std::string& query_string) const
     {
-        std::lock_guard lock(conn_mutex_);
+        std::lock_guard lock(this->conn_mutex_);
         try
         {
             std::unique_ptr<pqxx::work> txn = initialize_transaction();
@@ -309,12 +380,13 @@ namespace drug_lib::common::database
     {
         try
         {
-            pqxx::nontransaction txn(*conn_);
+            std::lock_guard lock(this->conn_mutex_);
+            pqxx::nontransaction txn(*this->conn_);
             const pqxx::result r = txn.exec(
                 "SELECT typname, oid FROM pg_type WHERE typname IN ('bool', 'int2', 'int4', 'int8', 'float4', 'float8', 'text', 'varchar', 'bpchar', 'timestamp', 'timestamptz')");
             for (const auto& row : r)
             {
-                type_oids_.insert({row["oid"].as<uint32_t>(), row["typname"].c_str()});
+                this->type_oids_.insert({row["oid"].as<uint32_t>(), row["typname"].c_str()});
             }
         }
         catch (const std::exception& e)
@@ -328,10 +400,14 @@ namespace drug_lib::common::database
         std::unique_ptr<FieldBase> field_ptr;
 
         // Get the field's PostgreSQL type OID
-        const auto type_oid = type_oids_.find(field.type());
-        if (type_oid == type_oids_.end())
+        boost::container::flat_map<uint32_t, std::string>::const_iterator type_oid;
         {
-            throw std::invalid_argument("field type not found");
+            std::lock_guard lock(this->conn_mutex_);
+            type_oid = this->type_oids_.find(field.type());
+            if (type_oid == this->type_oids_.end())
+            {
+                throw std::invalid_argument("field type not found");
+            }
         }
 
         // Determine the C++ type based on the PostgreSQL type OID and create the appropriate Field object
@@ -388,14 +464,20 @@ namespace drug_lib::common::database
     void PqxxClient::make_unique_constraint(const std::string_view table_name,
                                             std::vector<std::shared_ptr<FieldBase>> conflict_fields)
     {
-        conflict_fields_ = std::move(conflict_fields);
+        std::vector<std::shared_ptr<FieldBase>> conflict_fields_it;
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            std::string tb = table_name.data();
+            this->conflict_fields_[tb] = std::move(conflict_fields);
+            conflict_fields_it = this->conflict_fields_.at(tb);
+        }
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
         std::ostringstream sub_query;
         query_stream << "ALTER TABLE " << table << " ADD CONSTRAINT ";
         std::ostringstream name_constraint;
         sub_query << " UNIQUE (";
-        for (const auto& column : conflict_fields_)
+        for (const auto& column : conflict_fields_it)
         {
             sub_query << escape_identifier(column->get_name()) << ",";
             name_constraint << column->get_name() << "_";
@@ -412,15 +494,15 @@ namespace drug_lib::common::database
     // Transaction Methods
     void PqxxClient::start_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
-        if (in_transaction_)
+        if (this->in_transaction_)
         {
             throw TransactionException("Transaction already started.", db_err::TRANSACTION_START_FAILED);
         }
         try
         {
-            open_transaction_ = std::make_unique<pqxx::work>(*conn_);
-            in_transaction_ = true;
+            std::lock_guard lock(this->conn_mutex_);
+            this->open_transaction_ = std::make_unique<pqxx::work>(*this->conn_);
+            this->in_transaction_ = true;
         }
         catch (const pqxx::sql_error& e)
         {
@@ -430,16 +512,16 @@ namespace drug_lib::common::database
 
     void PqxxClient::commit_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
-        if (!in_transaction_)
+        if (!this->in_transaction_)
         {
             throw TransactionException("No active transaction to commit.", db_err::TRANSACTION_COMMIT_FAILED);
         }
         try
         {
-            open_transaction_->commit();
-            open_transaction_.reset();
-            in_transaction_ = false;
+            std::lock_guard lock(this->conn_mutex_);
+            this->open_transaction_->commit();
+            this->open_transaction_.reset();
+            this->in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
         {
@@ -449,16 +531,16 @@ namespace drug_lib::common::database
 
     void PqxxClient::rollback_transaction()
     {
-        std::lock_guard lock(conn_mutex_);
-        if (!in_transaction_)
+        if (!this->in_transaction_)
         {
             throw TransactionException("No active transaction to rollback.", db_err::TRANSACTION_ROLLBACK_FAILED);
         }
         try
         {
-            open_transaction_->abort();
-            open_transaction_.reset();
-            in_transaction_ = false;
+            std::lock_guard lock(this->conn_mutex_);
+            this->open_transaction_->abort();
+            this->open_transaction_.reset();
+            this->in_transaction_ = false;
         }
         catch (const pqxx::sql_error& e)
         {
@@ -497,9 +579,9 @@ namespace drug_lib::common::database
 
     bool PqxxClient::check_table(const std::string_view table_name)
     {
-        const std::string table = conn_->esc(std::string(table_name));
-        const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = " + conn_->
-            quote(table) + ");";
+        const std::string table = this->conn_->esc(std::string(table_name));
+        const std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = "
+            + this->conn_->quote(table) + ");";
         const pqxx::result res = execute_query_with_result(query);
         return res[0][0].as<bool>();
     }
@@ -523,7 +605,7 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
+        build_conflict_clause(query, table_name, replace_fields);
         execute_query(query, params);
     }
 
@@ -532,12 +614,43 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, replace_fields);
+        build_conflict_clause(query, table_name, replace_fields);
         execute_query(query, params);
     }
 
+    void PqxxClient::create_fts_index_query(const std::string_view table_name, std::ostringstream& index_query) const
+    {
+        const std::string table = escape_identifier(table_name);
+
+        // Build the concatenated fields expression
+        std::ostringstream fields_stream;
+        std::vector<std::shared_ptr<FieldBase>> fts_fields;
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            try
+            {
+                fts_fields = this->fts_fields_.at(table_name.data());
+            }
+            catch (std::out_of_range&)
+            {
+                throw QueryException(
+                    "For this table fts index is not set up or disabled. Or invalid table name credentials",
+                    db_err::INVALID_DATA);
+            }
+        }
+        for (const auto& field : fts_fields)
+        {
+            fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
+        }
+        std::string fields_concatenated = fields_stream.str();
+        fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+
+        index_query << "CREATE INDEX IF NOT EXISTS " << make_fts_index_name(table_name) << " ON " << table
+            << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
+    }
+
     void PqxxClient::setup_full_text_search(
-        std::string_view table_name,
+        const std::string_view table_name,
         std::vector<std::shared_ptr<FieldBase>> fields)
     {
         if (fields.empty())
@@ -545,27 +658,14 @@ namespace drug_lib::common::database
             throw QueryException("Invalid number of fts fields. Expected at least one element",
                                  db_err::INVALID_QUERY);
         }
-        fts_fields_ = std::move(fields);
-        std::lock_guard lock(conn_mutex_);
-
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->fts_fields_[table_name.data()] = std::move(fields);
+        }
         try
         {
-            const std::string table = escape_identifier(table_name);
-
-            // Build the concatenated fields expression
-            std::ostringstream fields_stream;
-            for (const auto& field : fts_fields_)
-            {
-                fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
-            }
-            std::string fields_concatenated = fields_stream.str();
-            fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
-
-            // Create the functional index
             std::ostringstream index_query;
-            index_query << "CREATE INDEX IF NOT EXISTS idx_" << table_name << "_fts ON " << table
-                << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
-
+            create_fts_index_query(table_name, index_query);
             execute_query(index_query.str());
         }
         catch (const std::exception& e)
@@ -574,11 +674,57 @@ namespace drug_lib::common::database
         }
     }
 
+    void PqxxClient::drop_full_text_search(const std::string_view table_name) const
+    {
+        try
+        {
+            std::ostringstream index_query;
+            index_query << "DROP INDEX IF EXISTS " << make_fts_index_name(table_name) << ";";
+            execute_query(index_query.str());
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
+
+    void PqxxClient::remove_full_text_search(const std::string_view table_name)
+    {
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->fts_fields_[std::string(table_name)].clear();
+        }
+        drop_full_text_search(table_name);
+    }
+
+    void PqxxClient::restore_full_text_search(const std::string_view table_name) const
+    {
+        try
+        {
+            std::ostringstream index_query;
+            create_fts_index_query(table_name, index_query);
+            execute_query(index_query.str());
+        }
+        catch (const QueryException& e)
+        {
+            if (e.get_error() == errors::db_error_code::INVALID_DATA)
+            {
+                throw QueryException(
+                    "Tried to restore fts index, but fts fields were not set up. Use setup FTS function",
+                    errors::db_error_code::INVALID_DATA);
+            }
+            throw adapt_exception(e);
+        }
+        catch (const std::exception& e)
+        {
+            throw adapt_exception(e);
+        }
+    }
 
     // Data Retrieval
     std::vector<Record> PqxxClient::select(
         const std::string_view table_name,
-        const FieldConditions& conditions) const
+        const Conditions& conditions) const
     {
         if (conditions.empty())
         {
@@ -591,17 +737,10 @@ namespace drug_lib::common::database
 
         pqxx::params params;
         query_stream << "SELECT * FROM " << table;
-        query_stream << " WHERE ";
+
         uint32_t param_index = 1;
-        for (const auto& condition : conditions)
-        {
-            std::string field_name = escape_identifier(condition.field()->get_name());
-            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-            params.append(condition.value()->to_string());
-        }
-        std::string query = query_stream.str();
-        query.erase(query.size() - 5); // Remove last ' AND '
-        query += ";";
+        const std::string query = build_condition_clause(table_name, query_stream, params, param_index, conditions);
+
         const pqxx::result res = execute_query_with_result(query, params);
         results.reserve(res.size());
         for (const auto& row : res)
@@ -618,7 +757,7 @@ namespace drug_lib::common::database
     }
 
     std::vector<std::unique_ptr<ViewRecord>> PqxxClient::view(const std::string_view table_name,
-                                                              const FieldConditions& conditions) const
+                                                              const Conditions& conditions) const
     {
         if (conditions.empty())
         {
@@ -626,22 +765,13 @@ namespace drug_lib::common::database
                                  db_err::INVALID_QUERY);
         }
         std::vector<std::unique_ptr<ViewRecord>> results;
-        std::string table = escape_identifier(table_name);
+        const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
 
         pqxx::params params;
         query_stream << "SELECT * FROM " << table;
-        query_stream << " WHERE ";
         uint32_t param_index = 1;
-        for (const auto& condition : conditions)
-        {
-            std::string field_name = escape_identifier(condition.field()->get_name());
-            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-            params.append(condition.value()->to_string());
-        }
-        std::string query = query_stream.str();
-        query.erase(query.size() - 5); // Remove last ' AND '
-        query += ";";
+        const std::string query = build_condition_clause(table_name, query_stream, params, param_index, conditions);
         pqxx::result res = execute_query_with_result(query, params);
         results.reserve(res.size());
         for (auto&& row : std::move(res))
@@ -691,7 +821,7 @@ namespace drug_lib::common::database
         return results;
     }
 
-    void PqxxClient::truncate(const std::string_view table_name)
+    void PqxxClient::truncate_table(const std::string_view table_name)
     {
         const std::string table = escape_identifier(table_name);
         std::ostringstream query_stream;
@@ -699,9 +829,7 @@ namespace drug_lib::common::database
         execute_query(query_stream.str());
     }
 
-    void PqxxClient::remove(
-        const std::string_view table_name,
-        const FieldConditions& conditions)
+    void PqxxClient::remove(const std::string_view table_name, const Conditions& conditions)
     {
         if (conditions.empty())
         {
@@ -712,18 +840,8 @@ namespace drug_lib::common::database
         std::ostringstream query_stream;
         pqxx::params params;
         query_stream << "DELETE FROM " << table;
-
-        query_stream << " WHERE ";
         uint32_t param_index = 1;
-        for (const auto& condition : conditions)
-        {
-            std::string field_name = escape_identifier(condition.field()->get_name());
-            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-            params.append(condition.value()->to_string());
-        }
-        std::string query = query_stream.str();
-        query.erase(query.size() - 5); // Remove last ' AND '
-        query += ";";
+        const std::string query = build_condition_clause(table_name, query_stream, params, param_index, conditions);
 
         execute_query(query, params);
     }
@@ -740,7 +858,7 @@ namespace drug_lib::common::database
     }
 
     uint32_t PqxxClient::count(const std::string_view table_name,
-                               const FieldConditions& conditions) const
+                               const Conditions& conditions) const
     {
         if (conditions.empty())
         {
@@ -754,53 +872,16 @@ namespace drug_lib::common::database
         // Add conditions if any
         pqxx::params params;
         uint32_t param_index = 1;
-        query_stream << " WHERE ";
-        for (const auto& condition : conditions)
-        {
-            std::string field_name = escape_identifier(condition.field()->get_name());
-            query_stream << field_name << " " << condition.op() << " $" << param_index++ << " AND ";
-            params.append(condition.value()->to_string());
-        }
-        std::string query = query_stream.str();
-        query.erase(query.size() - 5); // Remove last ' AND '
-        query += ";";
+        const std::string query = build_condition_clause(table_name, query_stream, params, param_index, conditions);
         const pqxx::result res = execute_query_with_result(query, params);
         return res[0][0].as<uint32_t>();
     }
 
 
-    // Full-Text Search Methods
-    std::vector<Record> PqxxClient::get_data_fts(
-        const std::string_view table_name,
-        const std::string& fts_query_params) const
+    std::string PqxxClient::make_fts_index_name(const std::string_view table_name)
     {
-        std::vector<Record> results;
-        const std::string table = escape_identifier(table_name);
-
-        // Build the concatenated fields expression
-        std::ostringstream fields_stream;
-        for (const auto& field : fts_fields_)
-        {
-            fields_stream << "coalesce(" << field->get_name() << "::text, '') || ' ' || ";
-        }
-        std::string fields_str = fields_stream.str();
-        fields_str.erase(fields_str.size() - 11); // Remove last " || ' ' || "
-
-        const std::string query = "SELECT * FROM " + table +
-            " WHERE to_tsvector('simple', " + fields_str + ") @@ to_tsquery('simple', $1);";
-
-        pqxx::params params;
-        params.append(fts_query_params);
-
-        for (const pqxx::result res = execute_query_with_result(query, params); const auto& row : res)
-        {
-            Record record;
-            for (const auto& field : row)
-            {
-                record.push_back(process_field(field));
-            }
-            results.push_back(std::move(record));
-        }
-        return results;
+        std::ostringstream fts_ind;
+        fts_ind << "fts_" << table_name << "_idx";
+        return fts_ind.str();
     }
 }

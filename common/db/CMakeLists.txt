@@ -1,20 +1,19 @@
-set(DATABASE_LIBS ${COMMON_LIBS}_Database)
-
 ##############################################################################
 # Database main classes NECESSARY UTILITY
 ##############################################################################
-add_library(${DATABASE_LIBS}_Base INTERFACE
+add_library(${PROJECT_NAME}_Common_Database_Base INTERFACE
         base/db_conditions.hpp
         base/db_field.hpp
         base/db_record.hpp
         base/db_serializer.hpp
+        base/db_controller.hpp
 )
 
-target_include_directories(${DATABASE_LIBS}_Base
+target_include_directories(${PROJECT_NAME}_Common_Database_Base
         INTERFACE
-        base
+        base/
 )
-target_link_libraries(${DATABASE_LIBS}_Base
+target_link_libraries(${PROJECT_NAME}_Common_Database_Base
         INTERFACE
         Boost::boost
         JsonCpp::JsonCpp
@@ -24,29 +23,29 @@ target_link_libraries(${DATABASE_LIBS}_Base
 ##############################################################################
 # Database Client Interface
 ##############################################################################
-add_library(${DATABASE_LIBS}_Interface
+add_library(${PROJECT_NAME}_Common_Database_Interface
         INTERFACE
         interface/db_interface.hpp
 )
 
-target_link_libraries(${DATABASE_LIBS}_Interface
+target_link_libraries(${PROJECT_NAME}_Common_Database_Interface
         INTERFACE
         JsonCpp::JsonCpp
-        ${DATABASE_LIBS}_Base
+        ${PROJECT_NAME}_Common_Database_Base
 )
-target_include_directories(${DATABASE_LIBS}_Interface
+target_include_directories(${PROJECT_NAME}_Common_Database_Interface
         INTERFACE
-        interface
+        interface/
 )
 ##############################################################################
 
 ##############################################################################
 # Error handling
 ##############################################################################
-add_library(${DATABASE_LIBS}_Exceptions INTERFACE
+add_library(${PROJECT_NAME}_Common_Database_Exceptions INTERFACE
         exceptions/exceptions.hpp
         exceptions/error_codes.hpp)
-target_include_directories(${DATABASE_LIBS}_Exceptions INTERFACE
+target_include_directories(${PROJECT_NAME}_Common_Database_Exceptions INTERFACE
         exceptions
 )
 ##############################################################################
@@ -59,5 +58,7 @@ add_subdirectory(creational)
 add_subdirectory(behavioral)
 
 add_subdirectory(postgres/pqxx_impl)
+
+add_subdirectory(mock/basic_mock)
 
 

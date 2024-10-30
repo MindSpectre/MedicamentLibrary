@@ -43,3 +43,20 @@ target_link_libraries(${UNIT_TESTING_TARGET}_StopWatch
 )
 add_test(SupportClasses ${UNIT_TESTING_TARGET}_StopWatch)
 ##############################################################################
+
+##############################################################################
+# Test Transaction Manager
+##############################################################################
+add_executable(${UNIT_TESTING_TARGET}_TransactionManager
+        unit_tests/transaction_manager/test_transaction_manager.cpp
+)
+target_link_libraries(${UNIT_TESTING_TARGET}_TransactionManager
+        PRIVATE
+        DrugLib_Common_Database_Behavioral_TransactionManager
+        DrugLib_Common_Database_MockClient
+        DrugLib_Common_Database_Interface
+        ${TEST_NECESSARY_LIBS}
+
+)
+add_test(SupportClasses ${UNIT_TESTING_TARGET}_TransactionManager)
+##############################################################################

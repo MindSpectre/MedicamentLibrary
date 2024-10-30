@@ -18,9 +18,9 @@ namespace drug_lib::common::database
         {
         }
 
-        [[nodiscard]] const std::unique_ptr<FieldBase>& field() const { return field_; }
-        [[nodiscard]] const std::string& op() const { return operator_; }
-        [[nodiscard]] const std::unique_ptr<FieldBase>& value() const { return value_; }
+        [[nodiscard]] const std::unique_ptr<FieldBase>& field() const & { return field_; }
+        [[nodiscard]] const std::string& op() const & { return operator_; }
+        [[nodiscard]] const std::unique_ptr<FieldBase>& value() const & { return value_; }
 
     private:
         std::unique_ptr<FieldBase> field_;
@@ -28,30 +28,92 @@ namespace drug_lib::common::database
         std::unique_ptr<FieldBase> value_;
     };
 
-    class FieldConditions final
+    class PatternCondition final
     {
     public:
-        ~FieldConditions() = default;
+        explicit PatternCondition(std::string&& pattern) : pattern_(std::move(pattern))
+        {
+        }
 
-        void add_condition(FieldCondition&& condition)
+        explicit PatternCondition(const std::string& pattern) : pattern_(pattern)
+        {
+        }
+
+        ~PatternCondition() = default;
+
+        [[nodiscard]] const std::string& get_pattern() const &
+        {
+            return pattern_;
+        }
+
+        void set_pattern(std::string&& pattern) &
+        {
+            pattern_ = std::move(pattern);
+        }
+
+        void set_pattern(const std::string& pattern) &
+        {
+            pattern_ = pattern;
+        }
+
+    protected:
+        std::string pattern_;
+    };
+
+    class Conditions final
+    {
+    public:
+        ~Conditions() = default;
+
+        void add_field_condition(FieldCondition&& condition) &
         {
             conditions_.push_back(std::move(condition));
         }
 
-        [[nodiscard]] const std::vector<FieldCondition>& conditions() const &
+        void add_pattern_condition(PatternCondition&& condition) &
+        {
+            patterns_.push_back(std::move(condition));
+        }
+
+        void pop_field_condition() &
+        {
+            conditions_.pop_back();
+        }
+
+        void pop_pattern_condition() &
+        {
+            patterns_.pop_back();
+        }
+
+        void clear_field_conditions() &
+        {
+            conditions_.clear();
+        }
+
+        void clear_pattern_conditions() &
+        {
+            patterns_.clear();
+        }
+
+        [[nodiscard]] const std::vector<FieldCondition>& fields_conditions() const &
         {
             return conditions_;
         }
 
-        // Implement begin(), end(), empty(), and size() methods
-        auto begin() { return conditions_.begin(); }
-        auto end() { return conditions_.end(); }
-        [[nodiscard]] auto begin() const { return conditions_.cbegin(); }
-        [[nodiscard]] auto end() const { return conditions_.cend(); }
-        [[nodiscard]] bool empty() const { return conditions_.empty(); }
+        [[nodiscard]] const std::vector<PatternCondition>& pattern_conditions() const &
+        {
+            return patterns_;
+        }
+
+        [[nodiscard]] bool empty() const
+        {
+            return conditions_.empty() && patterns_.empty();
+        }
+
         [[nodiscard]] size_t size() const { return conditions_.size(); }
 
     private:
         std::vector<FieldCondition> conditions_;
+        std::vector<PatternCondition> patterns_;
     };
 }
