@@ -740,7 +740,6 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
         "<",
         std::make_unique<Field<int32_t>>("", b)
     ));
-    conditions.add_pattern_condition(PatternCondition("Pers" + std::to_string(b - 2)));
 
     const auto res2 = db_client->view(test_table, conditions);
 

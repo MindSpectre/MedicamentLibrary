@@ -304,7 +304,7 @@ namespace drug_lib::common::database
             tsquery_stream << pattern.get_pattern() << " & ";
         }
         std::string tsquery = tsquery_stream.str();
-        tsquery.erase(tsquery.size() - 3);
+        tsquery.erase(tsquery.size() - 3); // Remove last " & "
         query_stream << "to_tsvector('simple', " << fields_concatenated << ") @@ to_tsquery('simple', $"
             << param_index++ << ");";
         params.append(tsquery);
@@ -690,8 +690,10 @@ namespace drug_lib::common::database
 
     void PqxxClient::remove_full_text_search(const std::string_view table_name)
     {
-        std::lock_guard lock(this->conn_mutex_);
-        this->fts_fields_[std::string(table_name)].clear();
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->fts_fields_[std::string(table_name)].clear();
+        }
         drop_full_text_search(table_name);
     }
 
@@ -702,6 +704,16 @@ namespace drug_lib::common::database
             std::ostringstream index_query;
             create_fts_index_query(table_name, index_query);
             execute_query(index_query.str());
+        }
+        catch (const QueryException& e)
+        {
+            if (e.get_error() == errors::db_error_code::INVALID_DATA)
+            {
+                throw QueryException(
+                    "Tried to restore fts index, but fts fields were not set up. Use setup FTS function",
+                    errors::db_error_code::INVALID_DATA);
+            }
+            throw adapt_exception(e);
         }
         catch (const std::exception& e)
         {
