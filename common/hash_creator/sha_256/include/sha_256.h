@@ -19,7 +19,7 @@ namespace drug_lib::common::hash_creator
         /// @param data The message to hash
         /// @param salt The salt to use in the hash
         /// @return A hexadecimal string representing the HMAC-SHA256 hash
-        std::string HashFunction(const std::string& data, const std::string& salt) override
+        std::string hash_function(const std::string& data, const std::string& salt) override
         {
             // Combine key and salt to create the HMAC key
             const std::string hmacKey = key + salt;

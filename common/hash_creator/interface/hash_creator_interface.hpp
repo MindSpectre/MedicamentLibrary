@@ -17,10 +17,10 @@ namespace drug_lib::common::hash_creator
         {
         }
 
-        virtual std::string HashFunction(const std::string& data, const std::string& salt) = 0;
+        virtual std::string hash_function(const std::string& data, const std::string& salt) = 0;
 
         /// @brief Sets the secret key for HMAC
-        void SetKey(const std::string& newKey)
+        void set_key(const std::string& newKey)
         {
             key = newKey;
         }
