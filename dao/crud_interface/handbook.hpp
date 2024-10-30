@@ -46,37 +46,6 @@ namespace drug_lib::dao
             }
         }
 
-        [[nodiscard]] std::vector<RecordType> get(const common::database::Conditions& conditions) const
-        {
-            const auto result = connect_->select(table_name_, conditions);
-            std::vector<RecordType> records;
-            records.reserve(result.size());
-            for (const auto& db_record : result)
-            {
-                RecordType record;
-                record.from_record(db_record);
-                records.emplace_back(std::move(record));
-            }
-            return records;
-        }
-
-        void remove(const common::database::Conditions& conditions) const
-        {
-            connect_->remove(table_name_, conditions);
-        }
-
-        void upsert(const std::vector<RecordType>& records,
-                    const std::vector<std::shared_ptr<common::database::FieldBase>>& replace_fields) const
-        {
-            std::vector<common::database::Record> db_records;
-            db_records.reserve(records.size());
-            for (const auto& record : records)
-            {
-                db_records.push_back(record.to_record());
-            }
-            connect_->upsert(table_name_, db_records, replace_fields);
-        }
-
     public:
         virtual ~HandbookBase() = default;
 

@@ -11,7 +11,7 @@ add_library(${PROJECT_NAME}_Common_Database_Base INTERFACE
 
 target_include_directories(${PROJECT_NAME}_Common_Database_Base
         INTERFACE
-        base
+        base/
 )
 target_link_libraries(${PROJECT_NAME}_Common_Database_Base
         INTERFACE
@@ -35,7 +35,7 @@ target_link_libraries(${PROJECT_NAME}_Common_Database_Interface
 )
 target_include_directories(${PROJECT_NAME}_Common_Database_Interface
         INTERFACE
-        interface
+        interface/
 )
 ##############################################################################
 
@@ -58,5 +58,7 @@ add_subdirectory(creational)
 add_subdirectory(behavioral)
 
 add_subdirectory(postgres/pqxx_impl)
+
+add_subdirectory(mock/basic_mock)
 
 

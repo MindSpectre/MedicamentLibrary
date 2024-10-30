@@ -744,7 +744,7 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
     const auto res2 = db_client->view(test_table, conditions);
 
     stopwatch.flag("View with conditions: " + std::to_string(b - a));
-    EXPECT_EQ(res2.size(), 1);
+    EXPECT_EQ(res2.size(), b-a);
 }
 
 TEST_F(PqxxClientTest, FtsSpeedTest)

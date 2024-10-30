@@ -25,7 +25,6 @@ target_link_libraries(${PqxxClient}
 
 target_include_directories(${PqxxClient}
         PUBLIC
-        source/
         include/
 )
 ##############################################################################
