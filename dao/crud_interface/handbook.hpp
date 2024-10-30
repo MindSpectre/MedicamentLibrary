@@ -46,7 +46,7 @@ namespace drug_lib::dao
             }
         }
 
-        [[nodiscard]] std::vector<RecordType> get(const common::database::FieldConditions& conditions) const
+        [[nodiscard]] std::vector<RecordType> get(const common::database::Conditions& conditions) const
         {
             const auto result = connect_->select(table_name_, conditions);
             std::vector<RecordType> records;
@@ -60,7 +60,7 @@ namespace drug_lib::dao
             return records;
         }
 
-        void remove(const common::database::FieldConditions& conditions) const
+        void remove(const common::database::Conditions& conditions) const
         {
             connect_->remove(table_name_, conditions);
         }

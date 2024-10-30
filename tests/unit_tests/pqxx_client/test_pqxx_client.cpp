@@ -231,8 +231,8 @@ TEST_F(PqxxClientTest, RemoveTest)
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Remove data
-    FieldConditions conditions;
-    conditions.add_condition(FieldCondition(
+    Conditions conditions;
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         "=",
         std::make_unique<Field<int32_t>>("", 1)
@@ -261,8 +261,8 @@ TEST_F(PqxxClientTest, CountTest)
 
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
-    FieldConditions conditions;
-    conditions.add_condition(FieldCondition(
+    Conditions conditions;
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int>>("id", 0),
         "=",
         std::make_unique<Field<int>>("", 1)
@@ -317,7 +317,9 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     std::string search_query = "fruit";
-    auto results = db_client->get_data_fts(test_table, search_query);
+    Conditions conditions;
+    conditions.add_pattern_condition(PatternCondition(search_query));
+    auto results = db_client->select(test_table, conditions);
 
     // Verify the results
     EXPECT_EQ(results.size(), 2);
@@ -331,24 +333,25 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     }
 
     EXPECT_EQ(result_ids, expected_ids);
-
+    conditions.pop_pattern_condition();
     // Search for 'yellow'
     search_query = "yellow";
-    results = db_client->get_data_fts(test_table, search_query);
-
+    conditions.add_pattern_condition(PatternCondition(search_query));
+    results = db_client->select(test_table, conditions);
     EXPECT_EQ(results.size(), 1);
     EXPECT_EQ(results.front()[1]->as<std::string>(), "Banana");
-
+    conditions.pop_pattern_condition();
     // Search for 'vegetable'
     search_query = "vegetable";
-    results = db_client->get_data_fts(test_table, search_query);
-
+    conditions.add_pattern_condition(PatternCondition(search_query));
+    results = db_client->select(test_table, conditions);
     EXPECT_EQ(results.size(), 1);
     EXPECT_EQ(results.front()[1]->as<std::string>(), "Carrot");
-
+    conditions.pop_pattern_condition();
     // Search for a term not present
     search_query = "berry";
-    results = db_client->get_data_fts(test_table, search_query);
+    conditions.add_pattern_condition(PatternCondition(search_query));
+    results = db_client->select(test_table, conditions);
 
     EXPECT_TRUE(results.empty());
 }
@@ -371,8 +374,8 @@ TEST_F(PqxxClientTest, TruncateTableTest)
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     // Remove data
-    FieldConditions conditions;
-    conditions.add_condition(FieldCondition(
+    Conditions conditions;
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         "=",
         std::make_unique<Field<int32_t>>("", 1)
@@ -633,8 +636,9 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     stopwatch.finish();
     // Check that the correct number of records were inserted
     EXPECT_EQ(results.size(), limit_);
-    const std::string search_query = "Pers2";
-    const auto fts_res = db_client->get_data_fts(test_table, search_query);
+    Conditions conditions;
+    conditions.add_pattern_condition(PatternCondition("Pers2"));
+    const auto fts_res = db_client->select(test_table, conditions);
     stopwatch.finish();
     EXPECT_EQ(fts_res.size(), limit_/3);
 }
@@ -667,14 +671,14 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
     auto results = db_client->select(test_table);
     EXPECT_EQ(results.size(), limit_);
     stopwatch.flag("Select all: " + std::to_string(limit_));
-    FieldConditions conditions;
+    Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_condition(FieldCondition(
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         ">=",
         std::make_unique<Field<int32_t>>("", a)
     ));
-    conditions.add_condition(FieldCondition(
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         "<",
         std::make_unique<Field<int32_t>>("", b)
@@ -724,23 +728,24 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
     }
     EXPECT_EQ(results.size(), limit_);
     stopwatch.flag("View all + transformed: " + std::to_string(limit_));
-    FieldConditions conditions;
+    Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_condition(FieldCondition(
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         ">=",
         std::make_unique<Field<int32_t>>("", a)
     ));
-    conditions.add_condition(FieldCondition(
+    conditions.add_field_condition(FieldCondition(
         std::make_unique<Field<int32_t>>("id", 0),
         "<",
         std::make_unique<Field<int32_t>>("", b)
     ));
+    conditions.add_pattern_condition(PatternCondition("Pers" + std::to_string(b - 2)));
 
     const auto res2 = db_client->view(test_table, conditions);
 
-    stopwatch.flag("Select with conditions: " + std::to_string(b - a));
-    EXPECT_EQ(res2.size(), b-a);
+    stopwatch.flag("View with conditions: " + std::to_string(b - a));
+    EXPECT_EQ(res2.size(), 1);
 }
 
 TEST_F(PqxxClientTest, FtsSpeedTest)
@@ -768,7 +773,9 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
     stopwatch.start();
     stopwatch.set_countdown_from_prev(true);
     const std::string search_query = "Pers2";
-    const auto results = db_client->get_data_fts(test_table, search_query);
+    Conditions conditions;
+    conditions.add_pattern_condition(PatternCondition(search_query));
+    const auto results = db_client->view(test_table, conditions);
     stopwatch.finish();
     EXPECT_EQ(results.size(), limit_/3);
 }

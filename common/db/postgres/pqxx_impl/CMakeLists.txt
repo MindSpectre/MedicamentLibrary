@@ -9,6 +9,7 @@ add_library(${PqxxClient}
         include/pqxx_utilities.hpp
         include/pqxx_connect_params.hpp
         include/pqxx_view_record.hpp
+        include/pqxx_controller.hpp
 )
 
 target_link_libraries(${PqxxClient}

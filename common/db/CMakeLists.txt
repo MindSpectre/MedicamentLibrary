@@ -6,6 +6,7 @@ add_library(${PROJECT_NAME}_Common_Database_Base INTERFACE
         base/db_field.hpp
         base/db_record.hpp
         base/db_serializer.hpp
+        base/db_controller.hpp
 )
 
 target_include_directories(${PROJECT_NAME}_Common_Database_Base

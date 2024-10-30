@@ -10,7 +10,6 @@
 
 namespace drug_lib::common::database
 {
-    // TODO: Make ReadView for field with unique ptr
     template <typename T>
     class Field;
     /// @brief Base class representing a field in the database
