@@ -16,6 +16,7 @@ target_include_directories(${DATA_OBJECTS_PROPERTIES}_Medicaments
         medicaments/include
         medicaments/
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/objects/base/include
 )
 
 ##############################################################################

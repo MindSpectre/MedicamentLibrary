@@ -32,13 +32,29 @@ namespace drug_lib::dao
         std::shared_ptr<common::database::interfaces::DbInterface> connect_;
         std::string_view table_name_;
         std::vector<std::shared_ptr<common::database::FieldBase>> fts_fields_;
+        std::vector<std::shared_ptr<common::database::FieldBase>> replaceable_fields_;
+        std::vector<std::shared_ptr<common::database::FieldBase>> key_fields_;
+        std::vector<std::shared_ptr<common::database::FieldBase>> value_fields_;
 
-        void setup_constraints() const
+        virtual void setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
         {
+            connect_ = std::move(client);
             if (!table_name_.empty())
             {
-                connect_->make_unique_constraint(table_name_,
-                                                 {std::make_shared<common::database::Field<int32_t>>("id", 0)});
+                if (connect_->check_table(table_name_))
+                    return;
+                common::database::Record record;
+                for (const auto& field : key_fields_)
+                {
+                    record.push_back(field->clone());
+                }
+                for (const auto& field : value_fields_)
+                {
+                    record.push_back(field->clone());
+                }
+                connect_->create_table(table_name_, record);
+                connect_->make_unique_constraint(table_name_, key_fields_);
+                connect_->setup_fts_index(table_name_, fts_fields_);
             }
             else
             {
@@ -51,7 +67,8 @@ namespace drug_lib::dao
 
         void insert(const RecordType& record)
         {
-            connect_->insert(table_name_, {record.to_record()});
+            std::vector db_record = {record.to_record()};
+            connect_->insert(table_name_, std::move(db_record));
         }
 
         // Insert multiple records
@@ -63,15 +80,23 @@ namespace drug_lib::dao
             {
                 db_records.push_back(record.to_record());
             }
-            connect_->insert(table_name_, db_records);
+            connect_->insert(table_name_, std::move(db_records));
         }
 
-        virtual void update_all_fields(const RecordType& record) = 0;
+        virtual void force_insert(const RecordType& record) = 0;
 
-        virtual void update_all_fields(const std::vector<RecordType>& records) = 0;
+        virtual void force_insert(const std::vector<RecordType>& records) = 0;
 
-        virtual void remove_all() = 0;
-        virtual std::vector<RecordType> get_all() = 0;
+        virtual void remove_by_id(int32_t id) = 0;
+        virtual void remove_by_name(const std::string& name) = 0;
+
+        virtual std::vector<RecordType> get_by_id(int32_t id) = 0;
+        virtual std::vector<RecordType> get_by_name(const std::string& name) = 0;
+
+        virtual std::vector<RecordType> search(const std::string& pattern) = 0;
+
+        virtual void tear_down() = 0;
+        virtual std::vector<RecordType> select() = 0;
 
         void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
         {

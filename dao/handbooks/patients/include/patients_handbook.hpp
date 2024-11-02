@@ -10,20 +10,14 @@ namespace drug_lib::dao
     class PatientsHandbook final : public HandbookBase<objects::Patient>
     {
     public:
-        ~PatientsHandbook() override;
-        void remove_all() override;
-        std::vector<objects::Patient> get_all() override;
-        void update_all_fields(const objects::Patient& record) override;
-        void update_all_fields(const std::vector<objects::Patient>& records) override;
-
-        PatientsHandbook()
-        {
-            table_name_ = handbook_tables_name::Patients;
-            setup_constraints();
-            fts_fields_ = {
-
-            };
-            connect_->setup_full_text_search(table_name_, fts_fields_);
-        }
+        void force_insert(const objects::Patient& record) override;
+        void force_insert(const std::vector<objects::Patient>& records) override;
+        void remove_by_id(int32_t id) override;
+        void remove_by_name(const std::string& name) override;
+        std::vector<objects::Patient> get_by_id(int32_t id) override;
+        std::vector<objects::Patient> get_by_name(const std::string& name) override;
+        std::vector<objects::Patient> search(const std::string& pattern) override;
+        void tear_down() override;
+        std::vector<objects::Patient> select() override;
     };
 }

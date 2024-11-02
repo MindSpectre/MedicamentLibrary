@@ -1,8 +1,7 @@
 #include <memory>
 #include <gtest/gtest.h>
 
-#include "db_field.hpp"
-#include "db_interface.hpp"
+#include "db_interface_factory.hpp"
 #include "mock_db_client.hpp"
 #include "transaction_manager.hpp"
 
@@ -17,16 +16,17 @@ protected:
     std::string table2 = "table2";
 
     // Shared pointers for mock database connections and mutexes
-    std::shared_ptr<drug_lib::common::database::MockDbClient> mock_db1;
-    std::shared_ptr<drug_lib::common::database::MockDbClient> mock_db2;
+    std::shared_ptr<drug_lib::common::database::interfaces::DbInterface> mock_db1;
+    std::shared_ptr<drug_lib::common::database::interfaces::DbInterface> mock_db2;
     std::shared_ptr<std::recursive_mutex> mutex1;
     std::shared_ptr<std::recursive_mutex> mutex2;
 
     void SetUp() override
     {
         // Initialize mocks and mutexes
-        mock_db1 = std::make_shared<drug_lib::common::database::MockDbClient>();
-        mock_db2 = std::make_shared<drug_lib::common::database::MockDbClient>();
+        mock_db1 = drug_lib::common::database::creational::DbInterfaceFactory::create_mock_database();
+        mock_db2 = drug_lib::common::database::creational::DbInterfaceFactory::create_mock_database(
+            "123.123.123.123", 23, "mock_db1.db", "0.0.0.0", "123133");
         mutex1 = std::make_shared<std::recursive_mutex>();
         mutex2 = std::make_shared<std::recursive_mutex>();
 

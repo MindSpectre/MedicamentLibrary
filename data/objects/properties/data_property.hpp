@@ -4,16 +4,8 @@
 #include <boost/container/flat_map.hpp>
 #include <json/json.h>
 
-
 namespace drug_lib::data
 {
-    namespace properties
-    {
-        const std::string properties = "properties";
-        const std::string prescription = "prescription";
-        const std::string def_property = "def_property";
-    }
-
     class DataProperty
     {
     protected:
@@ -44,6 +36,10 @@ namespace drug_lib::data
         {
             return status_;
         }
+
+        struct _cm_attributes
+        {
+        };
     };
 
     class PropertyCollection final
@@ -87,18 +83,7 @@ namespace drug_lib::data
             return result;
         }
 
-        [[nodiscard]] std::unique_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept
-        {
-            Json::Value result;
-            for (const auto& [name, property] : m_data)
-            {
-                if (property->enabled())
-                {
-                    result[name] = property->get_info();
-                }
-            }
-            return std::make_unique<common::database::Field<Json::Value>>(properties::properties, result);
-        }
+        [[nodiscard]] std::unique_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept;
 
     private:
         boost::container::flat_map<std::string, std::shared_ptr<DataProperty>> m_data;

@@ -113,6 +113,8 @@ namespace drug_lib::common::database
         virtual ~ViewRecord() = default;
         [[nodiscard]] virtual std::string_view view(int32_t idx) const & = 0;
         [[nodiscard]] virtual std::string extract(int32_t idx) const & = 0;
+        [[nodiscard]] virtual std::size_t size() const & = 0;
+        [[nodiscard]] virtual std::string name(int32_t idx) const & = 0;
     };
 
     class BaseViewRecord final : public ViewRecord
@@ -131,6 +133,16 @@ namespace drug_lib::common::database
         [[nodiscard]] std::string extract(const int32_t idx) const & override
         {
             return std::string{views_[idx].value()};
+        }
+
+        [[nodiscard]] std::size_t size() const & override
+        {
+            return views_.size();
+        }
+
+        [[nodiscard]] std::string name(const int32_t idx) const & override
+        {
+            return views_[idx].get_name();
         }
 
     private:

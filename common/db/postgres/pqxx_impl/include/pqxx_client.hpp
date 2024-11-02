@@ -63,18 +63,18 @@ namespace drug_lib::common::database
         /// @brief Create full test search index for given fields
         /// @param table_name For which table created index.
         /// @param fields Fts fields
-        void setup_full_text_search(
+        void setup_fts_index(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) override;
 
         /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
-        void drop_full_text_search(std::string_view table_name) const override;
+        void drop_fts_index(std::string_view table_name) const override;
 
         /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
-        void remove_full_text_search(std::string_view table_name) override;
+        void remove_fts_index(std::string_view table_name) override;
 
         /// @brief Restore index + reindex. Use previous declared fts fields
-        void restore_full_text_search(std::string_view table_name) const override;
+        void restore_fts_index(std::string_view table_name) const override;
         // Table Management
 
         /// @param table_name new table name

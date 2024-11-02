@@ -22,6 +22,7 @@ add_executable(${UNIT_TESTING_TARGET}_PqxxClient
 target_link_libraries(${UNIT_TESTING_TARGET}_PqxxClient
         PRIVATE
         DrugLib_Common_Database_PqxxClient
+        DrugLib_Common_Database_Factory
         DrugLib_Common_StopWatch
         ${TEST_NECESSARY_LIBS}
 
@@ -53,8 +54,7 @@ add_executable(${UNIT_TESTING_TARGET}_TransactionManager
 target_link_libraries(${UNIT_TESTING_TARGET}_TransactionManager
         PRIVATE
         DrugLib_Common_Database_Behavioral_TransactionManager
-        DrugLib_Common_Database_MockClient
-        DrugLib_Common_Database_Interface
+        DrugLib_Common_Database_Factory
         ${TEST_NECESSARY_LIBS}
 
 )

@@ -19,7 +19,7 @@ namespace drug_lib::data
         static std::shared_ptr<DataProperty> create(const std::string& property_name,
                                                     const Json::Value& property_value = Json::Value())
         {
-            if (property_name == properties::prescription)
+            if (property_name == objects::medicaments::attributes::prescription)
             {
                 return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
             }
@@ -37,6 +37,19 @@ namespace drug_lib::data
             void create_collection(const std::unique_ptr<common::database::FieldBase>& field)
             {
                 auto values = field->as<Json::Value>();
+                for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+                {
+                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+                }
+            }
+
+            void create_collection(const std::string& field)
+            {
+                const Json::CharReaderBuilder builder;
+                Json::Value values;
+                std::istringstream s(field);
+                std::string errors;
+                parseFromStream(builder, s, &values, &errors);
                 for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
                 {
                     collection_.add_property(PropertyFactory::create(it.name(), *it));

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "db_interface.hpp"
+#include "mock_db_client.hpp"
 #include "pqxx_client.hpp"
 
 namespace drug_lib::common::database::creational
@@ -38,9 +39,15 @@ namespace drug_lib::common::database::creational
             return connect;
         }
 
-        // static std::shared_ptr<interfaces::DbInterface> create_mock_database()
-        // {
-        //     return std::make_shared<interfaces::DbInterface>();
-        // }
+        static std::shared_ptr<interfaces::DbInterface> create_mock_database()
+        {
+            return std::make_shared<MockDbClient>();
+        }
+
+        template <typename... Args>
+        static std::shared_ptr<interfaces::DbInterface> create_mock_database(Args... argv)
+        {
+            return std::make_shared<MockDbClient>(argv...);
+        }
     };
 }

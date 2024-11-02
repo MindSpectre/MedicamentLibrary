@@ -1,6 +1,7 @@
 // pqxx_client_test.cpp
 
 #include <chrono>
+#include <db_interface_factory.hpp>
 #include <functional>
 #include <gtest/gtest.h>
 
@@ -16,14 +17,15 @@ class PqxxClientTest : public testing::Test
 {
 protected:
     // Database connection parameters
-    const std::string host = "localhost";
-    const int port = 5432;
-    const std::string db_name = "test_db";
-    const std::string username = "postgres";
-    const std::string password = "postgres"; // Replace with your actual password
+    //
+    uint32_t port = 5432;
+    const std::string_view host = "localhost";
+    const std::string_view db_name = "test_db";
+    const std::string_view username = "postgres";
+    const std::string_view password = "postgres"; // Replace with your actual password
 
     // Pointer to the PqxxClient
-    std::shared_ptr<PqxxClient> db_client;
+    std::shared_ptr<interfaces::DbInterface> db_client;
 
     // Test table name
     std::string test_table = "test_table";
@@ -32,7 +34,7 @@ protected:
     void SetUp() override
     {
         // Initialize the database client
-        db_client = std::make_shared<PqxxClient>(host, port, db_name, username, password);
+        db_client = creational::DbInterfaceFactory::create_pqxx_client({host, port, db_name, username, password});
 
         // Ensure the test table does not exist before starting
         if (db_client->check_table(test_table))
@@ -54,7 +56,7 @@ protected:
         fts_fields.emplace_back(std::make_shared<Field<std::string>>("description", ""));
 
 
-        db_client->setup_full_text_search(test_table, std::move(fts_fields));
+        db_client->setup_fts_index(test_table, std::move(fts_fields));
     }
 
     void TearDown() override
@@ -615,7 +617,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
     constexpr uint32_t limit_ = flush * 8; // Total number of records each thread should handle
-    db_client->drop_full_text_search(test_table);
+    db_client->drop_fts_index(test_table);
     std::vector<Record> records;
     records.reserve(limit_); // Reserve space for records to avoid reallocations
     for (uint32_t i = 0; i < limit_; i++)
@@ -629,7 +631,8 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     stopwatch.start("Multithreading insert with dropping fts");
     stopwatch.flag("Threading launch: 4 threads");
     // stopwatch.flag("Thread " + std::to_string(s) + " finished");
-    utilities::bulk_insertion(db_client, test_table, std::move(records), flush, 8);
+    const std::shared_ptr<PqxxClient> db_client_n = std::dynamic_pointer_cast<PqxxClient>(db_client);
+    utilities::bulk_insertion(db_client_n, test_table, std::move(records), flush, 8);
     stopwatch.flag("Threading finished: 4 threads");
     // Fetch the records from the database
     const auto results = db_client->view(test_table);

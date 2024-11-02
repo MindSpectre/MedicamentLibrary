@@ -4,6 +4,11 @@
 
 namespace drug_lib::data::objects::medicaments
 {
+    struct attributes : DataProperty::_cm_attributes
+    {
+        static constexpr std::string prescription = "prescription";
+    };
+
     class PrescriptionDrug final : public DataProperty
     {
     public:
@@ -16,12 +21,12 @@ namespace drug_lib::data::objects::medicaments
 
         void set_info(const Json::Value& val) override
         {
-            prescription_ = val[properties::prescription].asString();
+            prescription_ = val[attributes::prescription].asString();
         }
 
         [[nodiscard]] std::string get_name() const override
         {
-            return properties::prescription;
+            return attributes::prescription;
         }
 
 

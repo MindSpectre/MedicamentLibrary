@@ -16,6 +16,8 @@ namespace drug_lib::common::database
         {
         }
 
+        PqxxConnectParams() = default;
+
         [[nodiscard]] const std::string_view& get_host() const
         {
             return host_;
@@ -79,7 +81,7 @@ namespace drug_lib::common::database
 
     private:
         std::string_view host_;
-        uint32_t port_;
+        uint32_t port_{};
         std::string_view db_name_;
         std::string_view login_;
         std::string_view password_;

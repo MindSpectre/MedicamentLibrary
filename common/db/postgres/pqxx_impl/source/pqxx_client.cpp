@@ -649,7 +649,7 @@ namespace drug_lib::common::database
             << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
     }
 
-    void PqxxClient::setup_full_text_search(
+    void PqxxClient::setup_fts_index(
         const std::string_view table_name,
         std::vector<std::shared_ptr<FieldBase>> fields)
     {
@@ -674,7 +674,7 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::drop_full_text_search(const std::string_view table_name) const
+    void PqxxClient::drop_fts_index(const std::string_view table_name) const
     {
         try
         {
@@ -688,16 +688,16 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::remove_full_text_search(const std::string_view table_name)
+    void PqxxClient::remove_fts_index(const std::string_view table_name)
     {
         {
             std::lock_guard lock(this->conn_mutex_);
             this->fts_fields_[std::string(table_name)].clear();
         }
-        drop_full_text_search(table_name);
+        drop_fts_index(table_name);
     }
 
-    void PqxxClient::restore_full_text_search(const std::string_view table_name) const
+    void PqxxClient::restore_fts_index(const std::string_view table_name) const
     {
         try
         {
