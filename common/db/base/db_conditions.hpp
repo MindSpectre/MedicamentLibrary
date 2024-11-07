@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,12 @@ namespace drug_lib::common::database
     class FieldCondition
     {
     public:
+        ~FieldCondition() = default;
+        FieldCondition(FieldCondition&&) noexcept = default;
+        FieldCondition& operator=(FieldCondition&&) noexcept = default;
+        FieldCondition(const FieldCondition&) = delete;
+        FieldCondition& operator=(const FieldCondition&) = delete;
+
         FieldCondition(std::unique_ptr<FieldBase> field, std::string op, std::unique_ptr<FieldBase> value)
             : field_(std::move(field)), operator_(std::move(op)), value_(std::move(value))
         {
@@ -60,6 +67,124 @@ namespace drug_lib::common::database
         std::string pattern_;
     };
 
+    enum class order_type
+    {
+        ascending,
+        descending
+    };
+
+    class OrderCondition final
+    {
+    public:
+        ~OrderCondition() = default;
+        OrderCondition(OrderCondition&&) noexcept = default;
+        OrderCondition& operator=(OrderCondition&&) noexcept = default;
+        OrderCondition(const OrderCondition&) = delete;
+        OrderCondition& operator=(const OrderCondition&) = delete;
+
+        explicit OrderCondition(std::unique_ptr<FieldBase>&& field,
+                                const order_type order = order_type::ascending, std::string spec_ = {}) :
+            column_(std::move(field)), order_(order), specifier_(std::move(spec_))
+        {
+        }
+
+        explicit OrderCondition(std::string column_name,
+                                const order_type order = order_type::ascending, std::string spec_ = {}) :
+            order_(order), specifier_(std::move(spec_))
+        {
+            column_ = std::make_unique<Field<int32_t>>(std::move(column_name), 0);
+        }
+
+        [[nodiscard]] const std::unique_ptr<FieldBase>& get_column() const
+        {
+            return column_;
+        }
+
+        void set_column(std::unique_ptr<FieldBase>&& column) &
+        {
+            column_ = std::move(column);
+        }
+
+        [[nodiscard]] order_type get_order() const
+        {
+            return order_;
+        }
+
+        void set_order(const order_type order) &
+        {
+            order_ = order;
+        }
+
+        [[nodiscard]] const std::string& get_specifier() const
+        {
+            return specifier_;
+        }
+
+        void set_specifier(const std::string& specifier) &
+        {
+            specifier_ = specifier;
+        }
+
+        void set_specifier(std::string&& specifier) &
+        {
+            specifier_ = std::move(specifier);
+        }
+
+    private:
+        std::unique_ptr<FieldBase> column_;
+        order_type order_ = order_type::ascending;
+        std::string specifier_;
+    };
+
+    class PageCondition final
+    {
+    public:
+        ~PageCondition() = default;
+        // Constructors
+        explicit PageCondition(const int32_t limit, const int32_t offset = 0)
+            : limit_(limit), offset_(offset)
+        {
+        }
+
+        // Accessors
+        [[nodiscard]] int32_t get_limit() const
+        {
+            return limit_;
+        }
+
+        [[nodiscard]] int32_t get_offset() const
+        {
+            return offset_;
+        }
+
+        // Modifiers
+        void set_limit(const int32_t limit)
+        {
+            limit_ = limit;
+        }
+
+        /// @warning accept 1-indexing
+        void set_page_number(const int32_t page_number)
+        {
+            offset_ = limit_ * (page_number - 1);
+        }
+
+        /// @warning accept 0-indexing
+        void set_page_0number(const int32_t page_number_zero_indexing)
+        {
+            offset_ = limit_ * page_number_zero_indexing;
+        }
+
+        void set_offset(const int32_t offset)
+        {
+            offset_ = offset;
+        }
+
+    private:
+        int32_t limit_; // Number of records per page
+        int32_t offset_; // Starting point in the dataset (calculated as page_number * limit)
+    };
+
     class Conditions final
     {
     public:
@@ -75,6 +200,16 @@ namespace drug_lib::common::database
             patterns_.push_back(std::move(condition));
         }
 
+        void add_order_by_condition(OrderCondition&& condition) &
+        {
+            orders_.push_back(std::move(condition));
+        }
+
+        void set_page_condition(PageCondition condition) &
+        {
+            pages_ = condition;
+        }
+
         void pop_field_condition() &
         {
             conditions_.pop_back();
@@ -83,6 +218,11 @@ namespace drug_lib::common::database
         void pop_pattern_condition() &
         {
             patterns_.pop_back();
+        }
+
+        void pop_order_by_condition() &
+        {
+            orders_.pop_back();
         }
 
         void clear_field_conditions() &
@@ -95,6 +235,16 @@ namespace drug_lib::common::database
             patterns_.clear();
         }
 
+        void clear_order_by_conditions() &
+        {
+            orders_.clear();
+        }
+
+        void clear_page_conditions() &
+        {
+            pages_.reset();
+        }
+
         [[nodiscard]] const std::vector<FieldCondition>& fields_conditions() const &
         {
             return conditions_;
@@ -105,15 +255,25 @@ namespace drug_lib::common::database
             return patterns_;
         }
 
-        [[nodiscard]] bool empty() const
+        [[nodiscard]] const std::vector<OrderCondition>& order_by_conditions() const &
         {
-            return conditions_.empty() && patterns_.empty();
+            return orders_;
         }
 
-        [[nodiscard]] size_t size() const { return conditions_.size(); }
+        [[nodiscard]] const std::optional<PageCondition>& page_condition() const &
+        {
+            return pages_;
+        }
+
+        [[nodiscard]] bool empty() const
+        {
+            return conditions_.empty() && patterns_.empty() && orders_.empty() && !pages_.has_value();
+        }
 
     private:
         std::vector<FieldCondition> conditions_;
         std::vector<PatternCondition> patterns_;
+        std::vector<OrderCondition> orders_;
+        std::optional<PageCondition> pages_;
     };
 }

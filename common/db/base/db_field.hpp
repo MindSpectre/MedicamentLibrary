@@ -47,7 +47,7 @@ namespace drug_lib::common::database
             throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
         }
 
-        virtual std::unique_ptr<FieldBase> clone() const = 0;
+        [[nodiscard]] virtual std::unique_ptr<FieldBase> clone() const = 0;
     };
 
     /// @brief Represents a field of a specific type in the database
@@ -180,7 +180,7 @@ namespace drug_lib::common::database
             return {};
         }
 
-        std::unique_ptr<FieldBase> clone() const override
+        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
         {
             return std::make_unique<Field<T>>(*this);
         }
@@ -227,7 +227,7 @@ namespace drug_lib::common::database
             throw std::runtime_error("get_sql_type() called in VIEWING field");
         }
 
-        std::unique_ptr<FieldBase> clone() const override
+        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
         {
             return std::make_unique<ViewingField>(*this);
         }

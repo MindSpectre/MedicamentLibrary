@@ -206,9 +206,10 @@ namespace drug_lib::common::database
 
         void build_conflict_clause(std::string& query, std::string_view table_name,
                                    const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const;
-        std::string build_condition_clause(std::string_view table_name, std::ostringstream& query_stream,
-                                           pqxx::params& params,
-                                           uint32_t& param_index, const Conditions& conditions) const;
+        void conditions_to_query(std::string_view table_name, std::ostringstream& query_stream,
+                                 pqxx::params& params,
+                                 uint32_t& param_index, const Conditions& conditions) const;
+
         void create_fts_index_query(std::string_view table_name, std::ostringstream& index_query) const;
         static std::string make_fts_index_name(std::string_view table_name);
     };
