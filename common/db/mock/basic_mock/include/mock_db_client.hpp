@@ -4,7 +4,6 @@
 #include <db_interface.hpp>
 #include <iostream>
 #include <memory>
-#include <mutex>
 #include <regex>
 #include <string_view>
 #include <valarray>

@@ -326,7 +326,7 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     // Verify the results
     EXPECT_EQ(results.size(), 2);
 
-    std::set<int> expected_ids = {1, 2};
+    std::set expected_ids = {1, 2};
     std::set<int> result_ids;
     for (const auto& rec : results)
     {
@@ -415,7 +415,7 @@ TEST_F(PqxxClientTest, TransactionSimpleTest)
     auto results = db_client->select(test_table);
     EXPECT_EQ(results.size(), 2);
 
-    EXPECT_NO_THROW(db_client->truncate_table(test_table));;
+    EXPECT_NO_THROW(db_client->truncate_table(test_table));
 
     EXPECT_EQ(db_client->select(test_table).size(), 0);
     // Test rollback
@@ -443,9 +443,8 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     std::condition_variable cv;
     bool ready_to_listen = false;
     // First thread - poster: inserts records within a transaction
-    auto poster_worker = [&]()
-    {
-        std::unique_lock<std::mutex> lock(mtx);
+    auto poster_worker = [&]{
+        std::unique_lock lock(mtx);
         EXPECT_NO_THROW(db_client->start_transaction());
         ready_to_listen = true;
         cv.notify_all();
@@ -466,9 +465,9 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     };
 
     // Second thread - listener 1: retrieves data without a transaction
-    auto non_transaction_worker = [&]()
+    auto non_transaction_worker = [&]
     {
-        std::unique_lock<std::mutex> lock(mtx);
+        std::unique_lock lock(mtx);
         cv.wait(lock, [&] { return ready_to_listen; });
         while (inserting.load())
         {
@@ -485,10 +484,10 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     };
 
     // Third thread - listener 2: tries to retrieve data inside a transaction
-    auto transactional_listener_worker = [&]()
+    auto transactional_listener_worker = [&]
     {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&] { return ready_to_listen; });
+        cv.wait(lock, [&]{return ready_to_listen; });
         while (inserting.load())
         {
             EXPECT_THROW(db_client->start_transaction(),
@@ -567,7 +566,7 @@ TEST_F(PqxxClientTest, PagingTest)
     conditions.set_page_condition(page_condition);
     auto res = db_client->view(test_table, conditions);
     EXPECT_EQ(res.size(), 150);
-    page_condition.set_page_0number(500 / 150);
+    page_condition.set_page_number(500 / 150 + 1);
     conditions.set_page_condition(page_condition);
     res = db_client->view(test_table, conditions);
     EXPECT_EQ(res.size(), 50);
@@ -880,6 +879,6 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
 
 int main()
 {
-    ::testing::InitGoogleTest();
+    testing::InitGoogleTest();
     return RUN_ALL_TESTS();
 }

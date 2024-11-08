@@ -5,14 +5,14 @@ namespace drug_lib::common::database
     class PqxxViewRecord final : public ViewRecord
     {
     public:
-        [[nodiscard]] std::string extract(const int32_t idx) const & override
+        [[nodiscard]] std::string extract(const std::size_t idx) const & override
         {
-            return std::string{row_[idx].view()};
+            return std::string{row_[static_cast<int32_t>(idx)].view()};
         }
 
-        [[nodiscard]] std::string_view view(const int32_t idx) const & override
+        [[nodiscard]] std::string_view view(const std::size_t idx) const & override
         {
-            return row_[idx].view();
+            return row_[static_cast<int32_t>(idx)].view();
         }
 
         void set_row(pqxx::row&& row)
@@ -25,9 +25,9 @@ namespace drug_lib::common::database
             return row_.size();
         }
 
-        [[nodiscard]] std::string name(const int32_t idx) const & override
+        [[nodiscard]] std::string name(const std::size_t idx) const & override
         {
-            return row_[idx].name();
+            return row_[static_cast<int32_t>(idx)].name();
         }
 
         PqxxViewRecord() = default;

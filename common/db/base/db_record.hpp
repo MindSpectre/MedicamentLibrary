@@ -109,16 +109,16 @@ namespace drug_lib::common::database
     {
     public:
         virtual ~ViewRecord() = default;
-        [[nodiscard]] virtual std::string_view view(int32_t idx) const & = 0;
-        [[nodiscard]] virtual std::string extract(int32_t idx) const & = 0;
+        [[nodiscard]] virtual std::string_view view(std::size_t idx) const & = 0;
+        [[nodiscard]] virtual std::string extract(std::size_t idx) const & = 0;
         [[nodiscard]] virtual std::size_t size() const & = 0;
-        [[nodiscard]] virtual std::string name(int32_t idx) const & = 0;
+        [[nodiscard]] virtual std::string name(std::size_t idx) const & = 0;
     };
 
     class BaseViewRecord final : public ViewRecord
     {
     public:
-        [[nodiscard]] std::string_view view(const int32_t idx) const & override
+        [[nodiscard]] std::string_view view(const std::size_t idx) const & override
         {
             return views_[idx].value();
         }
@@ -128,7 +128,7 @@ namespace drug_lib::common::database
             views_.emplace_back(std::move(field));
         }
 
-        [[nodiscard]] std::string extract(const int32_t idx) const & override
+        [[nodiscard]] std::string extract(const std::size_t idx) const & override
         {
             return std::string{views_[idx].value()};
         }
@@ -138,7 +138,7 @@ namespace drug_lib::common::database
             return views_.size();
         }
 
-        [[nodiscard]] std::string name(const int32_t idx) const & override
+        [[nodiscard]] std::string name(const std::size_t idx) const & override
         {
             return views_[idx].get_name();
         }

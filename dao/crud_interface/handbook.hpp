@@ -23,6 +23,8 @@ namespace drug_lib::dao
         {
             { a.to_record() } -> std::same_as<common::database::Record>;
             { a.from_record(record) } -> std::same_as<void>;
+            { T::fields::id };
+            { T::fields::name };
         };
 
     template <RecordTypeConcept RecordType>
@@ -83,20 +85,163 @@ namespace drug_lib::dao
             connect_->insert(table_name_, std::move(db_records));
         }
 
-        virtual void force_insert(const RecordType& record) = 0;
+        void force_insert(const RecordType& record)
+        {
+            std::vector<common::database::Record> db_records;
+            db_records.push_back(record.to_record());
+            connect_->upsert(table_name_, std::move(db_records), replaceable_fields_);
+        }
 
-        virtual void force_insert(const std::vector<RecordType>& records) = 0;
+        void force_insert(const std::vector<RecordType>& records)
+        {
+            std::vector<common::database::Record> db_records;
+            db_records.reserve(records.size());
+            for (const auto& record : records)
+            {
+                db_records.push_back(record.to_record());
+            }
+            connect_->upsert(table_name_, std::move(db_records), replaceable_fields_);
+        }
 
-        virtual void remove_by_id(int32_t id) = 0;
-        virtual void remove_by_name(const std::string& name) = 0;
+        void remove_by_id(int32_t id) const
+        {
+            common::database::Conditions removed_conditions;
+            removed_conditions.add_field_condition(
+                std::make_unique<common::database::Field<int32_t>>("id", 0),
+                "=",
+                std::make_unique<common::database::Field<int32_t>>("", id)
+            );
+            connect_->remove(table_name_, removed_conditions);
+        }
 
-        virtual std::vector<RecordType> get_by_id(int32_t id) = 0;
-        virtual std::vector<RecordType> get_by_name(const std::string& name) = 0;
+        void remove_by_name(const std::string& name) const
+        {
+            common::database::Conditions removed_conditions;
+            removed_conditions.add_field_condition(
+                std::make_unique<common::database::Field<std::string>>("name", ""),
+                "=",
+                std::make_unique<common::database::Field<std::string>>("", name)
+            );
+            connect_->remove(table_name_, removed_conditions);
+        }
 
-        virtual std::vector<RecordType> search(const std::string& pattern) = 0;
+        std::vector<RecordType> get_by_id(int32_t id) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_field_condition(
+                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
+                "=",
+                std::make_unique<common::database::Field<int32_t>>("", id)
+            );
+            auto res = connect_->view(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
+
+        std::vector<RecordType> get_by_name(const std::string& name) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_field_condition(
+                std::make_unique<common::database::Field<std::string>>(RecordType::fields::name, ""),
+                "=",
+                std::make_unique<common::database::Field<std::string>>("", name)
+            );
+            auto res = connect_->view(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
+
+        std::vector<RecordType> get_by_id_paged(int32_t id, const std::size_t page_number,
+                                                const uint16_t page_limit) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_field_condition(
+                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
+                "=",
+                std::make_unique<common::database::Field<int32_t>>("", id)
+            );
+            select_conditions.set_page_condition(
+                common::database::PageCondition(page_limit).set_page_number(page_number));
+            auto res = connect_->select(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
+
+        std::vector<RecordType> get_by_name_paged(const std::string& name, const std::size_t page_number,
+                                                  const uint16_t page_limit) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_field_condition(
+                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::name, 0),
+                "=",
+                std::make_unique<common::database::Field<std::string>>("", name)
+            );
+            select_conditions.set_page_condition(
+                common::database::PageCondition(page_limit).set_page_number(page_number));
+            auto res = connect_->select(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
+
+        std::vector<RecordType> search(const std::string& pattern) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_pattern_condition(pattern);
+            auto res = connect_->view(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
 
         virtual void tear_down() = 0;
-        virtual std::vector<RecordType> select() = 0;
+
+        std::vector<RecordType> select()
+        {
+            auto res = connect_->select(table_name_);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
 
         void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
         {

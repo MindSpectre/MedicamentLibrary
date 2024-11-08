@@ -147,42 +147,48 @@ namespace drug_lib::common::database
         }
 
         // Accessors
-        [[nodiscard]] int32_t get_limit() const
+        [[nodiscard]] uint32_t get_limit() const &
         {
             return limit_;
         }
 
-        [[nodiscard]] int32_t get_offset() const
+        [[nodiscard]] uint32_t get_offset() const &
         {
             return offset_;
         }
 
         // Modifiers
-        void set_limit(const int32_t limit)
+        void set_limit(const uint32_t limit) &
         {
             limit_ = limit;
         }
 
+        PageCondition& set_limit(const uint32_t limit) &&
+        {
+            limit_ = limit;
+            return *this;
+        }
+
         /// @warning accept 1-indexing
-        void set_page_number(const int32_t page_number)
+        PageCondition& set_page_number(const uint32_t page_number) &&
+        {
+            offset_ = limit_ * (page_number - 1);
+            return *this;
+        }
+
+        void set_page_number(const int32_t page_number) &
         {
             offset_ = limit_ * (page_number - 1);
         }
 
-        /// @warning accept 0-indexing
-        void set_page_0number(const int32_t page_number_zero_indexing)
-        {
-            offset_ = limit_ * page_number_zero_indexing;
-        }
-
-        void set_offset(const int32_t offset)
+        void set_offset(const uint32_t offset)
         {
             offset_ = offset;
         }
 
     private:
-        int32_t limit_; // Number of records per page
-        int32_t offset_; // Starting point in the dataset (calculated as page_number * limit)
+        uint32_t limit_; // Number of records per page
+        uint32_t offset_; // Starting point in the dataset (calculated as page_number * limit)
     };
 
     class Conditions final
@@ -195,15 +201,41 @@ namespace drug_lib::common::database
             conditions_.push_back(std::move(condition));
         }
 
+        template <typename... Args>
+        void add_field_condition(Args&&... args) &
+        {
+            conditions_.emplace_back(std::forward<Args>(args)...);
+        }
+
         void add_pattern_condition(PatternCondition&& condition) &
         {
             patterns_.push_back(std::move(condition));
+        }
+
+        template <typename... Args>
+        void add_pattern_condition(Args&&... args) &
+        {
+            patterns_.emplace_back(std::forward<Args>(args)...);
         }
 
         void add_order_by_condition(OrderCondition&& condition) &
         {
             orders_.push_back(std::move(condition));
         }
+
+        template <typename... Args>
+        void add_order_by_condition(Args&&... args) &
+        {
+            orders_.emplace_back(std::forward<Args>(args)...);
+        }
+
+
+        template <typename... Args>
+        void set_page_condition(Args&&... args) &
+        {
+            pages_ = PageCondition(std::forward<Args>(args)...);
+        }
+
 
         void set_page_condition(PageCondition condition) &
         {

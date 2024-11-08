@@ -182,7 +182,7 @@ namespace drug_lib::common::database
 
         [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
         {
-            return std::make_unique<Field<T>>(*this);
+            return std::make_unique<Field>(*this);
         }
 
     private:
