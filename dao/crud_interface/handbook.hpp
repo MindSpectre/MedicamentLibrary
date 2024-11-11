@@ -3,7 +3,7 @@
 #include <utility>
 #include <vector>
 
-#include "common_obj.hpp"
+#include "types/common_object.hpp"
 #include "db_conditions.hpp"
 #include "db_interface.hpp"
 
@@ -23,8 +23,8 @@ namespace drug_lib::dao
         {
             { a.to_record() } -> std::same_as<common::database::Record>;
             { a.from_record(record) } -> std::same_as<void>;
-            { T::fields::id };
-            { T::fields::name };
+            { T::field_name::id };
+            { T::field_name::name };
         };
 
     template <RecordTypeConcept RecordType>
@@ -103,7 +103,7 @@ namespace drug_lib::dao
             connect_->upsert(table_name_, std::move(db_records), replaceable_fields_);
         }
 
-        void remove_by_id(int32_t id) const
+        void remove_by_id(const int32_t id) const
         {
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
@@ -125,7 +125,7 @@ namespace drug_lib::dao
             connect_->remove(table_name_, removed_conditions);
         }
 
-        std::vector<RecordType> get_by_id(int32_t id) const
+        std::vector<RecordType> get_by_id(const int32_t id) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
@@ -165,8 +165,8 @@ namespace drug_lib::dao
             return records;
         }
 
-        std::vector<RecordType> get_by_id_paged(int32_t id, const std::size_t page_number,
-                                                const uint16_t page_limit) const
+        std::vector<RecordType> get_by_id_paged(int32_t id, const uint16_t page_limit,
+                                                const std::size_t page_number = 1) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
@@ -188,8 +188,8 @@ namespace drug_lib::dao
             return records;
         }
 
-        std::vector<RecordType> get_by_name_paged(const std::string& name, const std::size_t page_number,
-                                                  const uint16_t page_limit) const
+        std::vector<RecordType> get_by_name_paged(const std::string& name, const uint16_t page_limit,
+                                                  const std::size_t page_number = 1) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
@@ -227,11 +227,14 @@ namespace drug_lib::dao
             return records;
         }
 
-        virtual void tear_down() = 0;
-
-        std::vector<RecordType> select()
+        std::vector<RecordType> search_paged(const std::string& pattern, const uint16_t page_limit,
+                                             const std::size_t page_number = 1) const
         {
-            auto res = connect_->select(table_name_);
+            common::database::Conditions select_conditions;
+            select_conditions.add_pattern_condition(pattern);
+            select_conditions.set_page_condition(
+                common::database::PageCondition(page_limit).set_page_number(page_number));
+            auto res = connect_->view(table_name_, select_conditions);
             std::vector<RecordType> records;
             records.reserve(res.size());
             for (const auto& record : res)
@@ -242,6 +245,9 @@ namespace drug_lib::dao
             }
             return records;
         }
+
+        virtual void tear_down() = 0;
+
 
         void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
         {

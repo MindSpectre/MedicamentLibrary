@@ -204,8 +204,9 @@ namespace drug_lib::common::database
         void finish_transaction(std::unique_ptr<pqxx::work>&& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
-        void build_conflict_clause(std::string& query, std::string_view table_name,
-                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const;
+        void build_conflict_clause_for_force_insert(std::string& query, std::string_view table_name,
+                                                    const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
+        const &;
         void conditions_to_query(std::string_view table_name, std::ostringstream& query_stream,
                                  pqxx::params& params,
                                  uint32_t& param_index, const Conditions& conditions) const;

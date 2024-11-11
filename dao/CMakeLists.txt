@@ -8,7 +8,6 @@ add_library(DrugLib_Dao_CrudInterface
 
 target_link_libraries(DrugLib_Dao_CrudInterface
         INTERFACE
-        JsonCpp::JsonCpp
         DrugLib_Common_Database_Base
         DrugLib_Common_Database_PqxxClient
         DrugLib_Data_Objects

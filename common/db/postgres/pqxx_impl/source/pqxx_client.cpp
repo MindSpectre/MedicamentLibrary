@@ -60,13 +60,29 @@ namespace drug_lib::common::database
     PqxxClient::PqxxClient(const PqxxConnectParams& pr)
         : in_transaction_(false)
     {
-        this->conn_ = std::make_shared<pqxx::connection>(pr.make_connect_string());
-        if (!this->conn_->is_open())
+        try
         {
-            throw ConnectionException("Failed to open database connection.",
-                                      db_err::CONNECTION_FAILED);
+            this->conn_ = std::make_shared<pqxx::connection>(pr.make_connect_string());
+            if (!this->conn_->is_open())
+            {
+                throw ConnectionException("Failed to open database connection.",
+                                          db_err::CONNECTION_FAILED);
+            }
+            _oid_preprocess();
         }
-        _oid_preprocess();
+        catch (const pqxx::too_many_connections& e)
+        {
+            throw ConnectionException(e.what(), db_err::CONNECTION_POOL_EXHAUSTED);
+        }
+        catch (const pqxx::sql_error& e)
+        {
+            throw ConnectionException(e.what(), db_err::INVALID_QUERY);
+        }
+
+        catch (const std::exception& e)
+        {
+            throw ConnectionException(e.what(), db_err::PERMISSION_DENIED);
+        }
     }
 
     // Utility method to check if an identifier is valid
@@ -87,9 +103,9 @@ namespace drug_lib::common::database
     }
 
     // Static create postgreSQL Database
-    void PqxxClient::create_database(std::string_view host, uint32_t port, std::string_view db_name,
-                                     std::string_view login,
-                                     std::string_view password)
+    void PqxxClient::create_database(const std::string_view host, const uint32_t port, const std::string_view db_name,
+                                     const std::string_view login,
+                                     const std::string_view password)
     // Build the connection string to connect to the 'template1' database
     {
         std::ostringstream conn_str;
@@ -216,9 +232,10 @@ namespace drug_lib::common::database
         return DatabaseException(pqxxerr.what(), db_err::UNKNOWN_ERROR);
     }
 
-    void PqxxClient::build_conflict_clause(std::string& query,
-                                           const std::string_view table_name,
-                                           const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const
+    void PqxxClient::build_conflict_clause_for_force_insert(std::string& query,
+                                                            const std::string_view table_name,
+                                                            const std::vector<std::shared_ptr<FieldBase>>&
+                                                            replace_fields) const &
     {
         query.pop_back();
         // Build ON CONFLICT clause
@@ -673,7 +690,7 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, table_name, replace_fields);
+        build_conflict_clause_for_force_insert(query, table_name, replace_fields);
         execute_query(query, params);
     }
 
@@ -682,7 +699,7 @@ namespace drug_lib::common::database
                                            const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
     {
         auto [query, params] = construct_insert_query(table_name, rows);
-        build_conflict_clause(query, table_name, replace_fields);
+        build_conflict_clause_for_force_insert(query, table_name, replace_fields);
         execute_query(query, params);
     }
 

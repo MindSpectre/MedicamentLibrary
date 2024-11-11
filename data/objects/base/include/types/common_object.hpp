@@ -1,7 +1,6 @@
 #pragma once
 
-#include <data_property.hpp>
-
+#include "data_property.hpp"
 #include "db_record.hpp"
 
 namespace drug_lib::data
@@ -16,11 +15,11 @@ namespace drug_lib::data
             virtual void from_record(const common::database::Record& selected) = 0;
             virtual void from_record(const std::unique_ptr<common::database::ViewRecord>& viewed) = 0;
 
-            struct _cm_fields
+            struct _common_fields_names
             {
-                static constexpr std::string id = "id";
-                static constexpr std::string name = "name";
-                static constexpr std::string properties = "properties";
+                static constexpr auto id = "id";
+                static constexpr auto name = "name";
+                static constexpr auto properties = "properties";
             };
         };
     }
@@ -37,6 +36,6 @@ namespace drug_lib::data
             }
         }
         return std::make_unique<common::database::Field<Json::Value>>(
-            objects::ObjectBase::_cm_fields::properties, result);
+            objects::ObjectBase::_common_fields_names::properties, result);
     }
 }

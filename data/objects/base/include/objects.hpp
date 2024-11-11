@@ -1,6 +1,6 @@
 #pragma once
 
-#include "medicament.hpp"
-#include "organization.hpp"
-#include "patient.hpp"
-
+#include "types/medicament.hpp"
+#include "types/organization.hpp"
+#include "types/patient.hpp"
+#include "types/disease.hpp"

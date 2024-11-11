@@ -1,23 +1,19 @@
 #pragma once
 
-#include <db_field.hpp>
 #include <boost/container/flat_map.hpp>
-#include <json/json.h>
+
+#include "db_field.hpp"
 
 namespace drug_lib::data
 {
     class DataProperty
     {
-    protected:
-        bool status_ = false;
-
     public:
         virtual ~DataProperty() = default;
 
-
         [[nodiscard]] virtual Json::Value get_info() const = 0;
 
-        virtual void set_info(const Json::Value&) = 0;
+        virtual void set_info(const Json::Value& property) = 0;
 
         [[nodiscard]] virtual std::string get_name() const = 0;
 
@@ -37,9 +33,12 @@ namespace drug_lib::data
             return status_;
         }
 
-        struct _cm_attributes
+        struct _common_properties
         {
         };
+
+    protected:
+        bool status_ = false;
     };
 
     class PropertyCollection final

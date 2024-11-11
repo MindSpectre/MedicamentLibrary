@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <json/json.h>
 #include <json/value.h>
 
 namespace drug_lib::common::database

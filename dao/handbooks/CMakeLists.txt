@@ -1,4 +1,4 @@
-# PARENT_PROJECT_NAME = DrugLib.Dao
+# DAL = DrugLib_Dao
 
 set(Handbooks ${DAL}_Handbook)
 
@@ -24,12 +24,10 @@ target_include_directories(${Handbooks}_Medicaments
 ##############################################################################
 # Handbook: Organization
 ##############################################################################
-
 add_library(${Handbooks}_Organizations
         STATIC
         organizations/source/organizations_handbook.cpp
 )
-
 target_link_libraries(${Handbooks}_Organizations
         PRIVATE
         DrugLib_Dao_CrudInterface
@@ -63,7 +61,6 @@ target_include_directories(${Handbooks}_Patients
 ##############################################################################
 # Handbook: Diseases
 ##############################################################################
-
 add_library(${Handbooks}_Diseases
         STATIC
         diseases/source/diseases_handbook.cpp

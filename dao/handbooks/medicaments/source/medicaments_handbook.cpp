@@ -12,9 +12,9 @@ namespace drug_lib::dao
     {
         table_name_ = handbook_tables_name::Medicaments;
         //creating fields
-        auto id_f = common::database::Field(objects::Medicament::fields::id, 0);
-        auto name_f = common::database::Field<std::string>(objects::Medicament::fields::name, "");
-        auto prop_f = common::database::Field(objects::Medicament::fields::properties, Json::Value());
+        auto id_f = common::database::Field(objects::Medicament::field_name::id, 0);
+        auto name_f = common::database::Field<std::string>(objects::Medicament::field_name::name, "");
+        auto prop_f = common::database::Field(objects::Medicament::field_name::properties, Json::Value());
         fts_fields_.push_back(std::make_shared<common::database::Field<std::string>>(name_f));
         fts_fields_.push_back(std::make_shared<common::database::Field<Json::Value>>(prop_f));
 

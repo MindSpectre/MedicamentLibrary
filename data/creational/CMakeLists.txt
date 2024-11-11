@@ -1,19 +1,18 @@
 ##############################################################################
 # Data: Behavioral Property factory
 ##############################################################################
-add_library(${DATA_LIBS}_PropertyFactory
-        property_factory/source/property_factory.cpp
-        property_factory/include/property_factory.hpp
+add_library(DrugLib_Data_PropertiesController
+        property_factory/source/properties_controller.cpp
 )
-target_link_libraries(${DATA_LIBS}_PropertyFactory
+target_link_libraries(DrugLib_Data_PropertiesController
         PUBLIC
-        ${DATA_LIBS}_Objects_Properties_Medicaments
-        ${DATA_LIBS}_Objects_Properties_Organizations
-        ${DATA_LIBS}_Objects_Properties_Patients
+        DrugLib_Data_Objects_Properties_Medicaments
+        DrugLib_Data_Objects_Properties_Organizations
+        DrugLib_Data_Objects_Properties_Patients
+        DrugLib_Data_Objects_Properties_Diseases
 )
-target_include_directories(${DATA_LIBS}_PropertyFactory
+target_include_directories(DrugLib_Data_PropertiesController
         PUBLIC
-        property_factory/
         property_factory/include
 )
 ##############################################################################

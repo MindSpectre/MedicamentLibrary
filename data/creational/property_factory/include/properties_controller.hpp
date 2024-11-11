@@ -4,6 +4,7 @@
 #include "medicament_properties.hpp"
 #include "organization_properties.hpp"
 #include "patient_properties.hpp"
+#include "diseases_properties.hpp"
 
 namespace drug_lib::data
 {
@@ -11,17 +12,26 @@ namespace drug_lib::data
     {
     public:
         template <typename T>
-        static std::shared_ptr<DataProperty> create()
+            requires std::is_constructible_v<T, Json::Value>
+        static std::shared_ptr<DataProperty> create(const Json::Value& property_value)
         {
-            return std::make_shared<T>();
+            return std::make_shared<T>(property_value);
         }
 
         static std::shared_ptr<DataProperty> create(const std::string& property_name,
-                                                    const Json::Value& property_value = Json::Value())
+                                                    const Json::Value& property_value)
         {
-            if (property_name == objects::medicaments::attributes::prescription)
+            if (property_name == objects::medicaments::properties::prescription)
             {
                 return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
+            }
+            if (property_name == objects::diseases::properties::symptoms)
+            {
+                return std::make_shared<objects::diseases::Symptoms>(property_value);
+            }
+            if (property_name == objects::organizations::properties::license)
+            {
+                return std::make_shared<objects::organizations::License>(property_value);
             }
             throw std::invalid_argument("Property '" + property_name + "' not found");
         }

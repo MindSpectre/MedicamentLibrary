@@ -1,61 +1,82 @@
 set(DATA_OBJECTS_PROPERTIES DrugLib_Data_Objects_Properties)
+##############################################################################
+# Objects: Main data property class
+##############################################################################
+add_library(${DATA_OBJECTS_PROPERTIES}_DataProperty INTERFACE
+        data_property.hpp
+)
+target_link_libraries(${DATA_OBJECTS_PROPERTIES}_DataProperty INTERFACE
+        DrugLib_Common_Database_Base
+)
+target_include_directories(${DATA_OBJECTS_PROPERTIES}_DataProperty
+        INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+##############################################################################
 
 ##############################################################################
 # Objects: Medicaments properties
 ##############################################################################
-add_library(${DATA_OBJECTS_PROPERTIES}_Medicaments
+add_library(DrugLib_Data_Objects_Properties_Medicaments
         medicaments/source/medicament_properties.cpp
-        data_property.hpp
+        medicaments/include/medicament_properties/prescription.hpp
 )
-target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Medicaments PUBLIC
-        DrugLib_Common_Database_Base
-        JsonCpp::JsonCpp
+target_link_libraries(DrugLib_Data_Objects_Properties_Medicaments PUBLIC
+        ${DATA_OBJECTS_PROPERTIES}_DataProperty
 )
-target_include_directories(${DATA_OBJECTS_PROPERTIES}_Medicaments
+target_include_directories(DrugLib_Data_Objects_Properties_Medicaments
         PUBLIC
         medicaments/include
-        medicaments/
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/objects/base/include
 )
-
 ##############################################################################
 
 
 ##############################################################################
 # Objects: Organizations properties
 ##############################################################################
-add_library(${DATA_OBJECTS_PROPERTIES}_Organizations
+add_library(DrugLib_Data_Objects_Properties_Organizations
         organizations/source/organization_properties.cpp
-        data_property.hpp
+        organizations/include/organization_properties/license.hpp
 )
-target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Organizations PUBLIC
-        DrugLib_Common_Database_Base
-        JsonCpp::JsonCpp
+target_link_libraries(DrugLib_Data_Objects_Properties_Organizations PUBLIC
+        ${DATA_OBJECTS_PROPERTIES}_DataProperty
 )
-target_include_directories(${DATA_OBJECTS_PROPERTIES}_Organizations
+target_include_directories(DrugLib_Data_Objects_Properties_Organizations
         PUBLIC
         organizations/include
-        organizations/
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 ##############################################################################
 
 ##############################################################################
 # Objects: Patients properties
 ##############################################################################
-add_library(${DATA_OBJECTS_PROPERTIES}_Patients
+add_library(DrugLib_Data_Objects_Properties_Patients
         patients/source/patient_properties.cpp
-        data_property.hpp
+        patients/include/patient_properties.hpp
+        patients/include/current_diseases.hpp
 )
-target_link_libraries(${DATA_OBJECTS_PROPERTIES}_Patients PUBLIC
-        DrugLib_Common_Database_Base
-        JsonCpp::JsonCpp
+target_link_libraries(DrugLib_Data_Objects_Properties_Patients PUBLIC
+        ${DATA_OBJECTS_PROPERTIES}_DataProperty
 )
-target_include_directories(${DATA_OBJECTS_PROPERTIES}_Patients
+target_include_directories(DrugLib_Data_Objects_Properties_Patients
         PUBLIC
         patients/include
-        patients/
-        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+##############################################################################
+
+
+##############################################################################
+# Objects: Diseases properties
+##############################################################################
+add_library(DrugLib_Data_Objects_Properties_Diseases
+        diseases/source/diseases_properties.cpp
+        diseases/include/diseases_properties.hpp
+)
+target_link_libraries(DrugLib_Data_Objects_Properties_Diseases PUBLIC
+        ${DATA_OBJECTS_PROPERTIES}_DataProperty
+)
+target_include_directories(DrugLib_Data_Objects_Properties_Diseases
+        PUBLIC
+        diseases/include
 )
 ##############################################################################
