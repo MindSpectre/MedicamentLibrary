@@ -1,0 +1,106 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/objects/properties/medicaments/include/medicament_properties/prescription.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <ostream>
+        -:    4:
+        -:    5:#include "medicaments/source/properties_definition.hpp"
+        -:    6:
+        -:    7:namespace drug_lib::data::objects::medicaments
+        -:    8:{
+        -:    9:    class PrescriptionDrug final : public DataProperty
+        -:   10:    {
+        -:   11:    public:
+        -:   12:        PrescriptionDrug() = default;
+        -:   13:
+function _ZN8drug_lib4data7objects11medicaments16PrescriptionDrugC2ERKN4Json5ValueE called 0 returned 0% blocks executed 0%
+    #####:   14:        explicit PrescriptionDrug(const Json::Value& properties)
+    #####:   15:        {
+    #####:   16:            this->set_info(properties);
+    $$$$$:   16-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   17:        }
+    $$$$$:   17-block  0
+    $$$$$:   17-block  1
+    $$$$$:   17-block  2
+        -:   18:
+        -:   19:        template <typename T>
+        -:   20:            requires std::is_constructible_v<std::string, T>
+        -:   21:        explicit PrescriptionDrug(T description)
+        -:   22:            : description_(description)
+        -:   23:        {
+        -:   24:        }
+        -:   25:
+function _ZN8drug_lib4data7objects11medicaments16PrescriptionDrugD2Ev called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib4data7objects11medicaments16PrescriptionDrugD0Ev called 0 returned 0% blocks executed 0%
+    #####:   26:        ~PrescriptionDrug() override = default;
+    $$$$$:   26-block  0
+    $$$$$:   26-block  1
+        -:   27:
+function _ZNK8drug_lib4data7objects11medicaments16PrescriptionDrug8get_infoEv called 0 returned 0% blocks executed 0%
+    #####:   28:        [[nodiscard]] Json::Value get_info() const override
+        -:   29:        {
+    #####:   30:            Json::Value result;
+    #####:   31:            result[names_of_json_fields::description] = description_;
+    $$$$$:   31-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   31-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   31-block  2
+    #####:   32:            return result;
+    #####:   33:        }
+    $$$$$:   33-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   33-block  1
+    $$$$$:   33-block  2
+    $$$$$:   33-block  3
+    $$$$$:   33-block  4
+    $$$$$:   33-block  5
+        -:   34:
+function _ZN8drug_lib4data7objects11medicaments16PrescriptionDrug8set_infoERKN4Json5ValueE called 0 returned 0% blocks executed 0%
+    #####:   35:        void set_info(const Json::Value& property) override
+        -:   36:        {
+    #####:   37:            description_ = property[names_of_json_fields::description].asString();
+    #####:   38:        }
+    $$$$$:   38-block  0
+        -:   39:
+function _ZNK8drug_lib4data7objects11medicaments16PrescriptionDrug8get_nameB5cxx11Ev called 0 returned 0% blocks executed 0%
+    #####:   40:        [[nodiscard]] std::string get_name() const override
+        -:   41:        {
+    #####:   42:            return properties::prescription;
+    $$$$$:   42-block  0
+        -:   43:        }
+        -:   44:
+        -:   45:        [[nodiscard]] const std::string& get_description() const
+        -:   46:        {
+        -:   47:            return description_;
+        -:   48:        }
+        -:   49:
+        -:   50:        void set_description(std::string description)
+        -:   51:        {
+        -:   52:            description_ = std::move(description);
+        -:   53:        }
+        -:   54:
+        -:   55:
+        -:   56:        struct names_of_json_fields
+        -:   57:        {
+        -:   58:            static constexpr std::string description = "description";
+        -:   59:        };
+        -:   60:
+        -:   61:        friend std::ostream& operator<<(std::ostream& os, const PrescriptionDrug& obj)
+        -:   62:        {
+        -:   63:            return os << " description_: " << obj.description_;
+        -:   64:        }
+        -:   65:
+        -:   66:    private:
+        -:   67:        // PRESCRIPTION DETAILS
+        -:   68:        std::string description_;
+        -:   69:    };
+        -:   70:}

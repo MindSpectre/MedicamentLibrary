@@ -1,0 +1,1797 @@
+        -:    0:Source:/usr/include/c++/12/bits/std_function.h
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:// Implementation of std::function -*- C++ -*-
+        -:    2:
+        -:    3:// Copyright (C) 2004-2022 Free Software Foundation, Inc.
+        -:    4://
+        -:    5:// This file is part of the GNU ISO C++ Library.  This library is free
+        -:    6:// software; you can redistribute it and/or modify it under the
+        -:    7:// terms of the GNU General Public License as published by the
+        -:    8:// Free Software Foundation; either version 3, or (at your option)
+        -:    9:// any later version.
+        -:   10:
+        -:   11:// This library is distributed in the hope that it will be useful,
+        -:   12:// but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13:// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        -:   14:// GNU General Public License for more details.
+        -:   15:
+        -:   16:// Under Section 7 of GPL version 3, you are granted additional
+        -:   17:// permissions described in the GCC Runtime Library Exception, version
+        -:   18:// 3.1, as published by the Free Software Foundation.
+        -:   19:
+        -:   20:// You should have received a copy of the GNU General Public License and
+        -:   21:// a copy of the GCC Runtime Library Exception along with this program;
+        -:   22:// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+        -:   23:// <http://www.gnu.org/licenses/>.
+        -:   24:
+        -:   25:/** @file include/bits/std_function.h
+        -:   26: *  This is an internal header file, included by other library headers.
+        -:   27: *  Do not attempt to use it directly. @headername{functional}
+        -:   28: */
+        -:   29:
+        -:   30:#ifndef _GLIBCXX_STD_FUNCTION_H
+        -:   31:#define _GLIBCXX_STD_FUNCTION_H 1
+        -:   32:
+        -:   33:#pragma GCC system_header
+        -:   34:
+        -:   35:#if __cplusplus < 201103L
+        -:   36:# include <bits/c++0x_warning.h>
+        -:   37:#else
+        -:   38:
+        -:   39:#include <typeinfo>
+        -:   40:#include <bits/stl_function.h>
+        -:   41:#include <bits/invoke.h>
+        -:   42:#include <bits/refwrap.h>
+        -:   43:#include <bits/functexcept.h>
+        -:   44:
+        -:   45:namespace std _GLIBCXX_VISIBILITY(default)
+        -:   46:{
+        -:   47:_GLIBCXX_BEGIN_NAMESPACE_VERSION
+        -:   48:
+        -:   49:  /**
+        -:   50:   *  @brief Exception class thrown when class template function's
+        -:   51:   *  operator() is called with an empty target.
+        -:   52:   *  @ingroup exceptions
+        -:   53:   */
+        -:   54:  class bad_function_call : public std::exception
+        -:   55:  {
+        -:   56:  public:
+        -:   57:    virtual ~bad_function_call() noexcept;
+        -:   58:
+        -:   59:    const char* what() const noexcept;
+        -:   60:  };
+        -:   61:
+        -:   62:  /**
+        -:   63:   *  Trait identifying "location-invariant" types, meaning that the
+        -:   64:   *  address of the object (or any of its members) will not escape.
+        -:   65:   *  Trivially copyable types are location-invariant and users can
+        -:   66:   *  specialize this trait for other types.
+        -:   67:   */
+        -:   68:  template<typename _Tp>
+        -:   69:    struct __is_location_invariant
+        -:   70:    : is_trivially_copyable<_Tp>::type
+        -:   71:    { };
+        -:   72:
+        -:   73:  class _Undefined_class;
+        -:   74:
+        -:   75:  union _Nocopy_types
+        -:   76:  {
+        -:   77:    void*       _M_object;
+        -:   78:    const void* _M_const_object;
+        -:   79:    void (*_M_function_pointer)();
+        -:   80:    void (_Undefined_class::*_M_member_pointer)();
+        -:   81:  };
+        -:   82:
+        -:   83:  union [[gnu::may_alias]] _Any_data
+        -:   84:  {
+function _ZNSt9_Any_data9_M_accessEv called 4 returned 100% blocks executed 100%
+        4:   85:    void*       _M_access()       noexcept { return &_M_pod_data[0]; }
+        4:   85-block  0
+function _ZNKSt9_Any_data9_M_accessEv called 2727977 returned 100% blocks executed 100%
+  2727977:   86:    const void* _M_access() const noexcept { return &_M_pod_data[0]; }
+  2727977:   86-block  0
+        -:   87:
+        -:   88:    template<typename _Tp>
+        -:   89:      _Tp&
+function _ZNSt9_Any_data9_M_accessIPKSt9type_infoEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEEERT_v called 4 returned 100% blocks executed 100%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEEERT_v called 0 returned 0% blocks executed 0%
+function _ZNSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEEERT_v called 0 returned 0% blocks executed 0%
+        4:   90:      _M_access() noexcept
+        4:   91:      { return *static_cast<_Tp*>(_M_access()); }
+    $$$$$:   91-block  0
+    $$$$$:   91-block  1
+    $$$$$:   91-block  2
+    $$$$$:   91-block  3
+    $$$$$:   91-block  4
+    $$$$$:   91-block  5
+    $$$$$:   91-block  6
+    $$$$$:   91-block  7
+    $$$$$:   91-block  8
+    $$$$$:   91-block  9
+    $$$$$:   91-block 10
+    $$$$$:   91-block 11
+    $$$$$:   91-block 12
+    $$$$$:   91-block 13
+    $$$$$:   91-block 14
+    $$$$$:   91-block 15
+    $$$$$:   91-block 16
+    $$$$$:   91-block 17
+    $$$$$:   91-block 18
+    $$$$$:   91-block 19
+    $$$$$:   91-block 20
+    $$$$$:   91-block 21
+    $$$$$:   91-block 22
+    $$$$$:   91-block 23
+    $$$$$:   91-block 24
+        4:   91-block 25
+    $$$$$:   91-block 26
+    $$$$$:   91-block 27
+    $$$$$:   91-block 28
+        -:   92:
+        -:   93:    template<typename _Tp>
+        -:   94:      const _Tp&
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEEERKT_v called 2727979 returned 100% blocks executed 100%
+function _ZNKSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEEERKT_v called 0 returned 0% blocks executed 0%
+function _ZNKSt9_Any_data9_M_accessIPNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEEERKT_v called 0 returned 0% blocks executed 0%
+  2727979:   95:      _M_access() const noexcept
+  2727979:   96:      { return *static_cast<const _Tp*>(_M_access()); }
+    $$$$$:   96-block  0
+    $$$$$:   96-block  1
+    $$$$$:   96-block  2
+    $$$$$:   96-block  3
+    $$$$$:   96-block  4
+    $$$$$:   96-block  5
+    $$$$$:   96-block  6
+    $$$$$:   96-block  7
+    $$$$$:   96-block  8
+    $$$$$:   96-block  9
+    $$$$$:   96-block 10
+    $$$$$:   96-block 11
+  2727979:   96-block 12
+    $$$$$:   96-block 13
+    $$$$$:   96-block 14
+    $$$$$:   96-block 15
+        -:   97:
+        -:   98:    _Nocopy_types _M_unused;
+        -:   99:    char _M_pod_data[sizeof(_Nocopy_types)];
+        -:  100:  };
+        -:  101:
+        -:  102:  enum _Manager_operation
+        -:  103:  {
+        -:  104:    __get_type_info,
+        -:  105:    __get_functor_ptr,
+        -:  106:    __clone_functor,
+        -:  107:    __destroy_functor
+        -:  108:  };
+        -:  109:
+        -:  110:  template<typename _Signature>
+function _ZNSt8functionIFbcEED2Ev called 14 returned 100% blocks executed 100%
+        -:  111:    class function;
+        -:  112:
+        -:  113:  /// Base class of all polymorphic function object wrappers.
+        -:  114:  class _Function_base
+        -:  115:  {
+        -:  116:  public:
+        -:  117:    static const size_t _M_max_size = sizeof(_Nocopy_types);
+        -:  118:    static const size_t _M_max_align = __alignof__(_Nocopy_types);
+        -:  119:
+        -:  120:    template<typename _Functor>
+        -:  121:      class _Base_manager
+        -:  122:      {
+        -:  123:      protected:
+        -:  124:	static const bool __stored_locally =
+        -:  125:	(__is_location_invariant<_Functor>::value
+        -:  126:	 && sizeof(_Functor) <= _M_max_size
+        -:  127:	 && __alignof__(_Functor) <= _M_max_align
+        -:  128:	 && (_M_max_align % __alignof__(_Functor) == 0));
+        -:  129:
+        -:  130:	using _Local_storage = integral_constant<bool, __stored_locally>;
+        -:  131:
+        -:  132:	// Retrieve a pointer to the function object
+        -:  133:	static _Functor*
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE14_M_get_pointerERKSt9_Any_data called 2727988 returned 100% blocks executed 100%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE14_M_get_pointerERKSt9_Any_data called 0 returned 0% blocks executed 0%
+  2727988:  134:	_M_get_pointer(const _Any_data& __source) noexcept
+        -:  135:	{
+        -:  136:	  if _GLIBCXX17_CONSTEXPR (__stored_locally)
+        -:  137:	    {
+    #####:  138:	      const _Functor& __f = __source._M_access<_Functor>();
+    #####:  139:	      return const_cast<_Functor*>(std::__addressof(__f));
+    $$$$$:  139-block  0
+    $$$$$:  139-block  1
+    $$$$$:  139-block  2
+    $$$$$:  139-block  3
+    $$$$$:  139-block  4
+    $$$$$:  139-block  5
+    $$$$$:  139-block  6
+    $$$$$:  139-block  7
+    $$$$$:  139-block  8
+    $$$$$:  139-block  9
+    $$$$$:  139-block 10
+    $$$$$:  139-block 11
+        -:  140:	    }
+        -:  141:	  else // have stored a pointer
+  2727988:  142:	    return __source._M_access<_Functor*>();
+  2727988:  142-block  0
+    $$$$$:  142-block  1
+    $$$$$:  142-block  2
+    $$$$$:  142-block  3
+        -:  143:	}
+        -:  144:
+        -:  145:      private:
+        -:  146:	// Construct a location-invariant function object that fits within
+        -:  147:	// an _Any_data structure.
+        -:  148:	template<typename _Fn>
+        -:  149:	  static void
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+    #####:  150:	  _M_create(_Any_data& __dest, _Fn&& __f, true_type)
+        -:  151:	  {
+    #####:  152:	    ::new (__dest._M_access()) _Functor(std::forward<_Fn>(__f));
+    #####:  153:	  }
+    $$$$$:  153-block  0
+    $$$$$:  153-block  1
+    $$$$$:  153-block  2
+    $$$$$:  153-block  3
+    $$$$$:  153-block  4
+    $$$$$:  153-block  5
+    $$$$$:  153-block  6
+    $$$$$:  153-block  7
+    $$$$$:  153-block  8
+    $$$$$:  153-block  9
+    $$$$$:  153-block 10
+    $$$$$:  153-block 11
+    $$$$$:  153-block 12
+    $$$$$:  153-block 13
+    $$$$$:  153-block 14
+    $$$$$:  153-block 15
+    $$$$$:  153-block 16
+    $$$$$:  153-block 17
+    $$$$$:  153-block 18
+    $$$$$:  153-block 19
+    $$$$$:  153-block 20
+    $$$$$:  153-block 21
+    $$$$$:  153-block 22
+    $$$$$:  153-block 23
+        -:  154:
+        -:  155:	// Construct a function object on the heap and store a pointer.
+        -:  156:	template<typename _Fn>
+        -:  157:	  static void
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 2 returned 100% blocks executed 100%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_createIS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_createIRKS6_EEvRSt9_Any_dataOT_St17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+        2:  158:	  _M_create(_Any_data& __dest, _Fn&& __f, false_type)
+        -:  159:	  {
+        2:  160:	    __dest._M_access<_Functor*>()
+        4:  161:	      = new _Functor(std::forward<_Fn>(__f));
+    $$$$$:  161-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  161-block  1
+    $$$$$:  161-block  2
+    $$$$$:  161-block  3
+branch  2 never executed
+branch  3 never executed
+    $$$$$:  161-block  4
+    $$$$$:  161-block  5
+    $$$$$:  161-block  6
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  161-block  7
+    $$$$$:  161-block  8
+    $$$$$:  161-block  9
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  161-block 10
+    $$$$$:  161-block 11
+        2:  162:	  }
+        2:  162-block  0
+    $$$$$:  162-block  1
+    $$$$$:  162-block  2
+    $$$$$:  162-block  3
+    $$$$$:  162-block  4
+    $$$$$:  162-block  5
+    $$$$$:  162-block  6
+    $$$$$:  162-block  7
+        -:  163:
+        -:  164:	// Destroy an object stored in the internal buffer.
+        -:  165:	static void
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb1EE called 0 returned 0% blocks executed 0%
+    #####:  166:	_M_destroy(_Any_data& __victim, true_type)
+        -:  167:	{
+    #####:  168:	  __victim._M_access<_Functor>().~_Functor();
+    #####:  169:	}
+    $$$$$:  169-block  0
+    $$$$$:  169-block  1
+    $$$$$:  169-block  2
+    $$$$$:  169-block  3
+    $$$$$:  169-block  4
+    $$$$$:  169-block  5
+    $$$$$:  169-block  6
+    $$$$$:  169-block  7
+    $$$$$:  169-block  8
+    $$$$$:  169-block  9
+    $$$$$:  169-block 10
+    $$$$$:  169-block 11
+        -:  170:
+        -:  171:	// Destroy an object located on the heap.
+        -:  172:	static void
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb0EE called 2 returned 100% blocks executed 100%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_destroyERSt9_Any_dataSt17integral_constantIbLb0EE called 0 returned 0% blocks executed 0%
+        2:  173:	_M_destroy(_Any_data& __victim, false_type)
+        -:  174:	{
+        2:  175:	  delete __victim._M_access<_Functor*>();
+        2:  175-block  0
+branch  0 taken 0
+branch  1 taken 2
+        2:  175-block  1
+    $$$$$:  175-block  2
+branch  2 never executed
+branch  3 never executed
+    $$$$$:  175-block  3
+    $$$$$:  175-block  4
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  175-block  5
+    $$$$$:  175-block  6
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  175-block  7
+        2:  176:	}
+        2:  176-block  0
+    $$$$$:  176-block  1
+    $$$$$:  176-block  2
+    $$$$$:  176-block  3
+        -:  177:
+        -:  178:      public:
+        -:  179:	static bool
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 2 returned 100% blocks executed 50%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+        2:  180:	_M_manager(_Any_data& __dest, const _Any_data& __source,
+        -:  181:		   _Manager_operation __op)
+        -:  182:	{
+        2:  183:	  switch (__op)
+    $$$$$:  183-block  0
+branch  0 never executed
+branch  1 never executed
+branch  2 never executed
+branch  3 never executed
+branch  4 never executed
+    $$$$$:  183-block  1
+branch  5 never executed
+branch  6 never executed
+branch  7 never executed
+branch  8 never executed
+branch  9 never executed
+    $$$$$:  183-block  2
+branch 10 never executed
+branch 11 never executed
+branch 12 never executed
+branch 13 never executed
+branch 14 never executed
+    $$$$$:  183-block  3
+branch 15 never executed
+branch 16 never executed
+branch 17 never executed
+branch 18 never executed
+branch 19 never executed
+    $$$$$:  183-block  4
+branch 20 never executed
+branch 21 never executed
+branch 22 never executed
+branch 23 never executed
+branch 24 never executed
+    $$$$$:  183-block  5
+branch 25 never executed
+branch 26 never executed
+branch 27 never executed
+branch 28 never executed
+branch 29 never executed
+    $$$$$:  183-block  6
+branch 30 never executed
+branch 31 never executed
+branch 32 never executed
+branch 33 never executed
+branch 34 never executed
+    $$$$$:  183-block  7
+branch 35 never executed
+branch 36 never executed
+branch 37 never executed
+branch 38 never executed
+branch 39 never executed
+    $$$$$:  183-block  8
+branch 40 never executed
+branch 41 never executed
+branch 42 never executed
+branch 43 never executed
+branch 44 never executed
+    $$$$$:  183-block  9
+branch 45 never executed
+branch 46 never executed
+branch 47 never executed
+branch 48 never executed
+branch 49 never executed
+    $$$$$:  183-block 10
+branch 50 never executed
+branch 51 never executed
+branch 52 never executed
+branch 53 never executed
+branch 54 never executed
+    $$$$$:  183-block 11
+branch 55 never executed
+branch 56 never executed
+branch 57 never executed
+branch 58 never executed
+branch 59 never executed
+        2:  183-block 12
+branch 60 taken 0
+branch 61 taken 0
+branch 62 taken 0
+branch 63 taken 0
+branch 64 taken 2
+    $$$$$:  183-block 13
+branch 65 never executed
+branch 66 never executed
+branch 67 never executed
+branch 68 never executed
+branch 69 never executed
+    $$$$$:  183-block 14
+branch 70 never executed
+branch 71 never executed
+branch 72 never executed
+branch 73 never executed
+branch 74 never executed
+    $$$$$:  183-block 15
+branch 75 never executed
+branch 76 never executed
+branch 77 never executed
+branch 78 never executed
+branch 79 never executed
+        -:  184:	    {
+        -:  185:	    case __get_type_info:
+        -:  186:#if __cpp_rtti
+    #####:  187:	      __dest._M_access<const type_info*>() = &typeid(_Functor);
+        -:  188:#else
+        -:  189:	      __dest._M_access<const type_info*>() = nullptr;
+        -:  190:#endif
+    #####:  191:	      break;
+    $$$$$:  191-block  0
+    $$$$$:  191-block  1
+    $$$$$:  191-block  2
+    $$$$$:  191-block  3
+    $$$$$:  191-block  4
+    $$$$$:  191-block  5
+    $$$$$:  191-block  6
+    $$$$$:  191-block  7
+    $$$$$:  191-block  8
+    $$$$$:  191-block  9
+    $$$$$:  191-block 10
+    $$$$$:  191-block 11
+    $$$$$:  191-block 12
+    $$$$$:  191-block 13
+    $$$$$:  191-block 14
+    $$$$$:  191-block 15
+        -:  192:
+        -:  193:	    case __get_functor_ptr:
+    #####:  194:	      __dest._M_access<_Functor*>() = _M_get_pointer(__source);
+    #####:  195:	      break;
+    $$$$$:  195-block  0
+    $$$$$:  195-block  1
+    $$$$$:  195-block  2
+    $$$$$:  195-block  3
+    $$$$$:  195-block  4
+    $$$$$:  195-block  5
+    $$$$$:  195-block  6
+    $$$$$:  195-block  7
+    $$$$$:  195-block  8
+    $$$$$:  195-block  9
+    $$$$$:  195-block 10
+    $$$$$:  195-block 11
+    $$$$$:  195-block 12
+    $$$$$:  195-block 13
+    $$$$$:  195-block 14
+    $$$$$:  195-block 15
+        -:  196:
+        -:  197:	    case __clone_functor:
+    #####:  198:	      _M_init_functor(__dest,
+    #####:  199:		  *const_cast<const _Functor*>(_M_get_pointer(__source)));
+    #####:  200:	      break;
+    $$$$$:  200-block  0
+    $$$$$:  200-block  1
+    $$$$$:  200-block  2
+    $$$$$:  200-block  3
+    $$$$$:  200-block  4
+    $$$$$:  200-block  5
+    $$$$$:  200-block  6
+    $$$$$:  200-block  7
+    $$$$$:  200-block  8
+    $$$$$:  200-block  9
+    $$$$$:  200-block 10
+    $$$$$:  200-block 11
+    $$$$$:  200-block 12
+    $$$$$:  200-block 13
+    $$$$$:  200-block 14
+    $$$$$:  200-block 15
+        -:  201:
+        -:  202:	    case __destroy_functor:
+        2:  203:	      _M_destroy(__dest, _Local_storage());
+        2:  204:	      break;
+    $$$$$:  204-block  0
+    $$$$$:  204-block  1
+    $$$$$:  204-block  2
+    $$$$$:  204-block  3
+    $$$$$:  204-block  4
+    $$$$$:  204-block  5
+    $$$$$:  204-block  6
+    $$$$$:  204-block  7
+    $$$$$:  204-block  8
+    $$$$$:  204-block  9
+    $$$$$:  204-block 10
+    $$$$$:  204-block 11
+        2:  204-block 12
+    $$$$$:  204-block 13
+    $$$$$:  204-block 14
+    $$$$$:  204-block 15
+        -:  205:	    }
+        2:  206:	  return false;
+    $$$$$:  206-block  0
+    $$$$$:  206-block  1
+    $$$$$:  206-block  2
+    $$$$$:  206-block  3
+    $$$$$:  206-block  4
+    $$$$$:  206-block  5
+    $$$$$:  206-block  6
+    $$$$$:  206-block  7
+    $$$$$:  206-block  8
+    $$$$$:  206-block  9
+    $$$$$:  206-block 10
+    $$$$$:  206-block 11
+        2:  206-block 12
+    $$$$$:  206-block 13
+    $$$$$:  206-block 14
+    $$$$$:  206-block 15
+        -:  207:	}
+        -:  208:
+        -:  209:	template<typename _Fn>
+        -:  210:	  static void
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 2 returned 100% blocks executed 100%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE15_M_init_functorIS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE15_M_init_functorIRKS6_EEvRSt9_Any_dataOT_ called 0 returned 0% blocks executed 0%
+        2:  211:	  _M_init_functor(_Any_data& __functor, _Fn&& __f)
+        -:  212:	  noexcept(__and_<_Local_storage,
+        -:  213:			  is_nothrow_constructible<_Functor, _Fn>>::value)
+        -:  214:	  {
+        2:  215:	    _M_create(__functor, std::forward<_Fn>(__f), _Local_storage());
+    $$$$$:  215-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  215-block  1
+    $$$$$:  215-block  2
+branch  2 never executed
+branch  3 never executed
+    $$$$$:  215-block  3
+    $$$$$:  215-block  4
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  215-block  5
+    $$$$$:  215-block  6
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  215-block  7
+    $$$$$:  215-block  8
+branch  8 never executed
+branch  9 never executed
+    $$$$$:  215-block  9
+    $$$$$:  215-block 10
+branch 10 never executed
+branch 11 never executed
+    $$$$$:  215-block 11
+    $$$$$:  215-block 12
+branch 12 never executed
+branch 13 never executed
+    $$$$$:  215-block 13
+    $$$$$:  215-block 14
+branch 14 never executed
+branch 15 never executed
+    $$$$$:  215-block 15
+    $$$$$:  215-block 16
+branch 16 never executed
+branch 17 never executed
+    $$$$$:  215-block 17
+    $$$$$:  215-block 18
+branch 18 never executed
+branch 19 never executed
+    $$$$$:  215-block 19
+    $$$$$:  215-block 20
+branch 20 never executed
+branch 21 never executed
+    $$$$$:  215-block 21
+    $$$$$:  215-block 22
+branch 22 never executed
+branch 23 never executed
+    $$$$$:  215-block 23
+    $$$$$:  215-block 24
+branch 24 never executed
+branch 25 never executed
+    $$$$$:  215-block 25
+    $$$$$:  215-block 26
+branch 26 never executed
+branch 27 never executed
+    $$$$$:  215-block 27
+    $$$$$:  215-block 28
+branch 28 never executed
+branch 29 never executed
+    $$$$$:  215-block 29
+    $$$$$:  215-block 30
+branch 30 never executed
+branch 31 never executed
+    $$$$$:  215-block 31
+    $$$$$:  215-block 32
+branch 32 never executed
+branch 33 never executed
+    $$$$$:  215-block 33
+    $$$$$:  215-block 34
+branch 34 never executed
+branch 35 never executed
+    $$$$$:  215-block 35
+    $$$$$:  215-block 36
+branch 36 never executed
+branch 37 never executed
+    $$$$$:  215-block 37
+    $$$$$:  215-block 38
+branch 38 never executed
+branch 39 never executed
+    $$$$$:  215-block 39
+    $$$$$:  215-block 40
+branch 40 never executed
+branch 41 never executed
+    $$$$$:  215-block 41
+    $$$$$:  215-block 42
+branch 42 never executed
+branch 43 never executed
+    $$$$$:  215-block 43
+    $$$$$:  215-block 44
+branch 44 never executed
+branch 45 never executed
+    $$$$$:  215-block 45
+    $$$$$:  215-block 46
+branch 46 never executed
+branch 47 never executed
+    $$$$$:  215-block 47
+        2:  216:	  }
+    $$$$$:  216-block  0
+    $$$$$:  216-block  1
+    $$$$$:  216-block  2
+    $$$$$:  216-block  3
+    $$$$$:  216-block  4
+    $$$$$:  216-block  5
+    $$$$$:  216-block  6
+    $$$$$:  216-block  7
+    $$$$$:  216-block  8
+    $$$$$:  216-block  9
+    $$$$$:  216-block 10
+    $$$$$:  216-block 11
+    $$$$$:  216-block 12
+    $$$$$:  216-block 13
+    $$$$$:  216-block 14
+    $$$$$:  216-block 15
+    $$$$$:  216-block 16
+    $$$$$:  216-block 17
+    $$$$$:  216-block 18
+    $$$$$:  216-block 19
+    $$$$$:  216-block 20
+    $$$$$:  216-block 21
+    $$$$$:  216-block 22
+    $$$$$:  216-block 23
+        2:  216-block 24
+    $$$$$:  216-block 25
+    $$$$$:  216-block 26
+    $$$$$:  216-block 27
+    $$$$$:  216-block 28
+    $$$$$:  216-block 29
+    $$$$$:  216-block 30
+    $$$$$:  216-block 31
+        -:  217:
+        -:  218:	template<typename _Signature>
+        -:  219:	  static bool
+        -:  220:	  _M_not_empty_function(const function<_Signature>& __f) noexcept
+        -:  221:	  { return static_cast<bool>(__f); }
+        -:  222:
+        -:  223:	template<typename _Tp>
+        -:  224:	  static bool
+        -:  225:	  _M_not_empty_function(_Tp* __fp) noexcept
+        -:  226:	  { return __fp != nullptr; }
+        -:  227:
+        -:  228:	template<typename _Class, typename _Tp>
+        -:  229:	  static bool
+        -:  230:	  _M_not_empty_function(_Tp _Class::* __mp) noexcept
+        -:  231:	  { return __mp != nullptr; }
+        -:  232:
+        -:  233:	template<typename _Tp>
+        -:  234:	  static bool
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 2 returned 100% blocks executed 100%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+function _ZNSt14_Function_base13_Base_managerINSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE21_M_not_empty_functionIS6_EEbRKT_ called 0 returned 0% blocks executed 0%
+        2:  235:	  _M_not_empty_function(const _Tp&) noexcept
+        2:  236:	  { return true; }
+    $$$$$:  236-block  0
+    $$$$$:  236-block  1
+    $$$$$:  236-block  2
+    $$$$$:  236-block  3
+    $$$$$:  236-block  4
+    $$$$$:  236-block  5
+    $$$$$:  236-block  6
+    $$$$$:  236-block  7
+    $$$$$:  236-block  8
+    $$$$$:  236-block  9
+    $$$$$:  236-block 10
+    $$$$$:  236-block 11
+        2:  236-block 12
+    $$$$$:  236-block 13
+    $$$$$:  236-block 14
+    $$$$$:  236-block 15
+        -:  237:      };
+        -:  238:
+function _ZNSt14_Function_baseC2Ev called 14 returned 100% blocks executed 100%
+       28:  239:    _Function_base() = default;
+       14:  239-block  0
+       14:  239-block  1
+        -:  240:
+function _ZNSt14_Function_baseD2Ev called 14 returned 100% blocks executed 80%
+       14:  241:    ~_Function_base()
+        -:  242:    {
+       14:  243:      if (_M_manager)
+       14:  243-block  0
+branch  0 taken 12
+branch  1 taken 2
+        2:  244:	_M_manager(_M_functor, _M_functor, __destroy_functor);
+        2:  244-block  0
+branch  0 taken 2
+branch  1 taken 0
+        2:  244-block  1
+    $$$$$:  244-block  2
+       14:  245:    }
+       14:  245-block  0
+        -:  246:
+function _ZNKSt14_Function_base8_M_emptyEv called 2727999 returned 100% blocks executed 100%
+  2727999:  247:    bool _M_empty() const { return !_M_manager; }
+  2727999:  247-block  0
+        -:  248:
+        -:  249:    using _Manager_type
+        -:  250:      = bool (*)(_Any_data&, const _Any_data&, _Manager_operation);
+        -:  251:
+       14:  252:    _Any_data     _M_functor{};
+       14:  253:    _Manager_type _M_manager{};
+        -:  254:  };
+        -:  255:
+        -:  256:  template<typename _Signature, typename _Functor>
+        -:  257:    class _Function_handler;
+        -:  258:
+        -:  259:  template<typename _Res, typename _Functor, typename... _ArgTypes>
+        -:  260:    class _Function_handler<_Res(_ArgTypes...), _Functor>
+        -:  261:    : public _Function_base::_Base_manager<_Functor>
+        -:  262:    {
+        -:  263:      using _Base = _Function_base::_Base_manager<_Functor>;
+        -:  264:
+        -:  265:    public:
+        -:  266:      static bool
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 2 returned 100% blocks executed 60%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation called 0 returned 0% blocks executed 0%
+        2:  267:      _M_manager(_Any_data& __dest, const _Any_data& __source,
+        -:  268:		 _Manager_operation __op)
+        -:  269:      {
+        2:  270:	switch (__op)
+    $$$$$:  270-block  0
+branch  0 never executed
+branch  1 never executed
+branch  2 never executed
+    $$$$$:  270-block  1
+branch  3 never executed
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  270-block  2
+branch  6 never executed
+branch  7 never executed
+branch  8 never executed
+    $$$$$:  270-block  3
+branch  9 never executed
+branch 10 never executed
+branch 11 never executed
+    $$$$$:  270-block  4
+branch 12 never executed
+branch 13 never executed
+branch 14 never executed
+    $$$$$:  270-block  5
+branch 15 never executed
+branch 16 never executed
+branch 17 never executed
+    $$$$$:  270-block  6
+branch 18 never executed
+branch 19 never executed
+branch 20 never executed
+    $$$$$:  270-block  7
+branch 21 never executed
+branch 22 never executed
+branch 23 never executed
+    $$$$$:  270-block  8
+branch 24 never executed
+branch 25 never executed
+branch 26 never executed
+    $$$$$:  270-block  9
+branch 27 never executed
+branch 28 never executed
+branch 29 never executed
+    $$$$$:  270-block 10
+branch 30 never executed
+branch 31 never executed
+branch 32 never executed
+    $$$$$:  270-block 11
+branch 33 never executed
+branch 34 never executed
+branch 35 never executed
+        2:  270-block 12
+branch 36 taken 0
+branch 37 taken 2
+branch 38 taken 0
+    $$$$$:  270-block 13
+branch 39 never executed
+branch 40 never executed
+branch 41 never executed
+    $$$$$:  270-block 14
+branch 42 never executed
+branch 43 never executed
+branch 44 never executed
+    $$$$$:  270-block 15
+branch 45 never executed
+branch 46 never executed
+branch 47 never executed
+        -:  271:	  {
+        -:  272:#if __cpp_rtti
+        -:  273:	  case __get_type_info:
+    #####:  274:	    __dest._M_access<const type_info*>() = &typeid(_Functor);
+    #####:  275:	    break;
+    $$$$$:  275-block  0
+    $$$$$:  275-block  1
+    $$$$$:  275-block  2
+    $$$$$:  275-block  3
+    $$$$$:  275-block  4
+    $$$$$:  275-block  5
+    $$$$$:  275-block  6
+    $$$$$:  275-block  7
+    $$$$$:  275-block  8
+    $$$$$:  275-block  9
+    $$$$$:  275-block 10
+    $$$$$:  275-block 11
+    $$$$$:  275-block 12
+    $$$$$:  275-block 13
+    $$$$$:  275-block 14
+    $$$$$:  275-block 15
+        -:  276:#endif
+        -:  277:	  case __get_functor_ptr:
+    #####:  278:	    __dest._M_access<_Functor*>() = _Base::_M_get_pointer(__source);
+    #####:  279:	    break;
+    $$$$$:  279-block  0
+    $$$$$:  279-block  1
+    $$$$$:  279-block  2
+    $$$$$:  279-block  3
+    $$$$$:  279-block  4
+    $$$$$:  279-block  5
+    $$$$$:  279-block  6
+    $$$$$:  279-block  7
+    $$$$$:  279-block  8
+    $$$$$:  279-block  9
+    $$$$$:  279-block 10
+    $$$$$:  279-block 11
+    $$$$$:  279-block 12
+    $$$$$:  279-block 13
+    $$$$$:  279-block 14
+    $$$$$:  279-block 15
+        -:  280:
+        -:  281:	  default:
+        2:  282:	    _Base::_M_manager(__dest, __source, __op);
+        2:  283:	  }
+    $$$$$:  283-block  0
+    $$$$$:  283-block  1
+    $$$$$:  283-block  2
+    $$$$$:  283-block  3
+    $$$$$:  283-block  4
+    $$$$$:  283-block  5
+    $$$$$:  283-block  6
+    $$$$$:  283-block  7
+    $$$$$:  283-block  8
+    $$$$$:  283-block  9
+    $$$$$:  283-block 10
+    $$$$$:  283-block 11
+        2:  283-block 12
+    $$$$$:  283-block 13
+    $$$$$:  283-block 14
+    $$$$$:  283-block 15
+        2:  284:	return false;
+    $$$$$:  284-block  0
+    $$$$$:  284-block  1
+    $$$$$:  284-block  2
+    $$$$$:  284-block  3
+    $$$$$:  284-block  4
+    $$$$$:  284-block  5
+    $$$$$:  284-block  6
+    $$$$$:  284-block  7
+    $$$$$:  284-block  8
+    $$$$$:  284-block  9
+    $$$$$:  284-block 10
+    $$$$$:  284-block 11
+        2:  284-block 12
+    $$$$$:  284-block 13
+    $$$$$:  284-block 14
+    $$$$$:  284-block 15
+        -:  285:      }
+        -:  286:
+        -:  287:      static _Res
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 2727991 returned 100% blocks executed 100%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+function _ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc called 0 returned 0% blocks executed 0%
+  2727991:  288:      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
+        -:  289:      {
+  5455982:  290:	return std::__invoke_r<_Res>(*_Base::_M_get_pointer(__functor),
+    $$$$$:  290-block  0
+    $$$$$:  290-block  1
+    $$$$$:  290-block  2
+    $$$$$:  290-block  3
+    $$$$$:  290-block  4
+    $$$$$:  290-block  5
+    $$$$$:  290-block  6
+    $$$$$:  290-block  7
+    $$$$$:  290-block  8
+    $$$$$:  290-block  9
+    $$$$$:  290-block 10
+    $$$$$:  290-block 11
+    $$$$$:  290-block 12
+    $$$$$:  290-block 13
+    $$$$$:  290-block 14
+    $$$$$:  290-block 15
+    $$$$$:  290-block 16
+    $$$$$:  290-block 17
+    $$$$$:  290-block 18
+    $$$$$:  290-block 19
+    $$$$$:  290-block 20
+    $$$$$:  290-block 21
+    $$$$$:  290-block 22
+    $$$$$:  290-block 23
+  2727991:  290-block 24
+  2727991:  290-block 25
+    $$$$$:  290-block 26
+    $$$$$:  290-block 27
+    $$$$$:  290-block 28
+    $$$$$:  290-block 29
+    $$$$$:  290-block 30
+    $$$$$:  290-block 31
+  2727991:  291:				     std::forward<_ArgTypes>(__args)...);
+        -:  292:      }
+        -:  293:
+        -:  294:      template<typename _Fn>
+        -:  295:	static constexpr bool
+        -:  296:	_S_nothrow_init() noexcept
+        -:  297:	{
+        -:  298:	  return __and_<typename _Base::_Local_storage,
+        -:  299:			is_nothrow_constructible<_Functor, _Fn>>::value;
+        -:  300:	}
+        -:  301:    };
+        -:  302:
+        -:  303:  // Specialization for invalid types
+        -:  304:  template<>
+        -:  305:    class _Function_handler<void, void>
+        -:  306:    {
+        -:  307:    public:
+        -:  308:      static bool
+        -:  309:      _M_manager(_Any_data&, const _Any_data&, _Manager_operation)
+        -:  310:      { return false; }
+        -:  311:    };
+        -:  312:
+        -:  313:  // Avoids instantiating ill-formed specializations of _Function_handler
+        -:  314:  // in std::function<_Signature>::target<_Functor>().
+        -:  315:  // e.g. _Function_handler<Sig, void()> and _Function_handler<Sig, void>
+        -:  316:  // would be ill-formed.
+        -:  317:  template<typename _Signature, typename _Functor,
+        -:  318:	   bool __valid = is_object<_Functor>::value>
+        -:  319:    struct _Target_handler
+        -:  320:    : _Function_handler<_Signature, typename remove_cv<_Functor>::type>
+        -:  321:    { };
+        -:  322:
+        -:  323:  template<typename _Signature, typename _Functor>
+        -:  324:    struct _Target_handler<_Signature, _Functor, false>
+        -:  325:    : _Function_handler<void, void>
+        -:  326:    { };
+        -:  327:
+        -:  328:  /**
+        -:  329:   *  @brief Polymorphic function wrapper.
+        -:  330:   *  @ingroup functors
+        -:  331:   *  @since C++11
+        -:  332:   */
+        -:  333:  template<typename _Res, typename... _ArgTypes>
+        -:  334:    class function<_Res(_ArgTypes...)>
+        -:  335:    : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
+        -:  336:      private _Function_base
+        -:  337:    {
+        -:  338:      // Equivalent to std::decay_t except that it produces an invalid type
+        -:  339:      // if the decayed type is the current specialization of std::function.
+        -:  340:      template<typename _Func,
+        -:  341:	       bool _Self = is_same<__remove_cvref_t<_Func>, function>::value>
+        -:  342:	using _Decay_t
+        -:  343:	  = typename __enable_if_t<!_Self, decay<_Func>>::type;
+        -:  344:
+        -:  345:      template<typename _Func,
+        -:  346:	       typename _DFunc = _Decay_t<_Func>,
+        -:  347:	       typename _Res2 = __invoke_result<_DFunc&, _ArgTypes...>>
+        -:  348:	struct _Callable
+        -:  349:	: __is_invocable_impl<_Res2, _Res>::type
+        -:  350:	{ };
+        -:  351:
+        -:  352:      template<typename _Cond, typename _Tp = void>
+        -:  353:	using _Requires = __enable_if_t<_Cond::value, _Tp>;
+        -:  354:
+        -:  355:      template<typename _Functor>
+        -:  356:	using _Handler
+        -:  357:	  = _Function_handler<_Res(_ArgTypes...), __decay_t<_Functor>>;
+        -:  358:
+        -:  359:    public:
+        -:  360:      typedef _Res result_type;
+        -:  361:
+        -:  362:      // [3.7.2.1] construct/copy/destroy
+        -:  363:
+        -:  364:      /**
+        -:  365:       *  @brief Default construct creates an empty function call wrapper.
+        -:  366:       *  @post `!(bool)*this`
+        -:  367:       */
+function _ZNSt8functionIFbcEEC2Ev called 2 returned 100% blocks executed 100%
+        2:  368:      function() noexcept
+        4:  369:      : _Function_base() { }
+        2:  369-block  0
+        2:  369-block  1
+        -:  370:
+        -:  371:      /**
+        -:  372:       *  @brief Creates an empty function call wrapper.
+        -:  373:       *  @post @c !(bool)*this
+        -:  374:       */
+        -:  375:      function(nullptr_t) noexcept
+        -:  376:      : _Function_base() { }
+        -:  377:
+        -:  378:      /**
+        -:  379:       *  @brief %Function copy constructor.
+        -:  380:       *  @param __x A %function object with identical call signature.
+        -:  381:       *  @post `bool(*this) == bool(__x)`
+        -:  382:       *
+        -:  383:       *  The newly-created %function contains a copy of the target of
+        -:  384:       *  `__x` (if it has one).
+        -:  385:       */
+function _ZNSt8functionIFbcEEC2ERKS1_ called 0 returned 0% blocks executed 0%
+    #####:  386:      function(const function& __x)
+    #####:  387:      : _Function_base()
+        -:  388:      {
+    #####:  389:	if (static_cast<bool>(__x))
+    $$$$$:  389-block  0
+branch  0 never executed
+branch  1 never executed
+        -:  390:	  {
+    #####:  391:	    __x._M_manager(_M_functor, __x._M_functor, __clone_functor);
+    $$$$$:  391-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:  392:	    _M_invoker = __x._M_invoker;
+    #####:  393:	    _M_manager = __x._M_manager;
+    #####:  394:	  }
+    $$$$$:  394-block  0
+    #####:  395:      }
+    $$$$$:  395-block  0
+    $$$$$:  395-block  1
+    $$$$$:  395-block  2
+        -:  396:
+        -:  397:      /**
+        -:  398:       *  @brief %Function move constructor.
+        -:  399:       *  @param __x A %function object rvalue with identical call signature.
+        -:  400:       *
+        -:  401:       *  The newly-created %function contains the target of `__x`
+        -:  402:       *  (if it has one).
+        -:  403:       */
+function _ZNSt8functionIFbcEEC2EOS1_ called 10 returned 100% blocks executed 100%
+       10:  404:      function(function&& __x) noexcept
+       10:  405:      : _Function_base(), _M_invoker(__x._M_invoker)
+        -:  406:      {
+       10:  407:	if (static_cast<bool>(__x))
+       10:  407-block  0
+branch  0 taken 0
+branch  1 taken 10
+        -:  408:	  {
+       10:  409:	    _M_functor = __x._M_functor;
+       10:  410:	    _M_manager = __x._M_manager;
+       10:  411:	    __x._M_manager = nullptr;
+       10:  412:	    __x._M_invoker = nullptr;
+       10:  413:	  }
+       10:  413-block  0
+       10:  414:      }
+       10:  414-block  0
+        -:  415:
+        -:  416:      /**
+        -:  417:       *  @brief Builds a %function that targets a copy of the incoming
+        -:  418:       *  function object.
+        -:  419:       *  @param __f A %function object that is callable with parameters of
+        -:  420:       *  type `ArgTypes...` and returns a value convertible to `Res`.
+        -:  421:       *
+        -:  422:       *  The newly-created %function object will target a copy of
+        -:  423:       *  `__f`. If `__f` is `reference_wrapper<F>`, then this function
+        -:  424:       *  object will contain a reference to the function object `__f.get()`.
+        -:  425:       *  If `__f` is a null function pointer, null pointer-to-member, or
+        -:  426:       *  empty `std::function`, the newly-created object will be empty.
+        -:  427:       *
+        -:  428:       *  If `__f` is a non-null function pointer or an object of type
+        -:  429:       *  `reference_wrapper<F>`, this function will not throw.
+        -:  430:       */
+        -:  431:      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+        -:  432:      // 2774. std::function construction vs assignment
+        -:  433:      template<typename _Functor,
+        -:  434:	       typename _Constraints = _Requires<_Callable<_Functor>>>
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEvEEOT_ called 2 returned 100% blocks executed 66%
+function _ZNSt8functionIFbcEEC2INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEvEEOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8functionIFbcEEC2INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEvEEOT_ called 0 returned 0% blocks executed 0%
+        2:  435:	function(_Functor&& __f)
+        -:  436:	noexcept(_Handler<_Functor>::template _S_nothrow_init<_Functor>())
+        2:  437:	: _Function_base()
+        -:  438:	{
+        -:  439:	  static_assert(is_copy_constructible<__decay_t<_Functor>>::value,
+        -:  440:	      "std::function target must be copy-constructible");
+        -:  441:	  static_assert(is_constructible<__decay_t<_Functor>, _Functor>::value,
+        -:  442:	      "std::function target must be constructible from the "
+        -:  443:	      "constructor argument");
+        -:  444:
+        -:  445:	  using _My_handler = _Handler<_Functor>;
+        -:  446:
+        2:  447:	  if (_My_handler::_M_not_empty_function(__f))
+    $$$$$:  447-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  447-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:  447-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  447-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  447-block  4
+branch  8 never executed
+branch  9 never executed
+    $$$$$:  447-block  5
+branch 10 never executed
+branch 11 never executed
+    $$$$$:  447-block  6
+branch 12 never executed
+branch 13 never executed
+    $$$$$:  447-block  7
+branch 14 never executed
+branch 15 never executed
+    $$$$$:  447-block  8
+branch 16 never executed
+branch 17 never executed
+    $$$$$:  447-block  9
+branch 18 never executed
+branch 19 never executed
+    $$$$$:  447-block 10
+branch 20 never executed
+branch 21 never executed
+    $$$$$:  447-block 11
+branch 22 never executed
+branch 23 never executed
+        2:  447-block 12
+branch 24 taken 0
+branch 25 taken 2
+    $$$$$:  447-block 13
+branch 26 never executed
+branch 27 never executed
+    $$$$$:  447-block 14
+branch 28 never executed
+branch 29 never executed
+    $$$$$:  447-block 15
+branch 30 never executed
+branch 31 never executed
+        -:  448:	    {
+        4:  449:	      _My_handler::_M_init_functor(_M_functor,
+        2:  449-block  0
+branch  0 taken 2
+branch  1 taken 0
+        2:  449-block  1
+branch  2 taken 2
+branch  3 taken 0
+    $$$$$:  449-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:  449-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  449-block  4
+branch  8 never executed
+branch  9 never executed
+    $$$$$:  449-block  5
+branch 10 never executed
+branch 11 never executed
+    $$$$$:  449-block  6
+branch 12 never executed
+branch 13 never executed
+    $$$$$:  449-block  7
+branch 14 never executed
+branch 15 never executed
+        2:  450:					   std::forward<_Functor>(__f));
+        2:  451:	      _M_invoker = &_My_handler::_M_invoke;
+        2:  452:	      _M_manager = &_My_handler::_M_manager;
+        2:  453:	    }
+    $$$$$:  453-block  0
+    $$$$$:  453-block  1
+    $$$$$:  453-block  2
+    $$$$$:  453-block  3
+    $$$$$:  453-block  4
+    $$$$$:  453-block  5
+    $$$$$:  453-block  6
+    $$$$$:  453-block  7
+    $$$$$:  453-block  8
+    $$$$$:  453-block  9
+    $$$$$:  453-block 10
+    $$$$$:  453-block 11
+        2:  453-block 12
+    $$$$$:  453-block 13
+    $$$$$:  453-block 14
+    $$$$$:  453-block 15
+        2:  454:	}
+    $$$$$:  454-block  0
+    $$$$$:  454-block  1
+    $$$$$:  454-block  2
+    $$$$$:  454-block  3
+    $$$$$:  454-block  4
+    $$$$$:  454-block  5
+    $$$$$:  454-block  6
+    $$$$$:  454-block  7
+    $$$$$:  454-block  8
+    $$$$$:  454-block  9
+    $$$$$:  454-block 10
+    $$$$$:  454-block 11
+    $$$$$:  454-block 12
+        2:  454-block 13
+    $$$$$:  454-block 14
+    $$$$$:  454-block 15
+    $$$$$:  454-block 16
+    $$$$$:  454-block 17
+    $$$$$:  454-block 18
+    $$$$$:  454-block 19
+    $$$$$:  454-block 20
+    $$$$$:  454-block 21
+    $$$$$:  454-block 22
+    $$$$$:  454-block 23
+        -:  455:
+        -:  456:      /**
+        -:  457:       *  @brief Function assignment operator.
+        -:  458:       *  @param __x A %function with identical call signature.
+        -:  459:       *  @post `(bool)*this == (bool)x`
+        -:  460:       *  @returns `*this`
+        -:  461:       *
+        -:  462:       *  The target of `__x` is copied to `*this`. If `__x` has no
+        -:  463:       *  target, then `*this` will be empty.
+        -:  464:       *
+        -:  465:       *  If `__x` targets a function pointer or a reference to a function
+        -:  466:       *  object, then this operation will not throw an exception.
+        -:  467:       */
+        -:  468:      function&
+        -:  469:      operator=(const function& __x)
+        -:  470:      {
+        -:  471:	function(__x).swap(*this);
+        -:  472:	return *this;
+        -:  473:      }
+        -:  474:
+        -:  475:      /**
+        -:  476:       *  @brief Function move-assignment operator.
+        -:  477:       *  @param __x A %function rvalue with identical call signature.
+        -:  478:       *  @returns `*this`
+        -:  479:       *
+        -:  480:       *  The target of `__x` is moved to `*this`. If `__x` has no
+        -:  481:       *  target, then `*this` will be empty.
+        -:  482:       *
+        -:  483:       *  If `__x` targets a function pointer or a reference to a function
+        -:  484:       *  object, then this operation will not throw an exception.
+        -:  485:       */
+        -:  486:      function&
+function _ZNSt8functionIFbcEEaSEOS1_ called 2 returned 100% blocks executed 100%
+        2:  487:      operator=(function&& __x) noexcept
+        -:  488:      {
+        2:  489:	function(std::move(__x)).swap(*this);
+        2:  490:	return *this;
+        2:  490-block  0
+        -:  491:      }
+        -:  492:
+        -:  493:      /**
+        -:  494:       *  @brief Function assignment to empty.
+        -:  495:       *  @post `!(bool)*this`
+        -:  496:       *  @returns `*this`
+        -:  497:       *
+        -:  498:       *  The target of `*this` is deallocated, leaving it empty.
+        -:  499:       */
+        -:  500:      function&
+        -:  501:      operator=(nullptr_t) noexcept
+        -:  502:      {
+        -:  503:	if (_M_manager)
+        -:  504:	  {
+        -:  505:	    _M_manager(_M_functor, _M_functor, __destroy_functor);
+        -:  506:	    _M_manager = nullptr;
+        -:  507:	    _M_invoker = nullptr;
+        -:  508:	  }
+        -:  509:	return *this;
+        -:  510:      }
+        -:  511:
+        -:  512:      /**
+        -:  513:       *  @brief Function assignment to a new target.
+        -:  514:       *  @param __f  A function object that is callable with parameters of
+        -:  515:       *              type  `_ArgTypes...` and returns a value convertible
+        -:  516:       *              to `_Res`.
+        -:  517:       *  @return `*this`
+        -:  518:       *  @since C++11
+        -:  519:       *
+        -:  520:       *  This function object wrapper will target a copy of `__f`. If `__f`
+        -:  521:       *  is `reference_wrapper<F>`, then this function object will contain
+        -:  522:       *  a reference to the function object `__f.get()`. If `__f` is a null
+        -:  523:       *  function pointer or null pointer-to-member, this object will be
+        -:  524:       *  empty.
+        -:  525:       *
+        -:  526:       *  If `__f` is a non-null function pointer or an object of type
+        -:  527:       *  `reference_wrapper<F>`, this function will not throw.
+        -:  528:       */
+        -:  529:      template<typename _Functor>
+        -:  530:	_Requires<_Callable<_Functor>, function&>
+        -:  531:	operator=(_Functor&& __f)
+        -:  532:	noexcept(_Handler<_Functor>::template _S_nothrow_init<_Functor>())
+        -:  533:	{
+        -:  534:	  function(std::forward<_Functor>(__f)).swap(*this);
+        -:  535:	  return *this;
+        -:  536:	}
+        -:  537:
+        -:  538:      /// @overload
+        -:  539:      template<typename _Functor>
+        -:  540:	function&
+        -:  541:	operator=(reference_wrapper<_Functor> __f) noexcept
+        -:  542:	{
+        -:  543:	  function(__f).swap(*this);
+        -:  544:	  return *this;
+        -:  545:	}
+        -:  546:
+        -:  547:      // [3.7.2.2] function modifiers
+        -:  548:
+        -:  549:      /**
+        -:  550:       *  @brief Swap the targets of two %function objects.
+        -:  551:       *  @param __x A %function with identical call signature.
+        -:  552:       *
+        -:  553:       *  Swap the targets of `this` function object and `__f`.
+        -:  554:       *  This function will not throw exceptions.
+        -:  555:       */
+function _ZNSt8functionIFbcEE4swapERS1_ called 2 returned 100% blocks executed 100%
+        2:  556:      void swap(function& __x) noexcept
+        -:  557:      {
+        2:  558:	std::swap(_M_functor, __x._M_functor);
+        2:  559:	std::swap(_M_manager, __x._M_manager);
+        2:  560:	std::swap(_M_invoker, __x._M_invoker);
+        2:  561:      }
+        2:  561-block  0
+        -:  562:
+        -:  563:      // [3.7.2.3] function capacity
+        -:  564:
+        -:  565:      /**
+        -:  566:       *  @brief Determine if the %function wrapper has a target.
+        -:  567:       *
+        -:  568:       *  @return `true` when this function object contains a target,
+        -:  569:       *  or `false` when it is empty.
+        -:  570:       *
+        -:  571:       *  This function will not throw exceptions.
+        -:  572:       */
+function _ZNKSt8functionIFbcEEcvbEv called 10 returned 100% blocks executed 66%
+       10:  573:      explicit operator bool() const noexcept
+       10:  574:      { return !_M_empty(); }
+       10:  574-block  0
+branch  0 taken 10
+branch  1 taken 0
+       10:  574-block  1
+    $$$$$:  574-block  2
+        -:  575:
+        -:  576:      // [3.7.2.4] function invocation
+        -:  577:
+        -:  578:      /**
+        -:  579:       *  @brief Invokes the function targeted by `*this`.
+        -:  580:       *  @returns the result of the target.
+        -:  581:       *  @throws `bad_function_call` when `!(bool)*this`
+        -:  582:       *
+        -:  583:       *  The function call operator invokes the target function object
+        -:  584:       *  stored by `this`.
+        -:  585:       */
+        -:  586:      _Res
+function _ZNKSt8functionIFbcEEclEc called 2727999 returned 100% blocks executed 66%
+  2727999:  587:      operator()(_ArgTypes... __args) const
+        -:  588:      {
+  2727999:  589:	if (_M_empty())
+  2727999:  589-block  0
+branch  0 taken 2727999
+branch  1 taken 0
+    #####:  590:	  __throw_bad_function_call();
+    $$$$$:  590-block  0
+  2727999:  591:	return _M_invoker(_M_functor, std::forward<_ArgTypes>(__args)...);
+  2727999:  591-block  0
+        -:  592:      }
+        -:  593:
+        -:  594:#if __cpp_rtti
+        -:  595:      // [3.7.2.5] function target access
+        -:  596:      /**
+        -:  597:       *  @brief Determine the type of the target of this function object
+        -:  598:       *  wrapper.
+        -:  599:       *
+        -:  600:       *  @returns the type identifier of the target function object, or
+        -:  601:       *  `typeid(void)` if `!(bool)*this`.
+        -:  602:       *
+        -:  603:       *  This function will not throw exceptions.
+        -:  604:       */
+        -:  605:      const type_info&
+        -:  606:      target_type() const noexcept
+        -:  607:      {
+        -:  608:	if (_M_manager)
+        -:  609:	  {
+        -:  610:	    _Any_data __typeinfo_result;
+        -:  611:	    _M_manager(__typeinfo_result, _M_functor, __get_type_info);
+        -:  612:	    if (auto __ti =  __typeinfo_result._M_access<const type_info*>())
+        -:  613:	      return *__ti;
+        -:  614:	  }
+        -:  615:	return typeid(void);
+        -:  616:      }
+        -:  617:#endif
+        -:  618:
+        -:  619:      /**
+        -:  620:       *  @brief Access the stored target function object.
+        -:  621:       *
+        -:  622:       *  @return Returns a pointer to the stored target function object,
+        -:  623:       *  if `typeid(_Functor).equals(target_type())`; otherwise, a null
+        -:  624:       *  pointer.
+        -:  625:       *
+        -:  626:       * This function does not throw exceptions.
+        -:  627:       *
+        -:  628:       * @{
+        -:  629:       */
+        -:  630:      template<typename _Functor>
+        -:  631:	_Functor*
+        -:  632:	target() noexcept
+        -:  633:	{
+        -:  634:	  const function* __const_this = this;
+        -:  635:	  const _Functor* __func = __const_this->template target<_Functor>();
+        -:  636:	  // If is_function_v<_Functor> is true then const_cast<_Functor*>
+        -:  637:	  // would be ill-formed, so use *const_cast<_Functor**> instead.
+        -:  638:	  return *const_cast<_Functor**>(&__func);
+        -:  639:	}
+        -:  640:
+        -:  641:      template<typename _Functor>
+        -:  642:	const _Functor*
+        -:  643:	target() const noexcept
+        -:  644:	{
+        -:  645:	  if _GLIBCXX17_CONSTEXPR (is_object<_Functor>::value)
+        -:  646:	    {
+        -:  647:	      // For C++11 and C++14 if-constexpr is not used above, so
+        -:  648:	      // _Target_handler avoids ill-formed _Function_handler types.
+        -:  649:	      using _Handler = _Target_handler<_Res(_ArgTypes...), _Functor>;
+        -:  650:
+        -:  651:	      if (_M_manager == &_Handler::_M_manager
+        -:  652:#if __cpp_rtti
+        -:  653:		  || (_M_manager && typeid(_Functor) == target_type())
+        -:  654:#endif
+        -:  655:		 )
+        -:  656:		{
+        -:  657:		  _Any_data __ptr;
+        -:  658:		  _M_manager(__ptr, _M_functor, __get_functor_ptr);
+        -:  659:		  return __ptr._M_access<const _Functor*>();
+        -:  660:		}
+        -:  661:	    }
+        -:  662:	  return nullptr;
+        -:  663:	}
+        -:  664:      /// @}
+        -:  665:
+        -:  666:    private:
+        -:  667:      using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);
+        4:  668:      _Invoker_type _M_invoker = nullptr;
+        -:  669:    };
+        -:  670:
+        -:  671:#if __cpp_deduction_guides >= 201606
+        -:  672:  template<typename>
+        -:  673:    struct __function_guide_helper
+        -:  674:    { };
+        -:  675:
+        -:  676:  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+        -:  677:    struct __function_guide_helper<
+        -:  678:      _Res (_Tp::*) (_Args...) noexcept(_Nx)
+        -:  679:    >
+        -:  680:    { using type = _Res(_Args...); };
+        -:  681:
+        -:  682:  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+        -:  683:    struct __function_guide_helper<
+        -:  684:      _Res (_Tp::*) (_Args...) & noexcept(_Nx)
+        -:  685:    >
+        -:  686:    { using type = _Res(_Args...); };
+        -:  687:
+        -:  688:  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+        -:  689:    struct __function_guide_helper<
+        -:  690:      _Res (_Tp::*) (_Args...) const noexcept(_Nx)
+        -:  691:    >
+        -:  692:    { using type = _Res(_Args...); };
+        -:  693:
+        -:  694:  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+        -:  695:    struct __function_guide_helper<
+        -:  696:      _Res (_Tp::*) (_Args...) const & noexcept(_Nx)
+        -:  697:    >
+        -:  698:    { using type = _Res(_Args...); };
+        -:  699:
+        -:  700:  template<typename _Res, typename... _ArgTypes>
+        -:  701:    function(_Res(*)(_ArgTypes...)) -> function<_Res(_ArgTypes...)>;
+        -:  702:
+        -:  703:  template<typename _Functor, typename _Signature = typename
+        -:  704:	   __function_guide_helper<decltype(&_Functor::operator())>::type>
+        -:  705:    function(_Functor) -> function<_Signature>;
+        -:  706:#endif
+        -:  707:
+        -:  708:  // [20.7.15.2.6] null pointer comparisons
+        -:  709:
+        -:  710:  /**
+        -:  711:   *  @brief Test whether a polymorphic function object wrapper is empty.
+        -:  712:   *  @returns `true` if the wrapper has no target, `false` otherwise
+        -:  713:   *
+        -:  714:   *  This function will not throw exceptions.
+        -:  715:   */
+        -:  716:  template<typename _Res, typename... _Args>
+        -:  717:    inline bool
+        -:  718:    operator==(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
+        -:  719:    { return !static_cast<bool>(__f); }
+        -:  720:
+        -:  721:#if __cpp_impl_three_way_comparison < 201907L
+        -:  722:  /// @overload
+        -:  723:  template<typename _Res, typename... _Args>
+        -:  724:    inline bool
+        -:  725:    operator==(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
+        -:  726:    { return !static_cast<bool>(__f); }
+        -:  727:
+        -:  728:  /**
+        -:  729:   *  @brief Test whether a polymorphic function object wrapper is non-empty.
+        -:  730:   *  @returns `false` if the wrapper has no target, `true` otherwise
+        -:  731:   *
+        -:  732:   *  This function will not throw exceptions.
+        -:  733:   */
+        -:  734:  template<typename _Res, typename... _Args>
+        -:  735:    inline bool
+        -:  736:    operator!=(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
+        -:  737:    { return static_cast<bool>(__f); }
+        -:  738:
+        -:  739:  /// @overload
+        -:  740:  template<typename _Res, typename... _Args>
+        -:  741:    inline bool
+        -:  742:    operator!=(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
+        -:  743:    { return static_cast<bool>(__f); }
+        -:  744:#endif
+        -:  745:
+        -:  746:  // [20.7.15.2.7] specialized algorithms
+        -:  747:
+        -:  748:  /**
+        -:  749:   *  @brief Swap the targets of two polymorphic function object wrappers.
+        -:  750:   *
+        -:  751:   *  This function will not throw exceptions.
+        -:  752:   */
+        -:  753:  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+        -:  754:  // 2062. Effect contradictions w/o no-throw guarantee of std::function swaps
+        -:  755:  template<typename _Res, typename... _Args>
+        -:  756:    inline void
+        -:  757:    swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y) noexcept
+        -:  758:    { __x.swap(__y); }
+        -:  759:
+        -:  760:#if __cplusplus >= 201703L
+        -:  761:  namespace __detail::__variant
+        -:  762:  {
+        -:  763:    template<typename> struct _Never_valueless_alt; // see <variant>
+        -:  764:
+        -:  765:    // Provide the strong exception-safety guarantee when emplacing a
+        -:  766:    // function into a variant.
+        -:  767:    template<typename _Signature>
+        -:  768:      struct _Never_valueless_alt<std::function<_Signature>>
+        -:  769:      : std::true_type
+        -:  770:      { };
+        -:  771:  }  // namespace __detail::__variant
+        -:  772:#endif // C++17
+        -:  773:
+        -:  774:_GLIBCXX_END_NAMESPACE_VERSION
+        -:  775:} // namespace std
+        -:  776:
+        -:  777:#endif // C++11
+        -:  778:#endif // _GLIBCXX_STD_FUNCTION_H

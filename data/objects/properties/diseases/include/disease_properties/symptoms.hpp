@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "diseases/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::diseases
@@ -109,6 +111,25 @@ namespace drug_lib::data::objects::diseases
                 description_ = description;
             }
 
+            struct names_of_json_fields
+            {
+                static constexpr auto name = "name";
+                static constexpr auto severity = "severity";
+                static constexpr auto duration = "duration";
+                static constexpr auto type = "type";
+                static constexpr auto description = "description";
+            };
+
+            friend std::ostream& operator<<(std::ostream& os, const Symptom& obj)
+            {
+                return os
+                    << "name_: " << obj.name_
+                    << " severity_: " << obj.severity_
+                    << " duration_: " << obj.duration_
+                    << " type_: " << obj.type_
+                    << " description_: " << obj.description_;
+            }
+
         private:
             std::string name_;
             uint8_t severity_ = 0;
@@ -170,6 +191,15 @@ namespace drug_lib::data::objects::diseases
             return symptoms_[index];
         }
 
+        Symptom& operator[](const std::size_t index)
+        {
+            if (index >= symptoms_.size())
+            {
+                throw std::out_of_range("index out of range");
+            }
+            return symptoms_[index];
+        }
+
         [[nodiscard]] Json::Value get_info() const override
         {
             Json::Value symptoms_array(Json::arrayValue);
@@ -177,11 +207,11 @@ namespace drug_lib::data::objects::diseases
             for (const auto& symptom : symptoms_)
             {
                 Json::Value symptom_json;
-                symptom_json[names_of_json_fields::name] = symptom.get_name();
-                symptom_json[names_of_json_fields::severity] = symptom.get_severity();
-                symptom_json[names_of_json_fields::duration] = symptom.get_duration();
-                symptom_json[names_of_json_fields::type] = symptom.get_type();
-                symptom_json[names_of_json_fields::description] = symptom.get_description();
+                symptom_json[Symptom::names_of_json_fields::name] = symptom.get_name();
+                symptom_json[Symptom::names_of_json_fields::severity] = symptom.get_severity();
+                symptom_json[Symptom::names_of_json_fields::duration] = symptom.get_duration();
+                symptom_json[Symptom::names_of_json_fields::type] = symptom.get_type();
+                symptom_json[Symptom::names_of_json_fields::description] = symptom.get_description();
                 symptoms_array.append(symptom_json);
             }
 
@@ -197,13 +227,13 @@ namespace drug_lib::data::objects::diseases
                 if (symptom_json.isObject())
                 {
                     Symptom symptom(
-                        symptom_json[names_of_json_fields::name].asString(),
-                        static_cast<uint8_t>(symptom_json[names_of_json_fields::severity].asUInt()),
-                        symptom_json[names_of_json_fields::duration].asString(),
-                        symptom_json[names_of_json_fields::type].asString(),
-                        symptom_json[names_of_json_fields::description].asString()
+                        symptom_json[Symptom::names_of_json_fields::name].asString(),
+                        static_cast<uint8_t>(symptom_json[Symptom::names_of_json_fields::severity].asUInt()),
+                        symptom_json[Symptom::names_of_json_fields::duration].asString(),
+                        symptom_json[Symptom::names_of_json_fields::type].asString(),
+                        symptom_json[Symptom::names_of_json_fields::description].asString()
                     );
-                    symptoms_.emplace_back(std::move(symptom));
+                    symptoms_.push_back(std::move(symptom));
                 }
             }
         }
@@ -214,15 +244,6 @@ namespace drug_lib::data::objects::diseases
         }
 
     private:
-        struct names_of_json_fields
-        {
-            static constexpr auto name = "name";
-            static constexpr auto severity = "severity";
-            static constexpr auto duration = "duration";
-            static constexpr auto type = "type";
-            static constexpr auto description = "description";
-        };
-
         // PRESCRIPTION DETAILS
         std::vector<Symptom> symptoms_;
     };

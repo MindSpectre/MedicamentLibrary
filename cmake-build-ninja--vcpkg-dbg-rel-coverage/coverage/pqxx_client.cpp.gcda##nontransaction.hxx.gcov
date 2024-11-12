@@ -1,0 +1,98 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/pqxx/nontransaction.hxx
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Definition of the pqxx::nontransaction class.
+        -:    2: *
+        -:    3: * pqxx::nontransaction provides nontransactional database access
+        -:    4: *
+        -:    5: * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/nontransaction instead.
+        -:    6: *
+        -:    7: * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+        -:    8: *
+        -:    9: * See COPYING for copyright license.  If you did not receive a file called
+        -:   10: * COPYING with this source code, please notify the distributor of this
+        -:   11: * mistake, or contact the author.
+        -:   12: */
+        -:   13:#ifndef PQXX_H_NONTRANSACTION
+        -:   14:#define PQXX_H_NONTRANSACTION
+        -:   15:
+        -:   16:#if !defined(PQXX_HEADER_PRE)
+        -:   17:#  error "Include libpqxx headers as <pqxx/header>, not <pqxx/header.hxx>."
+        -:   18:#endif
+        -:   19:
+        -:   20:#include "pqxx/connection.hxx"
+        -:   21:#include "pqxx/result.hxx"
+        -:   22:#include "pqxx/transaction.hxx"
+        -:   23:
+        -:   24:namespace pqxx
+        -:   25:{
+        -:   26:using namespace std::literals;
+        -:   27:
+        -:   28:/// Simple "transaction" class offering no transactional integrity.
+        -:   29:/**
+        -:   30: * @ingroup transactions
+        -:   31: *
+        -:   32: * nontransaction, like transaction or any other transaction_base-derived
+        -:   33: * class, provides access to a database through a connection.  Unlike its
+        -:   34: * siblings, however, nontransaction does not maintain any kind of
+        -:   35: * transactional integrity.  This may be useful eg. for read-only access to the
+        -:   36: * database that does not require a consistent, atomic view on its data; or for
+        -:   37: * operations that are not allowed within a backend transaction, such as
+        -:   38: * creating tables.
+        -:   39: *
+        -:   40: * For queries that update the database, however, a real transaction is likely
+        -:   41: * to be faster unless the transaction consists of only a single record update.
+        -:   42: *
+        -:   43: * Also, you can keep a nontransaction open for as long as you like.  Actual
+        -:   44: * back-end transactions are limited in lifespan, and will sometimes fail just
+        -:   45: * because they took too long to execute or were left idle for too long.  This
+        -:   46: * will not happen with a nontransaction (although the connection may still
+        -:   47: * time out, e.g. when the network is unavailable for a very long time).
+        -:   48: *
+        -:   49: * Any query executed in a nontransaction is committed immediately, and neither
+        -:   50: * commit() nor abort() has any effect.
+        -:   51: *
+        -:   52: * Database features that require a backend transaction, such as cursors or
+        -:   53: * large objects, will not work in a nontransaction.
+        -:   54: */
+        -:   55:class PQXX_LIBEXPORT nontransaction final : public transaction_base
+        -:   56:{
+        -:   57:public:
+        -:   58:  /// Constructor.
+        -:   59:  /** Create a "dummy" transaction.
+        -:   60:   * @param c Connection in which this "transaction" will operate.
+        -:   61:   * @param tname Optional tname for the transaction, beginning with a letter
+        -:   62:   * and containing only letters and digits.
+        -:   63:   */
+function _ZN4pqxx14nontransactionC2ERNS_10connectionESt17basic_string_viewIcSt11char_traitsIcEE called 20 returned 100% blocks executed 50%
+       20:   64:  nontransaction(connection &c, std::string_view tname = ""sv) :
+       20:   65:          transaction_base{c, tname, std::shared_ptr<std::string>{}}
+       20:   65-block  0
+branch  0 taken 20
+branch  1 taken 0
+    $$$$$:   65-block  1
+    $$$$$:   65-block  2
+       20:   66:  {
+       20:   67:    register_transaction();
+       20:   67-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   68:  }
+       20:   68-block  0
+    $$$$$:   68-block  1
+        -:   69:
+function _ZN4pqxx14nontransactionD2Ev called 20 returned 100% blocks executed 100%
+function _ZN4pqxx14nontransactionD0Ev called 0 returned 0% blocks executed 0%
+       20:   70:  virtual ~nontransaction() override { close(); }
+       20:   70-block  0
+    $$$$$:   70-block  1
+        -:   71:
+        -:   72:private:
+function _ZN4pqxx14nontransaction9do_commitEv called 0 returned 0% blocks executed 0%
+    #####:   73:  virtual void do_commit() override {}
+    $$$$$:   73-block  0
+        -:   74:};
+        -:   75:} // namespace pqxx
+        -:   76:#endif

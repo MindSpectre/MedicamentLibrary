@@ -1,0 +1,88 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/objects/properties/data_property.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <boost/container/flat_map.hpp>
+        -:    4:
+        -:    5:#include "db_field.hpp"
+        -:    6:
+        -:    7:namespace drug_lib::data
+        -:    8:{
+function _ZN8drug_lib4data12DataPropertyC2Ev called 0 returned 0% blocks executed 0%
+        -:    9:    class DataProperty
+        -:   10:    {
+        -:   11:    public:
+function _ZN8drug_lib4data12DataPropertyD2Ev called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib4data12DataPropertyD0Ev called 0 returned 0% blocks executed 0%
+    #####:   12:        virtual ~DataProperty() = default;
+    $$$$$:   12-block  0
+    $$$$$:   12-block  1
+        -:   13:
+        -:   14:        [[nodiscard]] virtual Json::Value get_info() const = 0;
+        -:   15:
+        -:   16:        virtual void set_info(const Json::Value& property) = 0;
+        -:   17:
+        -:   18:        [[nodiscard]] virtual std::string get_name() const = 0;
+        -:   19:
+        -:   20:
+        -:   21:        struct _common_properties
+        -:   22:        {
+        -:   23:        };
+        -:   24:    };
+        -:   25:
+function _ZN8drug_lib4data18PropertyCollectionC2Ev called 5 returned 100% blocks executed 100%
+function _ZN8drug_lib4data18PropertyCollectionD2Ev called 5 returned 100% blocks executed 100%
+        -:   26:    class PropertyCollection final
+        -:   27:    {
+        -:   28:    public:
+function _ZN8drug_lib4data18PropertyCollection12add_propertyERKSt10shared_ptrINS0_12DataPropertyEE called 0 returned 0% blocks executed 0%
+    #####:   29:        void add_property(const std::shared_ptr<DataProperty>& property)
+        -:   30:        {
+    #####:   31:            m_data[property->get_name()] = property;
+    $$$$$:   31-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   31-block  1
+    $$$$$:   31-block  2
+    #####:   32:        }
+    $$$$$:   32-block  0
+        -:   33:
+        -:   34:        void remove_property(const std::shared_ptr<DataProperty>& property)
+        -:   35:        {
+        -:   36:            m_data.erase(property->get_name());
+        -:   37:        }
+        -:   38:
+        -:   39:        void remove_property(const std::string& property_name)
+        -:   40:        {
+        -:   41:            m_data.erase(property_name);
+        -:   42:        }
+        -:   43:
+        -:   44:        [[nodiscard]] std::shared_ptr<DataProperty> get_property(const std::string& property_name) const
+        -:   45:        {
+        -:   46:            return m_data.at(property_name);
+        -:   47:        }
+        -:   48:
+        -:   49:        std::shared_ptr<DataProperty> operator[](const std::string& property_name) const
+        -:   50:        {
+        -:   51:            return m_data.at(property_name);
+        -:   52:        }
+        -:   53:
+        -:   54:        [[nodiscard]] Json::Value get_collection_info() const noexcept
+        -:   55:        {
+        -:   56:            Json::Value result;
+        -:   57:            for (const auto& [name, property] : m_data)
+        -:   58:            {
+        -:   59:                result[name] = property->get_info();
+        -:   60:            }
+        -:   61:            return result;
+        -:   62:        }
+        -:   63:
+        -:   64:        [[nodiscard]] std::unique_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept;
+        -:   65:
+        -:   66:    private:
+        -:   67:        boost::container::flat_map<std::string, std::shared_ptr<DataProperty>> m_data;
+        -:   68:    };
+        -:   69:}

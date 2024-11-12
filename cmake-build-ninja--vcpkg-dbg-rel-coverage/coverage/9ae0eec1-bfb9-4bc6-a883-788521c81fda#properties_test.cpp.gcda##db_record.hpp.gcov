@@ -1,0 +1,164 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/db/base/db_record.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:// db_record.hpp
+        -:    2:
+        -:    3:#pragma once
+        -:    4:#include <memory>
+        -:    5:#include <string>
+        -:    6:
+        -:    7:#include "db_field.hpp"
+        -:    8:
+        -:    9:namespace drug_lib::common::database
+        -:   10:{
+        -:   11:    class Record final
+        -:   12:    {
+        -:   13:    public:
+function _ZN8drug_lib6common8database6RecordD2Ev called 1 returned 100% blocks executed 100%
+        1:   14:        ~Record() = default;
+        1:   14-block  0
+        -:   15:
+function _ZN8drug_lib6common8database6Record9push_backEOSt10unique_ptrINS1_9FieldBaseESt14default_deleteIS4_EE called 6 returned 100% blocks executed 100%
+        6:   16:        void push_back(std::unique_ptr<FieldBase>&& field)
+        -:   17:        {
+        6:   18:            fields_.push_back(std::move(field));
+        6:   19:        }
+        6:   19-block  0
+        -:   20:
+        -:   21:        template <typename FieldType, typename... Args>
+        -:   22:        void emplace_back(Args&&... args)
+        -:   23:        {
+        -:   24:            static_assert(std::is_base_of_v<FieldBase, FieldType>, "FieldType must derive from FieldBase");
+        -:   25:            fields_.emplace_back(std::make_unique<FieldType>(std::forward<Args>(args)...));
+        -:   26:        }
+        -:   27:
+        -:   28:        void pop_back()
+        -:   29:        {
+        -:   30:            fields_.pop_back();
+        -:   31:        }
+        -:   32:
+        -:   33:        void clear()
+        -:   34:        {
+        -:   35:            fields_.clear();
+        -:   36:        }
+        -:   37:
+        -:   38:        Record(Record&& other) noexcept
+        -:   39:            : fields_(std::move(other.fields_))
+        -:   40:        {
+        -:   41:        }
+        -:   42:
+        -:   43:        // Explicitly define the move assignment operator
+        -:   44:        Record& operator=(Record&& other) noexcept
+        -:   45:        {
+        -:   46:            if (this != &other)
+        -:   47:            {
+        -:   48:                fields_ = std::move(other.fields_);
+        -:   49:            }
+        -:   50:            return *this;
+        -:   51:        }
+        -:   52:
+        -:   53:        // Disable the copy constructor and assignment operator to avoid accidental copying
+        -:   54:        Record(const Record&) = delete;
+        -:   55:        Record& operator=(const Record&) = delete;
+        -:   56:        /*explicit*/
+function _ZN8drug_lib6common8database6RecordC2Ev called 1 returned 100% blocks executed 100%
+        1:   57:        Record() = default;
+        1:   57-block  0
+        -:   58:
+        -:   59:        [[nodiscard]] std::unique_ptr<FieldBase> pull_back()
+        -:   60:        {
+        -:   61:            auto tmp = std::move(fields_.back());
+        -:   62:            fields_.pop_back();
+        -:   63:            return std::move(tmp);
+        -:   64:        }
+        -:   65:
+        -:   66:        [[nodiscard]] std::size_t size() const
+        -:   67:        {
+        -:   68:            return fields_.size();
+        -:   69:        }
+        -:   70:
+        -:   71:        const std::unique_ptr<FieldBase>& operator[](const std::size_t idx) const &
+        -:   72:        {
+        -:   73:            return fields_[idx];
+        -:   74:        }
+        -:   75:
+        -:   76:        void reserve(const std::size_t sz)
+        -:   77:        {
+        -:   78:            fields_.reserve(sz);
+        -:   79:        }
+        -:   80:
+        -:   81:        [[nodiscard]] bool empty() const
+        -:   82:        {
+        -:   83:            return fields_.empty();
+        -:   84:        }
+        -:   85:
+function _ZNKR8drug_lib6common8database6Record6fieldsEv called 0 returned 0% blocks executed 0%
+    #####:   86:        [[nodiscard]] const std::vector<std::unique_ptr<FieldBase>>& fields() const &
+        -:   87:        {
+    #####:   88:            return fields_;
+    $$$$$:   88-block  0
+        -:   89:        }
+        -:   90:
+function _ZNO8drug_lib6common8database6Record6fieldsEv called 1 returned 100% blocks executed 100%
+        1:   91:        [[nodiscard]] std::vector<std::unique_ptr<FieldBase>> fields() &&
+        -:   92:        {
+        1:   93:            return std::move(fields_);
+        1:   93-block  0
+        -:   94:        }
+        -:   95:
+        -:   96:
+        -:   97:        // Implement begin() and end() methods
+        -:   98:        auto begin() { return fields_.begin(); }
+        -:   99:        auto end() { return fields_.end(); }
+        -:  100:        [[nodiscard]] auto begin() const { return fields_.cbegin(); }
+        -:  101:        [[nodiscard]] auto end() const { return fields_.cend(); }
+        -:  102:
+        -:  103:    private:
+        -:  104:        std::vector<std::unique_ptr<FieldBase>> fields_;
+        -:  105:    };
+        -:  106:
+        -:  107:
+        -:  108:    class ViewRecord
+        -:  109:    {
+        -:  110:    public:
+        -:  111:        virtual ~ViewRecord() = default;
+        -:  112:        [[nodiscard]] virtual std::string_view view(std::size_t idx) const & = 0;
+        -:  113:        [[nodiscard]] virtual std::string extract(std::size_t idx) const & = 0;
+        -:  114:        [[nodiscard]] virtual std::size_t size() const & = 0;
+        -:  115:        [[nodiscard]] virtual std::string name(std::size_t idx) const & = 0;
+        -:  116:    };
+        -:  117:
+        -:  118:    class BaseViewRecord final : public ViewRecord
+        -:  119:    {
+        -:  120:    public:
+        -:  121:        [[nodiscard]] std::string_view view(const std::size_t idx) const & override
+        -:  122:        {
+        -:  123:            return views_[idx].value();
+        -:  124:        }
+        -:  125:
+        -:  126:        void add_field(ViewingField&& field)
+        -:  127:        {
+        -:  128:            views_.emplace_back(std::move(field));
+        -:  129:        }
+        -:  130:
+        -:  131:        [[nodiscard]] std::string extract(const std::size_t idx) const & override
+        -:  132:        {
+        -:  133:            return std::string{views_[idx].value()};
+        -:  134:        }
+        -:  135:
+        -:  136:        [[nodiscard]] std::size_t size() const & override
+        -:  137:        {
+        -:  138:            return views_.size();
+        -:  139:        }
+        -:  140:
+        -:  141:        [[nodiscard]] std::string name(const std::size_t idx) const & override
+        -:  142:        {
+        -:  143:            return views_[idx].get_name();
+        -:  144:        }
+        -:  145:
+        -:  146:    private:
+        -:  147:        std::vector<ViewingField> views_;
+        -:  148:    };
+        -:  149:}

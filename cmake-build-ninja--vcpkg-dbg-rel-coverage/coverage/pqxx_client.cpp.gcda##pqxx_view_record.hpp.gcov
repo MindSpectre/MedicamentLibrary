@@ -1,0 +1,67 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/db/postgres/pqxx_impl/include/pqxx_view_record.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:namespace drug_lib::common::database
+        -:    4:{
+function _ZN8drug_lib6common8database14PqxxViewRecordD2Ev called 39301708 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database14PqxxViewRecordD0Ev called 39301708 returned 100% blocks executed 100%
+        -:    5:    class PqxxViewRecord final : public ViewRecord
+        -:    6:    {
+        -:    7:    public:
+function _ZNKR8drug_lib6common8database14PqxxViewRecord7extractB5cxx11Em called 396303 returned 100% blocks executed 50%
+   396303:    8:        [[nodiscard]] std::string extract(const std::size_t idx) const & override
+        -:    9:        {
+   396303:   10:            return std::string{row_[static_cast<int32_t>(idx)].view()};
+   396303:   10-block  0
+branch  0 taken 396303
+branch  1 taken 0
+   396303:   10-block  1
+    $$$$$:   10-block  2
+    $$$$$:   10-block  3
+    #####:   11:        }
+        -:   12:
+function _ZNKR8drug_lib6common8database14PqxxViewRecord4viewEm called 0 returned 0% blocks executed 0%
+    #####:   13:        [[nodiscard]] std::string_view view(const std::size_t idx) const & override
+        -:   14:        {
+    #####:   15:            return row_[static_cast<int32_t>(idx)].view();
+    $$$$$:   15-block  0
+        -:   16:        }
+        -:   17:
+function _ZN8drug_lib6common8database14PqxxViewRecord7set_rowEON4pqxx3rowE called 39301708 returned 100% blocks executed 100%
+ 39301708:   18:        void set_row(pqxx::row&& row)
+        -:   19:        {
+ 39301708:   20:            row_ = std::move(row);
+ 39301708:   21:        }
+ 39301708:   21-block  0
+        -:   22:
+function _ZNKR8drug_lib6common8database14PqxxViewRecord4sizeEv called 0 returned 0% blocks executed 0%
+    #####:   23:        [[nodiscard]] std::size_t size() const & override
+        -:   24:        {
+    #####:   25:            return row_.size();
+    $$$$$:   25-block  0
+        -:   26:        }
+        -:   27:
+function _ZNKR8drug_lib6common8database14PqxxViewRecord4nameB5cxx11Em called 0 returned 0% blocks executed 0%
+    #####:   28:        [[nodiscard]] std::string name(const std::size_t idx) const & override
+        -:   29:        {
+    #####:   30:            return row_[static_cast<int32_t>(idx)].name();
+    $$$$$:   30-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   30-block  1
+    $$$$$:   30-block  2
+    $$$$$:   30-block  3
+    #####:   31:        }
+        -:   32:
+function _ZN8drug_lib6common8database14PqxxViewRecordC2Ev called 39301708 returned 100% blocks executed 100%
+ 39301708:   33:        PqxxViewRecord() = default;
+ 39301708:   33-block  0
+        -:   34:
+        -:   35:    private:
+        -:   36:        pqxx::row row_;
+        -:   37:    };
+        -:   38:}

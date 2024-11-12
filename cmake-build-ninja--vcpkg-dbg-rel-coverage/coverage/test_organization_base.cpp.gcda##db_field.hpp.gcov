@@ -1,0 +1,426 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/db/base/db_field.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <chrono>
+        -:    4:#include <iomanip>
+        -:    5:#include <memory>
+        -:    6:#include <sstream>
+        -:    7:#include <string>
+        -:    8:#include <type_traits>
+        -:    9:#include <json/json.h>
+        -:   10:#include <json/value.h>
+        -:   11:
+        -:   12:namespace drug_lib::common::database
+        -:   13:{
+        -:   14:    template <typename T>
+        -:   15:    class Field;
+        -:   16:    /// @brief Base class representing a field in the database
+        -:   17:
+function _ZN8drug_lib6common8database9FieldBaseC2Ev called 11 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database9FieldBaseC2ERKS2_ called 0 returned 0% blocks executed 0%
+        -:   18:    class FieldBase
+        -:   19:    {
+        -:   20:    public:
+function _ZN8drug_lib6common8database9FieldBaseD2Ev called 11 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database9FieldBaseD0Ev called 0 returned 0% blocks executed 0%
+       11:   21:        virtual ~FieldBase() = default;
+       11:   21-block  0
+    $$$$$:   21-block  1
+        -:   22:
+        -:   23:        /// @return Column name of the field
+        -:   24:        [[nodiscard]] virtual const std::string& get_name() const = 0;
+        -:   25:
+        -:   26:        /// @brief Converts the field value to a string for SQL queries
+        -:   27:        [[nodiscard]] virtual std::string to_string() const & = 0;
+        -:   28:
+        -:   29:        /// @brief Converts the field value to a string for SQL queries
+        -:   30:        /// @return moveable
+        -:   31:        [[nodiscard]] virtual std::string to_string() && = 0;
+        -:   32:
+        -:   33:        /// @brief Gets the SQL data type of the field
+        -:   34:        [[nodiscard]] virtual std::string get_sql_type() const = 0;
+        -:   35:
+        -:   36:        template <typename T>
+function _ZNK8drug_lib6common8database9FieldBase2asINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEET_v called 8 returned 100% blocks executed 25%
+function _ZNK8drug_lib6common8database9FieldBase2asIiEET_v called 2 returned 100% blocks executed 25%
+function _ZNK8drug_lib6common8database9FieldBase2asIN4Json5ValueEEET_v called 0 returned 0% blocks executed 0%
+       10:   37:        T as() const
+        -:   38:        {
+        -:   39:            // Ensure that T is a valid type, e.g., int, std::string, etc.
+        -:   40:            static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
+        -:   41:
+        -:   42:            // Attempt to dynamic cast this object to a Field<T> type
+        -:   43:
+       10:   44:            if (const auto* derivedField = dynamic_cast<const Field<T>*>(this))
+        8:   44-block  0
+branch  0 taken 8
+branch  1 taken 0
+        8:   44-block  1
+    $$$$$:   44-block  2
+        8:   44-block  3
+branch  2 taken 8
+branch  3 taken 0
+        2:   44-block  4
+branch  4 taken 2
+branch  5 taken 0
+        2:   44-block  5
+    $$$$$:   44-block  6
+        2:   44-block  7
+branch  6 taken 2
+branch  7 taken 0
+    $$$$$:   44-block  8
+branch  8 never executed
+branch  9 never executed
+    $$$$$:   44-block  9
+    $$$$$:   44-block 10
+    $$$$$:   44-block 11
+branch 10 never executed
+branch 11 never executed
+        -:   45:            {
+       10:   46:                return derivedField->value();
+        8:   46-block  0
+        2:   46-block  1
+    $$$$$:   46-block  2
+        -:   47:            }
+    #####:   48:            throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
+    $$$$$:   48-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   48-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   48-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   48-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   48-block  4
+    $$$$$:   48-block  5
+branch  8 never executed
+branch  9 never executed
+    $$$$$:   48-block  6
+    $$$$$:   48-block  7
+    $$$$$:   48-block  8
+    $$$$$:   48-block  9
+branch 10 never executed
+branch 11 never executed
+    $$$$$:   48-block 10
+branch 12 never executed
+branch 13 never executed
+    $$$$$:   48-block 11
+branch 14 never executed
+branch 15 never executed
+    $$$$$:   48-block 12
+branch 16 never executed
+branch 17 never executed
+    $$$$$:   48-block 13
+    $$$$$:   48-block 14
+branch 18 never executed
+branch 19 never executed
+    $$$$$:   48-block 15
+    $$$$$:   48-block 16
+    $$$$$:   48-block 17
+    $$$$$:   48-block 18
+branch 20 never executed
+branch 21 never executed
+    $$$$$:   48-block 19
+branch 22 never executed
+branch 23 never executed
+    $$$$$:   48-block 20
+branch 24 never executed
+branch 25 never executed
+    $$$$$:   48-block 21
+branch 26 never executed
+branch 27 never executed
+    $$$$$:   48-block 22
+    $$$$$:   48-block 23
+branch 28 never executed
+branch 29 never executed
+    $$$$$:   48-block 24
+    $$$$$:   48-block 25
+    $$$$$:   48-block 26
+    #####:   49:        }
+    $$$$$:   49-block  0
+    $$$$$:   49-block  1
+    $$$$$:   49-block  2
+        -:   50:
+        -:   51:        [[nodiscard]] virtual std::unique_ptr<FieldBase> clone() const = 0;
+        -:   52:    };
+        -:   53:
+        -:   54:    /// @brief Represents a field of a specific type in the database
+        -:   55:    /// @tparam T Type of the value in the database
+        -:   56:    template <typename T>
+function _ZN8drug_lib6common8database5FieldIiED2Ev called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldIiED0Ev called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldIiEC2ERKS3_ called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED2Ev called 8 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED0Ev called 8 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2ERKS9_ called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib6common8database5FieldIN4Json5ValueEED2Ev called 1 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldIN4Json5ValueEED0Ev called 1 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldIN4Json5ValueEEC2ERKS5_ called 0 returned 0% blocks executed 0%
+    #####:   57:    class Field final : public FieldBase
+    $$$$$:   57-block  0
+    $$$$$:   57-block  1
+    $$$$$:   57-block  2
+    $$$$$:   57-block  3
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   57-block  4
+    $$$$$:   57-block  5
+    $$$$$:   57-block  6
+    $$$$$:   57-block  7
+    $$$$$:   57-block  8
+    $$$$$:   57-block  9
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   57-block 10
+    $$$$$:   57-block 11
+    $$$$$:   57-block 12
+    $$$$$:   57-block 13
+    $$$$$:   57-block 14
+        -:   58:    {
+        -:   59:    public:
+function _ZN8drug_lib6common8database5FieldIiEC2ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2ES8_S8_ called 8 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database5FieldIN4Json5ValueEEC2ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES4_ called 1 returned 100% blocks executed 100%
+       11:   60:        Field(std::string name, T value)
+       11:   61:            : name_(std::move(name)), value_(std::move(value))
+       11:   62:        {
+       11:   63:        }
+        2:   63-block  0
+        8:   63-block  1
+        1:   63-block  2
+        -:   64:
+        -:   65:        /// @return Column name of the field
+function _ZNK8drug_lib6common8database5FieldIiE8get_nameB5cxx11Ev called 6 returned 100% blocks executed 100%
+function _ZNK8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8get_nameEv called 14 returned 100% blocks executed 100%
+function _ZNK8drug_lib6common8database5FieldIN4Json5ValueEE8get_nameB5cxx11Ev called 5 returned 100% blocks executed 100%
+       25:   66:        [[nodiscard]] const std::string& get_name() const override { return name_; }
+        6:   66-block  0
+       14:   66-block  1
+        5:   66-block  2
+        -:   67:
+        -:   68:        void set_name(const std::string& name) { name_ = name; }
+        -:   69:        void set_name(std::string&& name) { name_ = std::move(name); }
+        -:   70:
+        -:   71:        /// @return Value of the field
+function _ZNK8drug_lib6common8database5FieldIN4Json5ValueEE5valueEv called 0 returned 0% blocks executed 0%
+function _ZNK8drug_lib6common8database5FieldIiE5valueEv called 2 returned 100% blocks executed 100%
+function _ZNK8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE5valueEv called 8 returned 100% blocks executed 100%
+       10:   72:        const T& value() const { return value_; }
+    $$$$$:   72-block  0
+        2:   72-block  1
+        8:   72-block  2
+        -:   73:        void set_value(const T& value) { value_ = value; }
+        -:   74:        void set_value(T&& value) { value_ = std::move(value); }
+        -:   75:
+        -:   76:        /// @brief Converts the field value to a string for SQL queries
+function _ZNKR8drug_lib6common8database5FieldIiE9to_stringB5cxx11Ev called 0 returned 0% blocks executed 0%
+function _ZNKR8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE9to_stringEv called 0 returned 0% blocks executed 0%
+function _ZNKR8drug_lib6common8database5FieldIN4Json5ValueEE9to_stringB5cxx11Ev called 0 returned 0% blocks executed 0%
+    #####:   77:        [[nodiscard]] std::string to_string() const & override
+        -:   78:        {
+        -:   79:            if constexpr (std::is_same_v<T, std::string>)
+        -:   80:            {
+    #####:   81:                return value_;
+    $$$$$:   81-block  0
+        -:   82:            }
+        -:   83:            else if constexpr (std::is_same_v<T, bool>)
+        -:   84:            {
+        -:   85:                return value_ ? "TRUE" : "FALSE";
+        -:   86:            }
+        -:   87:            else if constexpr (std::is_arithmetic_v<T>)
+        -:   88:            {
+    #####:   89:                return std::to_string(value_);
+    $$$$$:   89-block  0
+        -:   90:            }
+        -:   91:            else if constexpr (std::is_same_v<T, Json::Value>)
+        -:   92:            {
+    #####:   93:                return value_.toStyledString();
+    $$$$$:   93-block  0
+        -:   94:            }
+        -:   95:            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+        -:   96:            {
+        -:   97:                // Convert time_point to string in ISO 8601 format
+        -:   98:                const std::time_t time = std::chrono::system_clock::to_time_t(value_);
+        -:   99:                const std::tm* tm_ptr = std::localtime(&time);
+        -:  100:                std::ostringstream oss;
+        -:  101:                oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");
+        -:  102:                return oss.str();
+        -:  103:            }
+        -:  104:            else
+        -:  105:            {
+        -:  106:                static_assert(sizeof(T) == 0, "Unsupported field type for to_string()");
+        -:  107:            }
+        -:  108:            return {};
+        -:  109:        }
+        -:  110:
+        -:  111:        /// @brief Converts the field value to a string for SQL queries
+function _ZNO8drug_lib6common8database5FieldIiE9to_stringB5cxx11Ev called 0 returned 0% blocks executed 0%
+function _ZNO8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE9to_stringEv called 0 returned 0% blocks executed 0%
+function _ZNO8drug_lib6common8database5FieldIN4Json5ValueEE9to_stringB5cxx11Ev called 0 returned 0% blocks executed 0%
+    #####:  112:        [[nodiscard]] std::string to_string() && override
+        -:  113:        {
+        -:  114:            if constexpr (std::is_same_v<T, std::string>)
+        -:  115:            {
+    #####:  116:                return std::move(value_); // Move the string instead of copying
+    $$$$$:  116-block  0
+        -:  117:            }
+        -:  118:            else if constexpr (std::is_same_v<T, bool>)
+        -:  119:            {
+        -:  120:                return value_ ? "TRUE" : "FALSE";
+        -:  121:            }
+        -:  122:            else if constexpr (std::is_arithmetic_v<T>)
+        -:  123:            {
+    #####:  124:                return std::to_string(value_); // No need to move arithmetic types
+    $$$$$:  124-block  0
+        -:  125:            }
+        -:  126:            else if constexpr (std::is_same_v<T, Json::Value>)
+        -:  127:            {
+    #####:  128:                return value_.toStyledString(); // Move the JSON string representation
+    $$$$$:  128-block  0
+        -:  129:            }
+        -:  130:            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+        -:  131:            {
+        -:  132:                // Convert time_point to string in ISO 8601 format
+        -:  133:                const std::time_t time = std::chrono::system_clock::to_time_t(value_);
+        -:  134:                const std::tm* tm_ptr = std::localtime(&time);
+        -:  135:                std::ostringstream oss;
+        -:  136:                oss << std::put_time(tm_ptr, "%Y-%m-%d %H:%M:%S");
+        -:  137:                return oss.str(); // No need to move, it's a local object
+        -:  138:            }
+        -:  139:            else
+        -:  140:            {
+        -:  141:                static_assert(sizeof(T) == 0, "Unsupported field type for to_string()");
+        -:  142:            }
+        -:  143:            return {};
+        -:  144:        }
+        -:  145:
+        -:  146:        /// @brief Gets the SQL data type of the field
+function _ZNK8drug_lib6common8database5FieldIiE12get_sql_typeB5cxx11Ev called 0 returned 0% blocks executed 0%
+function _ZNK8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE12get_sql_typeEv called 0 returned 0% blocks executed 0%
+function _ZNK8drug_lib6common8database5FieldIN4Json5ValueEE12get_sql_typeB5cxx11Ev called 0 returned 0% blocks executed 0%
+    #####:  147:        [[nodiscard]] std::string get_sql_type() const override
+        -:  148:        {
+        -:  149:            if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>)
+        -:  150:            {
+    #####:  151:                return "INT";
+    $$$$$:  151-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  151-block  1
+    $$$$$:  151-block  2
+    $$$$$:  151-block  3
+        -:  152:            }
+        -:  153:            else if constexpr (std::is_same_v<T, int64_t>)
+        -:  154:            {
+        -:  155:                return "BIGINT";
+        -:  156:            }
+        -:  157:            else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>)
+        -:  158:            {
+        -:  159:                return "DOUBLE PRECISION";
+        -:  160:            }
+        -:  161:            else if constexpr (std::is_same_v<T, std::string>)
+        -:  162:            {
+    #####:  163:                return "TEXT";
+    $$$$$:  163-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  163-block  1
+    $$$$$:  163-block  2
+    $$$$$:  163-block  3
+        -:  164:            }
+        -:  165:            else if constexpr (std::is_same_v<T, Json::Value>)
+        -:  166:            {
+    #####:  167:                return "JSONB";
+    $$$$$:  167-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  167-block  1
+    $$$$$:  167-block  2
+    $$$$$:  167-block  3
+        -:  168:            }
+        -:  169:            else if constexpr (std::is_same_v<T, bool>)
+        -:  170:            {
+        -:  171:                return "BOOLEAN";
+        -:  172:            }
+        -:  173:            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+        -:  174:            {
+        -:  175:                return "TIMESTAMP";
+        -:  176:            }
+        -:  177:            else
+        -:  178:            {
+        -:  179:                static_assert(sizeof(T) == 0, "Unsupported field type for get_sql_type()");
+        -:  180:            }
+        -:  181:            return {};
+    #####:  182:        }
+        -:  183:
+function _ZNK8drug_lib6common8database5FieldIiE5cloneEv called 0 returned 0% blocks executed 0%
+function _ZNK8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE5cloneEv called 0 returned 0% blocks executed 0%
+function _ZNK8drug_lib6common8database5FieldIN4Json5ValueEE5cloneEv called 0 returned 0% blocks executed 0%
+    #####:  184:        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
+        -:  185:        {
+    #####:  186:            return std::make_unique<Field>(*this);
+    $$$$$:  186-block  0
+    $$$$$:  186-block  1
+    $$$$$:  186-block  2
+        -:  187:        }
+        -:  188:
+        -:  189:    private:
+        -:  190:        std::string name_;
+        -:  191:        T value_;
+        -:  192:    };
+        -:  193:
+        -:  194:    class ViewingField final : public FieldBase
+        -:  195:    {
+        -:  196:    public:
+        -:  197:        ViewingField(std::string&& name, std::string_view&& value)
+        -:  198:            : name_(std::move(name)), value_(value)
+        -:  199:        {
+        -:  200:        }
+        -:  201:
+        -:  202:        /// @return Column name of the field
+        -:  203:        [[nodiscard]] const std::string& get_name() const override { return name_; }
+        -:  204:
+        -:  205:        void set_name(const std::string& name) { name_ = name; }
+        -:  206:        void set_name(std::string&& name) { name_ = std::move(name); }
+        -:  207:
+        -:  208:        /// @return Value of the field
+        -:  209:        [[nodiscard]] std::string_view value() const { return value_; }
+        -:  210:        void set_value(const std::string_view& value) { value_ = value; }
+        -:  211:        void set_value(std::string_view&& value) { value_ = value; }
+        -:  212:
+        -:  213:        /// @brief Converts the field value to a string for SQL queries
+        -:  214:        [[nodiscard]] std::string to_string() const & override
+        -:  215:        {
+        -:  216:            return std::string(value_);
+        -:  217:        }
+        -:  218:
+        -:  219:        /// @brief Converts the field value to a string for SQL queries
+        -:  220:        [[nodiscard]] std::string to_string() && override
+        -:  221:        {
+        -:  222:            return std::string(value_);
+        -:  223:        }
+        -:  224:
+        -:  225:        /// @brief Gets the SQL data type of the field
+        -:  226:        [[nodiscard]] std::string get_sql_type() const override
+        -:  227:        {
+        -:  228:            throw std::runtime_error("get_sql_type() called in VIEWING field");
+        -:  229:        }
+        -:  230:
+        -:  231:        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
+        -:  232:        {
+        -:  233:            return std::make_unique<ViewingField>(*this);
+        -:  234:        }
+        -:  235:
+        -:  236:    private:
+        -:  237:        std::string name_;
+        -:  238:        std::string_view value_;
+        -:  239:    };
+        -:  240:}

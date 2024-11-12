@@ -1,0 +1,51 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/boost/move/detail/force_ptr.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Base.dir/patient/test_patient_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Base.dir/patient/test_patient_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1://////////////////////////////////////////////////////////////////////////////
+        -:    2://
+        -:    3:// (C) Copyright Ion Gaztanaga 2014-2015. Distributed under the Boost
+        -:    4:// Software License, Version 1.0. (See accompanying file
+        -:    5:// LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+        -:    6://
+        -:    7:// See http://www.boost.org/libs/container for documentation.
+        -:    8://
+        -:    9://////////////////////////////////////////////////////////////////////////////
+        -:   10:#ifndef BOOST_MOVE_DETAIL_FORCE_CAST_HPP
+        -:   11:#define BOOST_MOVE_DETAIL_FORCE_CAST_HPP
+        -:   12:
+        -:   13:#ifndef BOOST_CONFIG_HPP
+        -:   14:#  include <boost/config.hpp>
+        -:   15:#endif
+        -:   16:
+        -:   17:#if defined(BOOST_HAS_PRAGMA_ONCE)
+        -:   18:#  pragma once
+        -:   19:#endif
+        -:   20:
+        -:   21:#include <boost/move/detail/workaround.hpp>
+        -:   22:
+        -:   23:namespace boost {
+        -:   24:namespace move_detail {
+        -:   25:
+        -:   26:
+        -:   27:template <typename T>
+function _ZN5boost11move_detail9force_ptrIPKNS_9container12vec_iteratorIPSt4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEELb0EEEEET_PVKv called 0 returned 0% blocks executed 0%
+function _ZN5boost11move_detail9force_ptrIPKSt4lessINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEET_PVKv called 0 returned 0% blocks executed 0%
+function _ZN5boost11move_detail9force_ptrIPNS_9container3dtl4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEET_PVKv called 0 returned 0% blocks executed 0%
+function _ZN5boost11move_detail9force_ptrIPKNS_9container12vec_iteratorIPNS2_3dtl4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEELb1EEEEET_PVKv called 0 returned 0% blocks executed 0%
+function _ZN5boost11move_detail9force_ptrIPKNS_9container12vec_iteratorIPSt4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEELb1EEEEET_PVKv called 2 returned 100% blocks executed 100%
+        2:   28:BOOST_MOVE_FORCEINLINE T force_ptr(const volatile void *p)
+        -:   29:{
+        2:   30:   return static_cast<T>(const_cast<void*>(p));
+    $$$$$:   30-block  0
+    $$$$$:   30-block  1
+    $$$$$:   30-block  2
+    $$$$$:   30-block  3
+        2:   30-block  4
+        -:   31:}
+        -:   32:
+        -:   33:}  //namespace move_detail {
+        -:   34:}  //namespace boost {
+        -:   35:
+        -:   36:#endif   //#ifndef BOOST_MOVE_DETAIL_FORCE_CAST_HPP

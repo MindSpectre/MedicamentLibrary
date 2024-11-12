@@ -1,7 +1,7 @@
 #pragma once
 
 #include "handbook.hpp"
-#include "types/patient.hpp"
+#include "patient.hpp"
 
 namespace drug_lib::dao
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "medicaments/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::medicaments
@@ -14,8 +16,10 @@ namespace drug_lib::data::objects::medicaments
             this->set_info(properties);
         }
 
-        explicit PrescriptionDrug(std::string description)
-            : description_(std::move(description))
+        template <typename T>
+            requires std::is_constructible_v<std::string, T>
+        explicit PrescriptionDrug(T description)
+            : description_(description)
         {
         }
 
@@ -48,12 +52,18 @@ namespace drug_lib::data::objects::medicaments
             description_ = std::move(description);
         }
 
-    private:
+
         struct names_of_json_fields
         {
             static constexpr std::string description = "description";
         };
 
+        friend std::ostream& operator<<(std::ostream& os, const PrescriptionDrug& obj)
+        {
+            return os << " description_: " << obj.description_;
+        }
+
+    private:
         // PRESCRIPTION DETAILS
         std::string description_;
     };

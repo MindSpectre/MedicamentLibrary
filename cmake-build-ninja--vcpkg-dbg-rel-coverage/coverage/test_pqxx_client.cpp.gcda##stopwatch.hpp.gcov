@@ -1,0 +1,463 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/stopwatch/include/stopwatch.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <chrono>
+        -:    4:#include <iomanip>
+        -:    5:#include <iostream>
+        -:    6:#include <string>
+        -:    7:#include <vector>
+        -:    8:
+        -:    9:namespace drug_lib::common
+        -:   10:{
+        -:   11:    /**
+        -:   12:     * @brief Stopwatch class used for measuring time intervals.
+        -:   13:     *
+        -:   14:     * @tparam T The time unit used for measuring intervals (milliseconds by default).
+        -:   15:     */
+        -:   16:    template <typename T = std::chrono::milliseconds>
+        -:   17:    class Stopwatch
+        -:   18:    {
+        -:   19:    public:
+        -:   20:        /**
+        -:   21:         * @brief Checks if time is counted from the previous flag.
+        -:   22:         *
+        -:   23:         * @return true if countdown is from the previous flag.
+        -:   24:         */
+        -:   25:        [[nodiscard]] bool is_count_from_prev() const
+        -:   26:        {
+        -:   27:            return countdown_from_prev_;
+        -:   28:        }
+        -:   29:
+        -:   30:        /**
+        -:   31:         * @brief Sets countdown from the previous flag.
+        -:   32:         *
+        -:   33:         * @param state Boolean value to set countdown from previous flag.
+        -:   34:         */
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE23set_countdown_from_prevEb called 3 returned 100% blocks executed 100%
+        3:   35:        void set_countdown_from_prev(const bool state)
+        -:   36:        {
+        3:   37:            countdown_from_prev_ = state;
+        3:   38:        }
+        3:   38-block  0
+        -:   39:
+        -:   40:        /**
+        -:   41:         * @brief Checks if time is counted from the start time.
+        -:   42:         *
+        -:   43:         * @return true if countdown is from the start time.
+        -:   44:         */
+        -:   45:        [[nodiscard]] bool is_count_from_start() const
+        -:   46:        {
+        -:   47:            return countdown_from_start_;
+        -:   48:        }
+        -:   49:
+        -:   50:        /**
+        -:   51:         * @brief Sets countdown from the start time.
+        -:   52:         *
+        -:   53:         * @param state Boolean value to set countdown from start.
+        -:   54:         */
+        -:   55:        void set_countdown_from_start(const bool state)
+        -:   56:        {
+        -:   57:            countdown_from_start_ = state;
+        -:   58:        }
+        -:   59:
+        -:   60:        /**
+        -:   61:         * @brief Constructor that initializes the stopwatch and reserves memory for flags.
+        -:   62:         *
+        -:   63:         * @param name Name of measure
+        -:   64:         * @param flags_cnt_reserve The initial reserved size of the flags vector.
+        -:   65:         */
+        -:   66:        // Constructor
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEEC2ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm called 6 returned 100% blocks executed 42%
+       12:   67:        explicit Stopwatch(std::string name = "", const std::size_t flags_cnt_reserve = 30) : running_name_(
+        6:   67-block  0
+branch  0 taken 6
+branch  1 taken 0
+        6:   67-block  1
+branch  2 taken 6
+branch  3 taken 0
+        -:   68:            std::move(name))
+        -:   69:        {
+        6:   70:            flags_.reserve(flags_cnt_reserve);
+        6:   70-block  0
+branch  0 taken 6
+branch  1 taken 0
+        6:   71:        }
+        6:   71-block  0
+    $$$$$:   71-block  1
+    $$$$$:   71-block  2
+    $$$$$:   71-block  3
+    $$$$$:   71-block  4
+        -:   72:
+        -:   73:        /**
+        -:   74:        * @brief Destructor that automatically prints the times.
+        -:   75:        */
+        -:   76:        // Destructor automatically flushes the times
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEED2Ev called 6 returned 100% blocks executed 100%
+        6:   77:        ~Stopwatch() noexcept
+        -:   78:        {
+        6:   79:            print();
+        6:   80:        }
+        6:   80-block  0
+        -:   81:
+        -:   82:        /**
+        -:   83:        * @brief Starts or resets the stopwatch.
+        -:   84:        */
+        -:   85:        // Start or reset the stopwatch
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE5startENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 6 returned 100% blocks executed 100%
+        6:   86:        void start(std::string name = "") noexcept
+        -:   87:        {
+        6:   88:            running_name_ = std::move(name);
+        6:   89:            start_time_ = now();
+        6:   90:            flags_.clear();
+        6:   91:        }
+        6:   91-block  0
+        -:   92:
+        -:   93:        /**
+        -:   94:         * @brief Stops the stopwatch and prints the times.
+        -:   95:         */
+        -:   96:        // Finish and print the times
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE6finishEv called 4 returned 100% blocks executed 66%
+        4:   97:        void finish() noexcept
+        -:   98:        {
+        4:   99:            flag("Finish");
+        4:   99-block  0
+branch  0 taken 4
+branch  1 taken 0
+    $$$$$:   99-block  1
+        4:  100:            print();
+        4:  101:        }
+        4:  101-block  0
+        -:  102:
+        -:  103:        /**
+        -:  104:         * @brief Prints all flags and time differences.
+        -:  105:         */
+        -:  106:        // Flush the times (printing all flags and time differences)
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE5printEv called 10 returned 100% blocks executed 97%
+       10:  107:        void print() noexcept
+        -:  108:        {
+       10:  109:            if (flags_.empty())
+       10:  109-block  0
+branch  0 taken 4
+branch  1 taken 6
+        4:  110:                return;
+        4:  110-block  0
+        6:  111:            std::cout << "Running: " << running_name_ << '\n' << "Stopwatch times (in " << time_unit_name() << "):\n";
+        6:  111-block  0
+branch  0 taken 6
+branch  1 taken 0
+        6:  111-block  1
+branch  2 taken 6
+branch  3 taken 0
+        6:  111-block  2
+branch  4 taken 6
+branch  5 taken 0
+        6:  111-block  3
+branch  6 taken 6
+branch  7 taken 0
+        6:  111-block  4
+branch  8 taken 6
+branch  9 taken 0
+        6:  111-block  5
+branch 10 taken 6
+branch 11 taken 0
+        6:  111-block  6
+branch 12 taken 6
+branch 13 taken 0
+    $$$$$:  111-block  7
+        6:  112:            auto previous = start_time_;
+       31:  113:            for (size_t i = 0; i < flags_.size(); ++i)
+        6:  113-block  0
+       31:  113-block  1
+branch  0 taken 6
+branch  1 taken 25
+       25:  113-block  2
+        -:  114:            {
+       25:  115:                if (flags_[i].name_.empty())
+       25:  115-block  0
+branch  0 taken 8
+branch  1 taken 17
+        8:  116:                    std::cout << "Flag " << i + 1;
+        8:  116-block  0
+branch  0 taken 8
+branch  1 taken 0
+        8:  116-block  1
+branch  2 taken 8
+branch  3 taken 0
+        8:  116-block  2
+        -:  117:                else
+       17:  118:                    std::cout << flags_[i].name_;
+       17:  118-block  0
+branch  0 taken 17
+branch  1 taken 0
+       25:  119:                if (countdown_from_prev_)
+       25:  119-block  0
+branch  0 taken 25
+branch  1 taken 0
+       50:  120:                    std::cout << "  |  " << std::chrono::duration_cast<T>(flags_[i].point_ - previous).count() <<
+       25:  120-block  0
+branch  0 taken 25
+branch  1 taken 0
+       25:  120-block  1
+branch  2 taken 25
+branch  3 taken 0
+       25:  120-block  2
+branch  4 taken 25
+branch  5 taken 0
+       25:  120-block  3
+branch  6 taken 25
+branch  7 taken 0
+       25:  120-block  4
+branch  8 taken 25
+branch  9 taken 0
+       25:  120-block  5
+branch 10 taken 25
+branch 11 taken 0
+       25:  120-block  6
+       25:  121:                        time_unit_name_short();
+       25:  121-block  0
+branch  0 taken 25
+branch  1 taken 0
+       25:  122:                if (countdown_from_start_)
+       25:  122-block  0
+branch  0 taken 25
+branch  1 taken 0
+       50:  123:                    std::cout << "  |  " << std::chrono::duration_cast<T>(flags_[i].point_ - start_time_).count() <<
+       25:  123-block  0
+branch  0 taken 25
+branch  1 taken 0
+       25:  123-block  1
+branch  2 taken 25
+branch  3 taken 0
+       25:  123-block  2
+branch  4 taken 25
+branch  5 taken 0
+       25:  123-block  3
+branch  6 taken 25
+branch  7 taken 0
+       25:  123-block  4
+branch  8 taken 25
+branch  9 taken 0
+       25:  123-block  5
+branch 10 taken 25
+branch 11 taken 0
+       25:  123-block  6
+       25:  124:                        time_unit_name_short();
+       25:  124-block  0
+branch  0 taken 25
+branch  1 taken 0
+       25:  125:                std::cout << "\n";
+       25:  125-block  0
+branch  0 taken 25
+branch  1 taken 0
+       25:  126:                previous = flags_[i].point_;
+       25:  127:            }
+       25:  127-block  0
+        6:  128:            std::cout << std::endl;
+        6:  128-block  0
+branch  0 taken 6
+branch  1 taken 0
+        6:  129:            flags_.clear();
+       10:  130:        }
+        6:  130-block  0
+       10:  130-block  1
+        -:  131:
+        -:  132:        /**
+        -:  133:          * @brief Resets the stopwatch, clears flags, and sets a new start time.
+        -:  134:          */
+        -:  135:        void reset() noexcept
+        -:  136:        {
+        -:  137:            start();
+        -:  138:        }
+        -:  139:
+        -:  140:        /**
+        -:  141:         * @brief Adds a new flag using the postfix increment operator.
+        -:  142:         *
+        -:  143:         * @return Reference to the Stopwatch object.
+        -:  144:         */
+        -:  145:        Stopwatch& operator++(int)
+        -:  146:        {
+        -:  147:            flag("");
+        -:  148:            return *this;
+        -:  149:        }
+        -:  150:
+        -:  151:        /**
+        -:  152:         * @brief Adds a new flag using the prefix increment operator.
+        -:  153:         *
+        -:  154:         * @return Reference to the Stopwatch object.
+        -:  155:         */
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEEppEv called 8 returned 100% blocks executed 100%
+        8:  156:        Stopwatch& operator++()
+        -:  157:        {
+        8:  158:            flag("");
+        8:  159:            return *this;
+        8:  159-block  0
+        -:  160:        }
+        -:  161:
+        -:  162:        /**
+        -:  163:        * @brief Removes the last flag using the postfix decrement operator.
+        -:  164:        *
+        -:  165:        * @return Reference to the Stopwatch object.
+        -:  166:        */
+        -:  167:        Stopwatch& operator--(int)
+        -:  168:        {
+        -:  169:            if (!flags_.empty())
+        -:  170:            {
+        -:  171:                flags_.pop_back();
+        -:  172:            }
+        -:  173:            return *this;
+        -:  174:        }
+        -:  175:
+        -:  176:        /**
+        -:  177:         * @brief Removes the last flag using the prefix decrement operator.
+        -:  178:         *
+        -:  179:         * @return Reference to the Stopwatch object.
+        -:  180:         */
+        -:  181:        Stopwatch& operator--()
+        -:  182:        {
+        -:  183:            if (!flags_.empty())
+        -:  184:            {
+        -:  185:                flags_.pop_back();
+        -:  186:            }
+        -:  187:            return *this;
+        -:  188:        }
+        -:  189:
+        -:  190:        /**
+        -:  191:           * @brief Adds a new flag with the specified name.
+        -:  192:           *
+        -:  193:           * @tparam string_mv The type of the name parameter (must be convertible to std::string).
+        -:  194:           * @param name The name of the flag.
+        -:  195:           */
+        -:  196:        template <typename string_mv>
+        -:  197:        std::enable_if_t<std::is_same_v<std::remove_cvref_t<string_mv>, std::string> || std::is_convertible_v<
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA30_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA28_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 1 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA7_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 5 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeESE_Esr3stdE16is_convertible_vISH_SE_EEvE4typeEOSH_ called 6 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA17_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA31_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 1 returned 100% blocks executed 100%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4flagIRA1_KcEENSt9enable_ifIXoosr3stdE9is_same_vINSt12remove_cvrefIT_E4typeENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEsr3stdE16is_convertible_vISE_SM_EEvE4typeEOSE_ called 8 returned 100% blocks executed 100%
+       25:  198:                             string_mv, std::string>, void> flag(string_mv&& name)
+        -:  199:        {
+       25:  200:            flags_.emplace_back(std::forward<string_mv>(name), now());
+       25:  201:        }
+        2:  201-block  0
+        1:  201-block  1
+        5:  201-block  2
+        6:  201-block  3
+        2:  201-block  4
+        1:  201-block  5
+        8:  201-block  6
+        -:  202:
+        -:  203:        // Overload -- operator to remove the last flag
+        -:  204:
+        -:  205:    private:
+        6:  206:        bool countdown_from_prev_ = true;
+        6:  207:        bool countdown_from_start_ = true;
+        -:  208:        std::string running_name_;
+        -:  209:
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagC2EOS8_ called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagD2Ev called 25 returned 100% blocks executed 100%
+        -:  210:        struct Flag
+        -:  211:        {
+        -:  212:            std::string name_;
+        -:  213:            std::chrono::time_point<std::chrono::high_resolution_clock> point_;
+        -:  214:
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagC2EONSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS2_10time_pointINS2_3_V212system_clockENS3_IlS4_ILl1ELl1000000000EEEEEE called 25 returned 100% blocks executed 100%
+       25:  215:            Flag(std::string&& name,
+       25:  216:                 const std::chrono::time_point<std::chrono::high_resolution_clock> point) : name_(std::move(name)),
+       25:  217:                point_(point)
+        -:  218:            {
+       25:  219:            }
+       25:  219-block  0
+        -:  220:
+        -:  221:            Flag(const std::string& name,
+        -:  222:                 const std::chrono::time_point<std::chrono::high_resolution_clock> point) : name_(name),
+        -:  223:                point_(point)
+        -:  224:            {
+        -:  225:            }
+        -:  226:        };
+        -:  227:
+        -:  228:        /**
+        -:  229:         * @brief Gets the current time.
+        -:  230:         *
+        -:  231:         * @return The current time point.
+        -:  232:         */
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE3nowEv called 31 returned 100% blocks executed 100%
+       31:  233:        static constexpr auto now() noexcept
+        -:  234:        {
+       31:  235:            return std::chrono::high_resolution_clock::now();
+       31:  235-block  0
+        -:  236:        }
+        -:  237:
+        -:  238:        /**
+        -:  239:         * @brief Gets the name of the time unit as a string.
+        -:  240:         *
+        -:  241:         * @return The name of the time unit (e.g., milliseconds).
+        -:  242:         */
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE14time_unit_nameEv called 6 returned 100% blocks executed 100%
+        6:  243:        [[nodiscard]] static constexpr const char* time_unit_name()
+        -:  244:        {
+        -:  245:            if constexpr (std::is_same_v<T, std::chrono::milliseconds>)
+        -:  246:            {
+        6:  247:                return "milliseconds";
+        6:  247-block  0
+        -:  248:            }
+        -:  249:            else if constexpr (std::is_same_v<T, std::chrono::microseconds>)
+        -:  250:            {
+        -:  251:                return "microseconds";
+        -:  252:            }
+        -:  253:            else if constexpr (std::is_same_v<T, std::chrono::nanoseconds>)
+        -:  254:            {
+        -:  255:                return "nanoseconds";
+        -:  256:            }
+        -:  257:            else if constexpr (std::is_same_v<T, std::chrono::seconds>)
+        -:  258:            {
+        -:  259:                return "seconds";
+        -:  260:            }
+        -:  261:            else
+        -:  262:            {
+        -:  263:                static_assert(sizeof(T) == 0, "Unsupported field type for time");
+        -:  264:            }
+        -:  265:            return {};
+        -:  266:        }
+        -:  267:
+        -:  268:        /**
+        -:  269:         * @brief Gets the short name of the time unit.
+        -:  270:         *
+        -:  271:         * @return The short name of the time unit (e.g., mls for milliseconds).
+        -:  272:         */
+function _ZN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE20time_unit_name_shortEv called 50 returned 100% blocks executed 100%
+       50:  273:        [[nodiscard]] static constexpr const char* time_unit_name_short()
+        -:  274:        {
+        -:  275:            if constexpr (std::is_same_v<T, std::chrono::milliseconds>)
+        -:  276:            {
+       50:  277:                return "mls";
+       50:  277-block  0
+        -:  278:            }
+        -:  279:            else if constexpr (std::is_same_v<T, std::chrono::microseconds>)
+        -:  280:            {
+        -:  281:                return "mcs";
+        -:  282:            }
+        -:  283:            else if constexpr (std::is_same_v<T, std::chrono::nanoseconds>)
+        -:  284:            {
+        -:  285:                return "ns";
+        -:  286:            }
+        -:  287:            else if constexpr (std::is_same_v<T, std::chrono::seconds>)
+        -:  288:            {
+        -:  289:                return "s";
+        -:  290:            }
+        -:  291:            else
+        -:  292:            {
+        -:  293:                static_assert(sizeof(T) == 0, "Unsupported field type for time");
+        -:  294:            }
+        -:  295:            return {};
+        -:  296:        }
+        -:  297:
+        -:  298:        std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
+        -:  299:        std::vector<Flag> flags_;
+        -:  300:    };
+        -:  301:}

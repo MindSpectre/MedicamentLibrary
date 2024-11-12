@@ -1,0 +1,2250 @@
+        -:    0:Source:/usr/include/c++/12/chrono
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Patient_Properties.dir/patient/properties/properties_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:// <chrono> -*- C++ -*-
+        -:    2:
+        -:    3:// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+        -:    4://
+        -:    5:// This file is part of the GNU ISO C++ Library.  This library is free
+        -:    6:// software; you can redistribute it and/or modify it under the
+        -:    7:// terms of the GNU General Public License as published by the
+        -:    8:// Free Software Foundation; either version 3, or (at your option)
+        -:    9:// any later version.
+        -:   10:
+        -:   11:// This library is distributed in the hope that it will be useful,
+        -:   12:// but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13:// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        -:   14:// GNU General Public License for more details.
+        -:   15:
+        -:   16:// Under Section 7 of GPL version 3, you are granted additional
+        -:   17:// permissions described in the GCC Runtime Library Exception, version
+        -:   18:// 3.1, as published by the Free Software Foundation.
+        -:   19:
+        -:   20:// You should have received a copy of the GNU General Public License and
+        -:   21:// a copy of the GCC Runtime Library Exception along with this program;
+        -:   22:// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+        -:   23:// <http://www.gnu.org/licenses/>.
+        -:   24:
+        -:   25:/** @file include/chrono
+        -:   26: *  This is a Standard C++ Library header.
+        -:   27: *  @ingroup chrono
+        -:   28: */
+        -:   29:
+        -:   30:#ifndef _GLIBCXX_CHRONO
+        -:   31:#define _GLIBCXX_CHRONO 1
+        -:   32:
+        -:   33:#pragma GCC system_header
+        -:   34:
+        -:   35:#if __cplusplus < 201103L
+        -:   36:# include <bits/c++0x_warning.h>
+        -:   37:#else
+        -:   38:
+        -:   39:#include <bits/chrono.h>
+        -:   40:#if __cplusplus > 201703L
+        -:   41:# include <sstream> // ostringstream
+        -:   42:# include <bits/charconv.h>
+        -:   43:#endif
+        -:   44:
+        -:   45:namespace std _GLIBCXX_VISIBILITY(default)
+        -:   46:{
+        -:   47:_GLIBCXX_BEGIN_NAMESPACE_VERSION
+        -:   48:
+        -:   49:  /**
+        -:   50:   * @defgroup chrono Time
+        -:   51:   * @ingroup utilities
+        -:   52:   *
+        -:   53:   * Classes and functions for time.
+        -:   54:   *
+        -:   55:   * @since C++11
+        -:   56:   */
+        -:   57:
+        -:   58:  /** @namespace std::chrono
+        -:   59:   *  @brief ISO C++ 2011 namespace for date and time utilities
+        -:   60:   *  @ingroup chrono
+        -:   61:   */
+        -:   62:  namespace chrono
+        -:   63:  {
+        -:   64:#if __cplusplus >= 202002L
+        -:   65:    /// @addtogroup chrono
+        -:   66:    /// @{
+        -:   67:    struct local_t { };
+        -:   68:    template<typename _Duration>
+        -:   69:      using local_time = time_point<local_t, _Duration>;
+        -:   70:    using local_seconds = local_time<seconds>;
+        -:   71:    using local_days = local_time<days>;
+        -:   72:
+        -:   73:    class utc_clock;
+        -:   74:    class tai_clock;
+        -:   75:    class gps_clock;
+        -:   76:
+        -:   77:    template<typename _Duration>
+        -:   78:      using utc_time = time_point<utc_clock, _Duration>;
+        -:   79:    using utc_seconds = utc_time<seconds>;
+        -:   80:
+        -:   81:    template<typename _Duration>
+        -:   82:      using tai_time = time_point<tai_clock, _Duration>;
+        -:   83:    using tai_seconds = tai_time<seconds>;
+        -:   84:
+        -:   85:    template<typename _Duration>
+        -:   86:      using gps_time = time_point<gps_clock, _Duration>;
+        -:   87:    using gps_seconds = gps_time<seconds>;
+        -:   88:
+        -:   89:    template<> struct is_clock<utc_clock> : true_type { };
+        -:   90:    template<> struct is_clock<tai_clock> : true_type { };
+        -:   91:    template<> struct is_clock<gps_clock> : true_type { };
+        -:   92:
+        -:   93:    template<> inline constexpr bool is_clock_v<utc_clock> = true;
+        -:   94:    template<> inline constexpr bool is_clock_v<tai_clock> = true;
+        -:   95:    template<> inline constexpr bool is_clock_v<gps_clock> = true;
+        -:   96:
+        -:   97:    struct leap_second_info
+        -:   98:    {
+        -:   99:      bool is_leap_second;
+        -:  100:      seconds elapsed;
+        -:  101:    };
+        -:  102:
+        -:  103:    // CALENDRICAL TYPES
+        -:  104:
+        -:  105:    // CLASS DECLARATIONS
+        -:  106:    class day;
+        -:  107:    class month;
+        -:  108:    class year;
+        -:  109:    class weekday;
+        -:  110:    class weekday_indexed;
+        -:  111:    class weekday_last;
+        -:  112:    class month_day;
+        -:  113:    class month_day_last;
+        -:  114:    class month_weekday;
+        -:  115:    class month_weekday_last;
+        -:  116:    class year_month;
+        -:  117:    class year_month_day;
+        -:  118:    class year_month_day_last;
+        -:  119:    class year_month_weekday;
+        -:  120:    class year_month_weekday_last;
+        -:  121:
+        -:  122:    struct last_spec
+        -:  123:    {
+        -:  124:      explicit last_spec() = default;
+        -:  125:
+        -:  126:      friend constexpr month_day_last
+        -:  127:      operator/(int __m, last_spec) noexcept;
+        -:  128:
+        -:  129:      friend constexpr month_day_last
+        -:  130:      operator/(last_spec, int __m) noexcept;
+        -:  131:    };
+        -:  132:
+        -:  133:    inline constexpr last_spec last{};
+        -:  134:
+        -:  135:    namespace __detail
+        -:  136:    {
+        -:  137:      // Compute the remainder of the Euclidean division of __n divided by __d.
+        -:  138:      // Euclidean division truncates toward negative infinity and always
+        -:  139:      // produces a remainder in the range of [0,__d-1] (whereas standard
+        -:  140:      // division truncates toward zero and yields a nonpositive remainder
+        -:  141:      // for negative __n).
+        -:  142:      constexpr unsigned
+        -:  143:      __modulo(long long __n, unsigned __d)
+        -:  144:      {
+        -:  145:	if (__n >= 0)
+        -:  146:	  return __n % __d;
+        -:  147:	else
+        -:  148:	  return (__d + (__n % __d)) % __d;
+        -:  149:      }
+        -:  150:
+        -:  151:      inline constexpr unsigned __days_per_month[12]
+        -:  152:	= { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        -:  153:    }
+        -:  154:
+        -:  155:    // DAY
+        -:  156:
+        -:  157:    class day
+        -:  158:    {
+        -:  159:    private:
+        -:  160:      unsigned char _M_d;
+        -:  161:
+        -:  162:    public:
+        -:  163:      day() = default;
+        -:  164:
+        -:  165:      explicit constexpr
+function _ZNSt6chrono3dayC2Ej called 0 returned 0% blocks executed 0%
+    #####:  166:      day(unsigned __d) noexcept
+    #####:  167:      : _M_d(__d)
+    #####:  168:      { }
+    $$$$$:  168-block  0
+        -:  169:
+        -:  170:      constexpr day&
+        -:  171:      operator++() noexcept
+        -:  172:      {
+        -:  173:	++_M_d;
+        -:  174:	return *this;
+        -:  175:      }
+        -:  176:
+        -:  177:      constexpr day
+        -:  178:      operator++(int) noexcept
+        -:  179:      {
+        -:  180:	auto __ret = *this;
+        -:  181:	++(*this);
+        -:  182:	return __ret;
+        -:  183:      }
+        -:  184:
+        -:  185:      constexpr day&
+        -:  186:      operator--() noexcept
+        -:  187:      {
+        -:  188:	--_M_d;
+        -:  189:	return *this;
+        -:  190:      }
+        -:  191:
+        -:  192:      constexpr day
+        -:  193:      operator--(int) noexcept
+        -:  194:      {
+        -:  195:	auto __ret = *this;
+        -:  196:	--(*this);
+        -:  197:	return __ret;
+        -:  198:      }
+        -:  199:
+        -:  200:      constexpr day&
+        -:  201:      operator+=(const days& __d) noexcept
+        -:  202:      {
+        -:  203:	*this = *this + __d;
+        -:  204:	return *this;
+        -:  205:      }
+        -:  206:
+        -:  207:      constexpr day&
+        -:  208:      operator-=(const days& __d) noexcept
+        -:  209:      {
+        -:  210:	*this = *this - __d;
+        -:  211:	return *this;
+        -:  212:      }
+        -:  213:
+        -:  214:      constexpr explicit
+function _ZNKSt6chrono3daycvjEv called 1 returned 100% blocks executed 100%
+        1:  215:      operator unsigned() const noexcept
+        1:  216:      { return _M_d; }
+        1:  216-block  0
+        -:  217:
+        -:  218:      constexpr bool
+        -:  219:      ok() const noexcept
+        -:  220:      { return 1 <= _M_d && _M_d <= 31; }
+        -:  221:
+        -:  222:      friend constexpr bool
+        -:  223:      operator==(const day& __x, const day& __y) noexcept
+        -:  224:      { return unsigned{__x} == unsigned{__y}; }
+        -:  225:
+        -:  226:      friend constexpr strong_ordering
+        -:  227:      operator<=>(const day& __x, const day& __y) noexcept
+        -:  228:      { return unsigned{__x} <=> unsigned{__y}; }
+        -:  229:
+        -:  230:      friend constexpr day
+        -:  231:      operator+(const day& __x, const days& __y) noexcept
+        -:  232:      { return day(unsigned{__x} + __y.count()); }
+        -:  233:
+        -:  234:      friend constexpr day
+        -:  235:      operator+(const days& __x, const day& __y) noexcept
+        -:  236:      { return __y + __x; }
+        -:  237:
+        -:  238:      friend constexpr day
+        -:  239:      operator-(const day& __x, const days& __y) noexcept
+        -:  240:      { return __x + -__y; }
+        -:  241:
+        -:  242:      friend constexpr days
+        -:  243:      operator-(const day& __x, const day& __y) noexcept
+        -:  244:      { return days{int(unsigned{__x}) - int(unsigned{__y})}; }
+        -:  245:
+        -:  246:      friend constexpr month_day
+        -:  247:      operator/(const month& __m, const day& __d) noexcept;
+        -:  248:
+        -:  249:      friend constexpr month_day
+        -:  250:      operator/(int __m, const day& __d) noexcept;
+        -:  251:
+        -:  252:      friend constexpr month_day
+        -:  253:      operator/(const day& __d, const month& __m) noexcept;
+        -:  254:
+        -:  255:      friend constexpr month_day
+        -:  256:      operator/(const day& __d, int __m) noexcept;
+        -:  257:
+        -:  258:      friend constexpr year_month_day
+        -:  259:      operator/(const year_month& __ym, const day& __d) noexcept;
+        -:  260:
+        -:  261:      // TODO: Implement operator<<, to_stream, from_stream.
+        -:  262:    };
+        -:  263:
+        -:  264:    // MONTH
+        -:  265:
+        -:  266:    class month
+        -:  267:    {
+        -:  268:    private:
+        -:  269:      unsigned char _M_m;
+        -:  270:
+        -:  271:    public:
+        -:  272:      month() = default;
+        -:  273:
+        -:  274:      explicit constexpr
+function _ZNSt6chrono5monthC2Ej called 0 returned 0% blocks executed 0%
+    #####:  275:      month(unsigned __m) noexcept
+    #####:  276:      : _M_m(__m)
+    #####:  277:      { }
+    $$$$$:  277-block  0
+        -:  278:
+        -:  279:      constexpr month&
+        -:  280:      operator++() noexcept
+        -:  281:      {
+        -:  282:	*this += months{1};
+        -:  283:	return *this;
+        -:  284:      }
+        -:  285:
+        -:  286:      constexpr month
+        -:  287:      operator++(int) noexcept
+        -:  288:      {
+        -:  289:	auto __ret = *this;
+        -:  290:	++(*this);
+        -:  291:	return __ret;
+        -:  292:      }
+        -:  293:
+        -:  294:      constexpr month&
+        -:  295:      operator--() noexcept
+        -:  296:      {
+        -:  297:	*this -= months{1};
+        -:  298:	return *this;
+        -:  299:      }
+        -:  300:
+        -:  301:      constexpr month
+        -:  302:      operator--(int) noexcept
+        -:  303:      {
+        -:  304:	auto __ret = *this;
+        -:  305:	--(*this);
+        -:  306:	return __ret;
+        -:  307:      }
+        -:  308:
+        -:  309:      constexpr month&
+        -:  310:      operator+=(const months& __m) noexcept
+        -:  311:      {
+        -:  312:	*this = *this + __m;
+        -:  313:	return *this;
+        -:  314:      }
+        -:  315:
+        -:  316:      constexpr month&
+        -:  317:      operator-=(const months& __m) noexcept
+        -:  318:      {
+        -:  319:	*this = *this - __m;
+        -:  320:	return *this;
+        -:  321:      }
+        -:  322:
+        -:  323:      explicit constexpr
+function _ZNKSt6chrono5monthcvjEv called 1 returned 100% blocks executed 100%
+        1:  324:      operator unsigned() const noexcept
+        1:  325:      { return _M_m; }
+        1:  325-block  0
+        -:  326:
+        -:  327:      constexpr bool
+        -:  328:      ok() const noexcept
+        -:  329:      { return 1 <= _M_m && _M_m <= 12; }
+        -:  330:
+        -:  331:      friend constexpr bool
+        -:  332:      operator==(const month& __x, const month& __y) noexcept
+        -:  333:      { return unsigned{__x} == unsigned{__y}; }
+        -:  334:
+        -:  335:      friend constexpr strong_ordering
+        -:  336:      operator<=>(const month& __x, const month& __y) noexcept
+        -:  337:      { return unsigned{__x} <=> unsigned{__y}; }
+        -:  338:
+        -:  339:      friend constexpr month
+        -:  340:      operator+(const month& __x, const months& __y) noexcept
+        -:  341:      {
+        -:  342:	auto __n = static_cast<long long>(unsigned{__x}) + (__y.count() - 1);
+        -:  343:	return month{__detail::__modulo(__n, 12) + 1};
+        -:  344:      }
+        -:  345:
+        -:  346:      friend constexpr month
+        -:  347:      operator+(const months& __x,  const month& __y) noexcept
+        -:  348:      { return __y + __x; }
+        -:  349:
+        -:  350:      friend constexpr month
+        -:  351:      operator-(const month& __x, const months& __y) noexcept
+        -:  352:      { return __x + -__y; }
+        -:  353:
+        -:  354:      friend constexpr months
+        -:  355:      operator-(const month& __x,  const month& __y) noexcept
+        -:  356:      {
+        -:  357:	const auto __dm = int(unsigned(__x)) - int(unsigned(__y));
+        -:  358:	return months{__dm < 0 ? 12 + __dm : __dm};
+        -:  359:      }
+        -:  360:
+        -:  361:      friend constexpr year_month
+        -:  362:      operator/(const year& __y, const month& __m) noexcept;
+        -:  363:
+        -:  364:      friend constexpr month_day
+        -:  365:      operator/(const month& __m, int __d) noexcept;
+        -:  366:
+        -:  367:      friend constexpr month_day_last
+        -:  368:      operator/(const month& __m, last_spec) noexcept;
+        -:  369:
+        -:  370:      friend constexpr month_day_last
+        -:  371:      operator/(last_spec, const month& __m) noexcept;
+        -:  372:
+        -:  373:      friend constexpr month_weekday
+        -:  374:      operator/(const month& __m, const weekday_indexed& __wdi) noexcept;
+        -:  375:
+        -:  376:      friend constexpr month_weekday
+        -:  377:      operator/(const weekday_indexed& __wdi, const month& __m) noexcept;
+        -:  378:
+        -:  379:      friend constexpr month_weekday_last
+        -:  380:      operator/(const month& __m, const weekday_last& __wdl) noexcept;
+        -:  381:
+        -:  382:      friend constexpr month_weekday_last
+        -:  383:      operator/(const weekday_last& __wdl, const month& __m) noexcept;
+        -:  384:
+        -:  385:      // TODO: Implement operator<<, to_stream, from_stream.
+        -:  386:    };
+        -:  387:
+        -:  388:    inline constexpr month January{1};
+        -:  389:    inline constexpr month February{2};
+        -:  390:    inline constexpr month March{3};
+        -:  391:    inline constexpr month April{4};
+        -:  392:    inline constexpr month May{5};
+        -:  393:    inline constexpr month June{6};
+        -:  394:    inline constexpr month July{7};
+        -:  395:    inline constexpr month August{8};
+        -:  396:    inline constexpr month September{9};
+        -:  397:    inline constexpr month October{10};
+        -:  398:    inline constexpr month November{11};
+        -:  399:    inline constexpr month December{12};
+        -:  400:
+        -:  401:    // YEAR
+        -:  402:
+        -:  403:    class year
+        -:  404:    {
+        -:  405:    private:
+        -:  406:      short _M_y;
+        -:  407:
+        -:  408:    public:
+        -:  409:      year() = default;
+        -:  410:
+        -:  411:      explicit constexpr
+function _ZNSt6chrono4yearC2Ei called 0 returned 0% blocks executed 0%
+    #####:  412:      year(int __y) noexcept
+    #####:  413:      : _M_y{static_cast<short>(__y)}
+    #####:  414:      { }
+    $$$$$:  414-block  0
+        -:  415:
+        -:  416:      static constexpr year
+        -:  417:      min() noexcept
+        -:  418:      { return year{-32767}; }
+        -:  419:
+        -:  420:      static constexpr year
+        -:  421:      max() noexcept
+        -:  422:      { return year{32767}; }
+        -:  423:
+        -:  424:      constexpr year&
+        -:  425:      operator++() noexcept
+        -:  426:      {
+        -:  427:	++_M_y;
+        -:  428:	return *this;
+        -:  429:      }
+        -:  430:
+        -:  431:      constexpr year
+        -:  432:      operator++(int) noexcept
+        -:  433:      {
+        -:  434:	auto __ret = *this;
+        -:  435:	++(*this);
+        -:  436:	return __ret;
+        -:  437:      }
+        -:  438:
+        -:  439:      constexpr year&
+        -:  440:      operator--() noexcept
+        -:  441:      {
+        -:  442:	--_M_y;
+        -:  443:	return *this;
+        -:  444:      }
+        -:  445:
+        -:  446:      constexpr year
+        -:  447:      operator--(int) noexcept
+        -:  448:      {
+        -:  449:	auto __ret = *this;
+        -:  450:	--(*this);
+        -:  451:	return __ret;
+        -:  452:      }
+        -:  453:
+        -:  454:      constexpr year&
+        -:  455:      operator+=(const years& __y) noexcept
+        -:  456:      {
+        -:  457:	*this = *this + __y;
+        -:  458:	return *this;
+        -:  459:      }
+        -:  460:
+        -:  461:      constexpr year&
+        -:  462:      operator-=(const years& __y) noexcept
+        -:  463:      {
+        -:  464:	*this = *this - __y;
+        -:  465:	return *this;
+        -:  466:      }
+        -:  467:
+        -:  468:      constexpr year
+        -:  469:      operator+() const noexcept
+        -:  470:      { return *this; }
+        -:  471:
+        -:  472:      constexpr year
+        -:  473:      operator-() const noexcept
+        -:  474:      { return year{-_M_y}; }
+        -:  475:
+        -:  476:      constexpr bool
+        -:  477:      is_leap() const noexcept
+        -:  478:      {
+        -:  479:	// Testing divisibility by 100 first gives better performance, that is,
+        -:  480:	// return (_M_y % 100 != 0 || _M_y % 400 == 0) && _M_y % 4 == 0;
+        -:  481:
+        -:  482:	// It gets even faster if _M_y is in [-536870800, 536870999]
+        -:  483:	// (which is the case here) and _M_y % 100 is replaced by
+        -:  484:	// __is_multiple_of_100 below.
+        -:  485:
+        -:  486:	// References:
+        -:  487:	// [1] https://github.com/cassioneri/calendar
+        -:  488:	// [2] https://accu.org/journals/overload/28/155/overload155.pdf#page=16
+        -:  489:
+        -:  490:	// Furthermore, if y%100 == 0, then y%400==0 is equivalent to y%16==0,
+        -:  491:	// so we can simplify it to (!mult_100 && y % 4 == 0) || y % 16 == 0,
+        -:  492:	// which is equivalent to (y & (mult_100 ? 15 : 3)) == 0.
+        -:  493:	// See https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
+        -:  494:
+        -:  495:	constexpr uint32_t __multiplier   = 42949673;
+        -:  496:	constexpr uint32_t __bound        = 42949669;
+        -:  497:	constexpr uint32_t __max_dividend = 1073741799;
+        -:  498:	constexpr uint32_t __offset       = __max_dividend / 2 / 100 * 100;
+        -:  499:	const bool __is_multiple_of_100
+        -:  500:	  = __multiplier * (_M_y + __offset) < __bound;
+        -:  501:	return (_M_y & (__is_multiple_of_100 ? 15 : 3)) == 0;
+        -:  502:      }
+        -:  503:
+        -:  504:      explicit constexpr
+function _ZNKSt6chrono4yearcviEv called 1 returned 100% blocks executed 100%
+        1:  505:      operator int() const noexcept
+        1:  506:      { return _M_y; }
+        1:  506-block  0
+        -:  507:
+        -:  508:      constexpr bool
+        -:  509:      ok() const noexcept
+        -:  510:      { return min()._M_y <= _M_y && _M_y <= max()._M_y; }
+        -:  511:
+        -:  512:      friend constexpr bool
+        -:  513:      operator==(const year& __x, const year& __y) noexcept
+        -:  514:      { return int{__x} == int{__y}; }
+        -:  515:
+        -:  516:      friend constexpr strong_ordering
+        -:  517:      operator<=>(const year& __x, const year& __y) noexcept
+        -:  518:      { return int{__x} <=> int{__y}; }
+        -:  519:
+        -:  520:      friend constexpr year
+        -:  521:      operator+(const year& __x, const years& __y) noexcept
+        -:  522:      { return year{int{__x} + static_cast<int>(__y.count())}; }
+        -:  523:
+        -:  524:      friend constexpr year
+        -:  525:      operator+(const years& __x, const year& __y) noexcept
+        -:  526:      { return __y + __x; }
+        -:  527:
+        -:  528:      friend constexpr year
+        -:  529:      operator-(const year& __x, const years& __y) noexcept
+        -:  530:      { return __x + -__y; }
+        -:  531:
+        -:  532:      friend constexpr years
+        -:  533:      operator-(const year& __x, const year& __y) noexcept
+        -:  534:      { return years{int{__x} - int{__y}}; }
+        -:  535:
+        -:  536:      friend constexpr year_month
+        -:  537:      operator/(const year& __y, int __m) noexcept;
+        -:  538:
+        -:  539:      friend constexpr year_month_day
+        -:  540:      operator/(const year& __y, const month_day& __md) noexcept;
+        -:  541:
+        -:  542:      friend constexpr year_month_day
+        -:  543:      operator/(const month_day& __md, const year& __y) noexcept;
+        -:  544:
+        -:  545:      friend constexpr year_month_day_last
+        -:  546:      operator/(const year& __y, const month_day_last& __mdl) noexcept;
+        -:  547:
+        -:  548:      friend constexpr year_month_day_last
+        -:  549:      operator/(const month_day_last& __mdl, const year& __y) noexcept;
+        -:  550:
+        -:  551:      friend constexpr year_month_weekday
+        -:  552:      operator/(const year& __y, const month_weekday& __mwd) noexcept;
+        -:  553:
+        -:  554:      friend constexpr year_month_weekday
+        -:  555:      operator/(const month_weekday& __mwd, const year& __y) noexcept;
+        -:  556:
+        -:  557:      friend constexpr year_month_weekday_last
+        -:  558:      operator/(const year& __y, const month_weekday_last& __mwdl) noexcept;
+        -:  559:
+        -:  560:      friend constexpr year_month_weekday_last
+        -:  561:      operator/(const month_weekday_last& __mwdl, const year& __y) noexcept;
+        -:  562:
+        -:  563:      // TODO: Implement operator<<, to_stream, from_stream.
+        -:  564:    };
+        -:  565:
+        -:  566:    // WEEKDAY
+        -:  567:
+        -:  568:    class weekday
+        -:  569:    {
+        -:  570:    private:
+        -:  571:      unsigned char _M_wd;
+        -:  572:
+        -:  573:      static constexpr weekday
+        -:  574:      _S_from_days(const days& __d)
+        -:  575:      {
+        -:  576:	auto __n = __d.count();
+        -:  577:	return weekday(__n >= -4 ? (__n + 4) % 7 : (__n + 5) % 7 + 6);
+        -:  578:      }
+        -:  579:
+        -:  580:    public:
+        -:  581:      weekday() = default;
+        -:  582:
+        -:  583:      explicit constexpr
+        -:  584:      weekday(unsigned __wd) noexcept
+        -:  585:      : _M_wd(__wd == 7 ? 0 : __wd) // __wd % 7 ?
+        -:  586:      { }
+        -:  587:
+        -:  588:      constexpr
+        -:  589:      weekday(const sys_days& __dp) noexcept
+        -:  590:      : weekday{_S_from_days(__dp.time_since_epoch())}
+        -:  591:      { }
+        -:  592:
+        -:  593:      explicit constexpr
+        -:  594:      weekday(const local_days& __dp) noexcept
+        -:  595:      : weekday{sys_days{__dp.time_since_epoch()}}
+        -:  596:      { }
+        -:  597:
+        -:  598:      constexpr weekday&
+        -:  599:      operator++() noexcept
+        -:  600:      {
+        -:  601:	*this += days{1};
+        -:  602:	return *this;
+        -:  603:      }
+        -:  604:
+        -:  605:      constexpr weekday
+        -:  606:      operator++(int) noexcept
+        -:  607:      {
+        -:  608:	auto __ret = *this;
+        -:  609:	++(*this);
+        -:  610:	return __ret;
+        -:  611:      }
+        -:  612:
+        -:  613:      constexpr weekday&
+        -:  614:      operator--() noexcept
+        -:  615:      {
+        -:  616:	*this -= days{1};
+        -:  617:	return *this;
+        -:  618:      }
+        -:  619:
+        -:  620:      constexpr weekday
+        -:  621:      operator--(int) noexcept
+        -:  622:      {
+        -:  623:	auto __ret = *this;
+        -:  624:	--(*this);
+        -:  625:	return __ret;
+        -:  626:      }
+        -:  627:
+        -:  628:      constexpr weekday&
+        -:  629:      operator+=(const days& __d) noexcept
+        -:  630:      {
+        -:  631:	*this = *this + __d;
+        -:  632:	return *this;
+        -:  633:      }
+        -:  634:
+        -:  635:      constexpr weekday&
+        -:  636:      operator-=(const days& __d) noexcept
+        -:  637:      {
+        -:  638:	*this = *this - __d;
+        -:  639:	return *this;
+        -:  640:      }
+        -:  641:
+        -:  642:      constexpr unsigned
+        -:  643:      c_encoding() const noexcept
+        -:  644:      { return _M_wd; }
+        -:  645:
+        -:  646:      constexpr unsigned
+        -:  647:      iso_encoding() const noexcept
+        -:  648:      { return _M_wd == 0u ? 7u : _M_wd; }
+        -:  649:
+        -:  650:      constexpr bool
+        -:  651:      ok() const noexcept
+        -:  652:      { return _M_wd <= 6; }
+        -:  653:
+        -:  654:      constexpr weekday_indexed
+        -:  655:      operator[](unsigned __index) const noexcept;
+        -:  656:
+        -:  657:      constexpr weekday_last
+        -:  658:      operator[](last_spec) const noexcept;
+        -:  659:
+        -:  660:      friend constexpr bool
+        -:  661:      operator==(const weekday& __x, const weekday& __y) noexcept
+        -:  662:      { return __x._M_wd == __y._M_wd; }
+        -:  663:
+        -:  664:      friend constexpr weekday
+        -:  665:      operator+(const weekday& __x, const days& __y) noexcept
+        -:  666:      {
+        -:  667:	auto __n = static_cast<long long>(__x._M_wd) + __y.count();
+        -:  668:	return weekday{__detail::__modulo(__n, 7)};
+        -:  669:      }
+        -:  670:
+        -:  671:      friend constexpr weekday
+        -:  672:      operator+(const days& __x, const weekday& __y) noexcept
+        -:  673:      { return __y + __x; }
+        -:  674:
+        -:  675:      friend constexpr weekday
+        -:  676:      operator-(const weekday& __x, const days& __y) noexcept
+        -:  677:      { return __x + -__y; }
+        -:  678:
+        -:  679:      friend constexpr days
+        -:  680:      operator-(const weekday& __x, const weekday& __y) noexcept
+        -:  681:      {
+        -:  682:	auto __n = static_cast<long long>(__x._M_wd) - __y._M_wd;
+        -:  683:	return days{__detail::__modulo(__n, 7)};
+        -:  684:      }
+        -:  685:
+        -:  686:      // TODO: operator<<, from_stream.
+        -:  687:    };
+        -:  688:
+        -:  689:    inline constexpr weekday Sunday{0};
+        -:  690:    inline constexpr weekday Monday{1};
+        -:  691:    inline constexpr weekday Tuesday{2};
+        -:  692:    inline constexpr weekday Wednesday{3};
+        -:  693:    inline constexpr weekday Thursday{4};
+        -:  694:    inline constexpr weekday Friday{5};
+        -:  695:    inline constexpr weekday Saturday{6};
+        -:  696:
+        -:  697:    // WEEKDAY_INDEXED
+        -:  698:
+        -:  699:    class weekday_indexed
+        -:  700:    {
+        -:  701:    private:
+        -:  702:      chrono::weekday _M_wd;
+        -:  703:      unsigned char _M_index;
+        -:  704:
+        -:  705:    public:
+        -:  706:      weekday_indexed() = default;
+        -:  707:
+        -:  708:      constexpr
+        -:  709:      weekday_indexed(const chrono::weekday& __wd, unsigned __index) noexcept
+        -:  710:      : _M_wd(__wd), _M_index(__index)
+        -:  711:      { }
+        -:  712:
+        -:  713:      constexpr chrono::weekday
+        -:  714:      weekday() const noexcept
+        -:  715:      { return _M_wd; }
+        -:  716:
+        -:  717:      constexpr unsigned
+        -:  718:      index() const noexcept
+        -:  719:      { return _M_index; };
+        -:  720:
+        -:  721:      constexpr bool
+        -:  722:      ok() const noexcept
+        -:  723:      { return _M_wd.ok() && 1 <= _M_index && _M_index <= 5; }
+        -:  724:
+        -:  725:      friend constexpr bool
+        -:  726:      operator==(const weekday_indexed& __x, const weekday_indexed& __y) noexcept
+        -:  727:      { return __x.weekday() == __y.weekday() && __x.index() == __y.index(); }
+        -:  728:
+        -:  729:      friend constexpr month_weekday
+        -:  730:      operator/(const month& __m, const weekday_indexed& __wdi) noexcept;
+        -:  731:
+        -:  732:      friend constexpr month_weekday
+        -:  733:      operator/(int __m, const weekday_indexed& __wdi) noexcept;
+        -:  734:
+        -:  735:      friend constexpr month_weekday
+        -:  736:      operator/(const weekday_indexed& __wdi, const month& __m) noexcept;
+        -:  737:
+        -:  738:      friend constexpr month_weekday
+        -:  739:      operator/(const weekday_indexed& __wdi, int __m) noexcept;
+        -:  740:
+        -:  741:      friend constexpr year_month_weekday
+        -:  742:      operator/(const year_month& __ym, const weekday_indexed& __wdi) noexcept;
+        -:  743:
+        -:  744:      // TODO: Implement operator<<.
+        -:  745:    };
+        -:  746:
+        -:  747:    constexpr weekday_indexed
+        -:  748:    weekday::operator[](unsigned __index) const noexcept
+        -:  749:    { return {*this, __index}; }
+        -:  750:
+        -:  751:    // WEEKDAY_LAST
+        -:  752:
+        -:  753:    class weekday_last
+        -:  754:    {
+        -:  755:    private:
+        -:  756:      chrono::weekday _M_wd;
+        -:  757:
+        -:  758:    public:
+        -:  759:      explicit constexpr
+        -:  760:      weekday_last(const chrono::weekday& __wd) noexcept
+        -:  761:      : _M_wd{__wd}
+        -:  762:      { }
+        -:  763:
+        -:  764:      constexpr chrono::weekday
+        -:  765:      weekday() const noexcept
+        -:  766:      { return _M_wd; }
+        -:  767:
+        -:  768:      constexpr bool
+        -:  769:      ok() const noexcept
+        -:  770:      { return _M_wd.ok(); }
+        -:  771:
+        -:  772:      friend constexpr bool
+        -:  773:      operator==(const weekday_last& __x, const weekday_last& __y) noexcept
+        -:  774:      { return __x.weekday() == __y.weekday(); }
+        -:  775:
+        -:  776:      friend constexpr month_weekday_last
+        -:  777:      operator/(int __m, const weekday_last& __wdl) noexcept;
+        -:  778:
+        -:  779:      friend constexpr month_weekday_last
+        -:  780:      operator/(const weekday_last& __wdl, int __m) noexcept;
+        -:  781:
+        -:  782:      friend constexpr year_month_weekday_last
+        -:  783:      operator/(const year_month& __ym, const weekday_last& __wdl) noexcept;
+        -:  784:
+        -:  785:      // TODO: Implement operator<<.
+        -:  786:    };
+        -:  787:
+        -:  788:    constexpr weekday_last
+        -:  789:    weekday::operator[](last_spec) const noexcept
+        -:  790:    { return weekday_last{*this}; }
+        -:  791:
+        -:  792:    // MONTH_DAY
+        -:  793:
+        -:  794:    class month_day
+        -:  795:    {
+        -:  796:    private:
+        -:  797:      chrono::month _M_m;
+        -:  798:      chrono::day _M_d;
+        -:  799:
+        -:  800:    public:
+        -:  801:      month_day() = default;
+        -:  802:
+        -:  803:      constexpr
+        -:  804:      month_day(const chrono::month& __m, const chrono::day& __d) noexcept
+        -:  805:      : _M_m{__m}, _M_d{__d}
+        -:  806:      { }
+        -:  807:
+        -:  808:      constexpr chrono::month
+        -:  809:      month() const noexcept
+        -:  810:      { return _M_m; }
+        -:  811:
+        -:  812:      constexpr chrono::day
+        -:  813:      day() const noexcept
+        -:  814:      { return _M_d; }
+        -:  815:
+        -:  816:      constexpr bool
+        -:  817:      ok() const noexcept
+        -:  818:      {
+        -:  819:	return _M_m.ok()
+        -:  820:	  && 1u <= unsigned(_M_d)
+        -:  821:	  && unsigned(_M_d) <= __detail::__days_per_month[unsigned(_M_m) - 1];
+        -:  822:      }
+        -:  823:
+        -:  824:      friend constexpr bool
+        -:  825:      operator==(const month_day& __x, const month_day& __y) noexcept
+        -:  826:      { return __x.month() == __y.month() && __x.day() == __y.day(); }
+        -:  827:
+        -:  828:      friend constexpr strong_ordering
+        -:  829:      operator<=>(const month_day& __x, const month_day& __y) noexcept
+        -:  830:	= default;
+        -:  831:
+        -:  832:      friend constexpr month_day
+        -:  833:      operator/(const chrono::month& __m, const chrono::day& __d) noexcept
+        -:  834:      { return {__m, __d}; }
+        -:  835:
+        -:  836:      friend constexpr month_day
+        -:  837:      operator/(const chrono::month& __m, int __d) noexcept
+        -:  838:      { return {__m, chrono::day(unsigned(__d))}; }
+        -:  839:
+        -:  840:      friend constexpr month_day
+        -:  841:      operator/(int __m, const chrono::day& __d) noexcept
+        -:  842:      { return {chrono::month(unsigned(__m)), __d}; }
+        -:  843:
+        -:  844:      friend constexpr month_day
+        -:  845:      operator/(const chrono::day& __d, const chrono::month& __m) noexcept
+        -:  846:      { return {__m, __d}; }
+        -:  847:
+        -:  848:      friend constexpr month_day
+        -:  849:      operator/(const chrono::day& __d, int __m) noexcept
+        -:  850:      { return {chrono::month(unsigned(__m)), __d}; }
+        -:  851:
+        -:  852:      friend constexpr year_month_day
+        -:  853:      operator/(int __y, const month_day& __md) noexcept;
+        -:  854:
+        -:  855:      friend constexpr year_month_day
+        -:  856:      operator/(const month_day& __md, int __y) noexcept;
+        -:  857:
+        -:  858:      // TODO: Implement operator<<, from_stream.
+        -:  859:    };
+        -:  860:
+        -:  861:    // MONTH_DAY_LAST
+        -:  862:
+        -:  863:    class month_day_last
+        -:  864:    {
+        -:  865:    private:
+        -:  866:      chrono::month _M_m;
+        -:  867:
+        -:  868:    public:
+        -:  869:      explicit constexpr
+        -:  870:      month_day_last(const chrono::month& __m) noexcept
+        -:  871:      : _M_m{__m}
+        -:  872:      { }
+        -:  873:
+        -:  874:      constexpr chrono::month
+        -:  875:      month() const noexcept
+        -:  876:      { return _M_m; }
+        -:  877:
+        -:  878:      constexpr bool
+        -:  879:      ok() const noexcept
+        -:  880:      { return _M_m.ok(); }
+        -:  881:
+        -:  882:      friend constexpr bool
+        -:  883:      operator==(const month_day_last& __x, const month_day_last& __y) noexcept
+        -:  884:      { return __x.month() == __y.month(); }
+        -:  885:
+        -:  886:      friend constexpr strong_ordering
+        -:  887:      operator<=>(const month_day_last& __x, const month_day_last& __y) noexcept
+        -:  888:	= default;
+        -:  889:
+        -:  890:      friend constexpr month_day_last
+        -:  891:      operator/(const chrono::month& __m, last_spec) noexcept
+        -:  892:      { return month_day_last{__m}; }
+        -:  893:
+        -:  894:      friend constexpr month_day_last
+        -:  895:      operator/(int __m, last_spec) noexcept
+        -:  896:      { return chrono::month(unsigned(__m)) / last; }
+        -:  897:
+        -:  898:      friend constexpr month_day_last
+        -:  899:      operator/(last_spec, const chrono::month& __m) noexcept
+        -:  900:      { return __m / last; }
+        -:  901:
+        -:  902:      friend constexpr month_day_last
+        -:  903:      operator/(last_spec, int __m) noexcept
+        -:  904:      { return __m / last; }
+        -:  905:
+        -:  906:      friend constexpr year_month_day_last
+        -:  907:      operator/(int __y, const month_day_last& __mdl) noexcept;
+        -:  908:
+        -:  909:      friend constexpr year_month_day_last
+        -:  910:      operator/(const month_day_last& __mdl, int __y) noexcept;
+        -:  911:
+        -:  912:      // TODO: Implement operator<<.
+        -:  913:    };
+        -:  914:
+        -:  915:    // MONTH_WEEKDAY
+        -:  916:
+        -:  917:    class month_weekday
+        -:  918:    {
+        -:  919:    private:
+        -:  920:      chrono::month _M_m;
+        -:  921:      chrono::weekday_indexed _M_wdi;
+        -:  922:
+        -:  923:    public:
+        -:  924:      constexpr
+        -:  925:      month_weekday(const chrono::month& __m,
+        -:  926:		    const chrono::weekday_indexed& __wdi) noexcept
+        -:  927:      : _M_m{__m}, _M_wdi{__wdi}
+        -:  928:      { }
+        -:  929:
+        -:  930:      constexpr chrono::month
+        -:  931:      month() const noexcept
+        -:  932:      { return _M_m; }
+        -:  933:
+        -:  934:      constexpr chrono::weekday_indexed
+        -:  935:      weekday_indexed() const noexcept
+        -:  936:      { return _M_wdi; }
+        -:  937:
+        -:  938:      constexpr bool
+        -:  939:      ok() const noexcept
+        -:  940:      { return _M_m.ok() && _M_wdi.ok(); }
+        -:  941:
+        -:  942:      friend constexpr bool
+        -:  943:      operator==(const month_weekday& __x, const month_weekday& __y) noexcept
+        -:  944:      {
+        -:  945:	return __x.month() == __y.month()
+        -:  946:	  && __x.weekday_indexed() == __y.weekday_indexed();
+        -:  947:      }
+        -:  948:
+        -:  949:      friend constexpr month_weekday
+        -:  950:      operator/(const chrono::month& __m,
+        -:  951:		const chrono::weekday_indexed& __wdi) noexcept
+        -:  952:      { return {__m, __wdi}; }
+        -:  953:
+        -:  954:      friend constexpr month_weekday
+        -:  955:      operator/(int __m, const chrono::weekday_indexed& __wdi) noexcept
+        -:  956:      { return chrono::month(unsigned(__m)) / __wdi; }
+        -:  957:
+        -:  958:      friend constexpr month_weekday
+        -:  959:      operator/(const chrono::weekday_indexed& __wdi,
+        -:  960:		const chrono::month& __m) noexcept
+        -:  961:      { return __m / __wdi; }
+        -:  962:
+        -:  963:      friend constexpr month_weekday
+        -:  964:      operator/(const chrono::weekday_indexed& __wdi, int __m) noexcept
+        -:  965:      { return __m / __wdi; }
+        -:  966:
+        -:  967:      friend constexpr year_month_weekday
+        -:  968:      operator/(int __y, const month_weekday& __mwd) noexcept;
+        -:  969:
+        -:  970:      friend constexpr year_month_weekday
+        -:  971:      operator/(const month_weekday& __mwd, int __y) noexcept;
+        -:  972:
+        -:  973:      // TODO: Implement operator<<.
+        -:  974:    };
+        -:  975:
+        -:  976:    // MONTH_WEEKDAY_LAST
+        -:  977:
+        -:  978:    class month_weekday_last
+        -:  979:    {
+        -:  980:    private:
+        -:  981:      chrono::month _M_m;
+        -:  982:      chrono::weekday_last _M_wdl;
+        -:  983:
+        -:  984:    public:
+        -:  985:      constexpr
+        -:  986:      month_weekday_last(const chrono::month& __m,
+        -:  987:			 const chrono::weekday_last& __wdl) noexcept
+        -:  988:      :_M_m{__m}, _M_wdl{__wdl}
+        -:  989:      { }
+        -:  990:
+        -:  991:      constexpr chrono::month
+        -:  992:      month() const noexcept
+        -:  993:      { return _M_m; }
+        -:  994:
+        -:  995:      constexpr chrono::weekday_last
+        -:  996:      weekday_last() const noexcept
+        -:  997:      { return _M_wdl; }
+        -:  998:
+        -:  999:      constexpr bool
+        -: 1000:      ok() const noexcept
+        -: 1001:      { return _M_m.ok() && _M_wdl.ok(); }
+        -: 1002:
+        -: 1003:      friend constexpr bool
+        -: 1004:      operator==(const month_weekday_last& __x,
+        -: 1005:		 const month_weekday_last& __y) noexcept
+        -: 1006:      {
+        -: 1007:	return __x.month() == __y.month()
+        -: 1008:	  && __x.weekday_last() == __y.weekday_last();
+        -: 1009:      }
+        -: 1010:
+        -: 1011:      friend constexpr month_weekday_last
+        -: 1012:      operator/(const chrono::month& __m,
+        -: 1013:		const chrono::weekday_last& __wdl) noexcept
+        -: 1014:      { return {__m, __wdl}; }
+        -: 1015:
+        -: 1016:      friend constexpr month_weekday_last
+        -: 1017:      operator/(int __m, const chrono::weekday_last& __wdl) noexcept
+        -: 1018:      { return chrono::month(unsigned(__m)) / __wdl; }
+        -: 1019:
+        -: 1020:      friend constexpr month_weekday_last
+        -: 1021:      operator/(const chrono::weekday_last& __wdl,
+        -: 1022:		const chrono::month& __m) noexcept
+        -: 1023:      { return __m / __wdl; }
+        -: 1024:
+        -: 1025:      friend constexpr month_weekday_last
+        -: 1026:      operator/(const chrono::weekday_last& __wdl, int __m) noexcept
+        -: 1027:      { return chrono::month(unsigned(__m)) / __wdl; }
+        -: 1028:
+        -: 1029:      friend constexpr year_month_weekday_last
+        -: 1030:      operator/(int __y, const month_weekday_last& __mwdl) noexcept;
+        -: 1031:
+        -: 1032:      friend constexpr year_month_weekday_last
+        -: 1033:      operator/(const month_weekday_last& __mwdl, int __y) noexcept;
+        -: 1034:
+        -: 1035:      // TODO: Implement operator<<.
+        -: 1036:    };
+        -: 1037:
+        -: 1038:    // YEAR_MONTH
+        -: 1039:
+        -: 1040:    namespace __detail
+        -: 1041:    {
+        -: 1042:      // [time.cal.ym], [time.cal.ymd], etc constrain the 'months'-based
+        -: 1043:      // addition/subtraction operator overloads like so:
+        -: 1044:      //
+        -: 1045:      //   Constraints: if the argument supplied by the caller for the months
+        -: 1046:      //   parameter is convertible to years, its implicit conversion sequence
+        -: 1047:      //   to years is worse than its implicit conversion sequence to months.
+        -: 1048:      //
+        -: 1049:      // We realize this constraint by templatizing the 'months'-based
+        -: 1050:      // overloads (using a dummy defaulted template parameter), so that
+        -: 1051:      // overload resolution doesn't select the 'months'-based overload unless
+        -: 1052:      // the implicit conversion sequence to 'months' is better than that to
+        -: 1053:      // 'years'.
+        -: 1054:      using __months_years_conversion_disambiguator = void;
+        -: 1055:    }
+        -: 1056:
+        -: 1057:    class year_month
+        -: 1058:    {
+        -: 1059:    private:
+        -: 1060:      chrono::year _M_y;
+        -: 1061:      chrono::month _M_m;
+        -: 1062:
+        -: 1063:    public:
+        -: 1064:      year_month() = default;
+        -: 1065:
+        -: 1066:      constexpr
+        -: 1067:      year_month(const chrono::year& __y, const chrono::month& __m) noexcept
+        -: 1068:      : _M_y{__y}, _M_m{__m}
+        -: 1069:      { }
+        -: 1070:
+        -: 1071:      constexpr chrono::year
+        -: 1072:      year() const noexcept
+        -: 1073:      { return _M_y; }
+        -: 1074:
+        -: 1075:      constexpr chrono::month
+        -: 1076:      month() const noexcept
+        -: 1077:      { return _M_m; }
+        -: 1078:
+        -: 1079:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1080:	constexpr year_month&
+        -: 1081:	operator+=(const months& __dm) noexcept
+        -: 1082:	{
+        -: 1083:	  *this = *this + __dm;
+        -: 1084:	  return *this;
+        -: 1085:	}
+        -: 1086:
+        -: 1087:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1088:	constexpr year_month&
+        -: 1089:	operator-=(const months& __dm) noexcept
+        -: 1090:	{
+        -: 1091:	  *this = *this - __dm;
+        -: 1092:	  return *this;
+        -: 1093:	}
+        -: 1094:
+        -: 1095:      constexpr year_month&
+        -: 1096:      operator+=(const years& __dy)  noexcept
+        -: 1097:      {
+        -: 1098:	*this = *this + __dy;
+        -: 1099:	return *this;
+        -: 1100:      }
+        -: 1101:
+        -: 1102:      constexpr year_month&
+        -: 1103:      operator-=(const years& __dy)  noexcept
+        -: 1104:      {
+        -: 1105:	*this = *this - __dy;
+        -: 1106:	return *this;
+        -: 1107:      }
+        -: 1108:
+        -: 1109:      constexpr bool
+        -: 1110:      ok() const noexcept
+        -: 1111:      { return _M_y.ok() && _M_m.ok(); }
+        -: 1112:
+        -: 1113:      friend constexpr bool
+        -: 1114:      operator==(const year_month& __x, const year_month& __y) noexcept
+        -: 1115:      { return __x.year() == __y.year() && __x.month() == __y.month(); }
+        -: 1116:
+        -: 1117:      friend constexpr strong_ordering
+        -: 1118:      operator<=>(const year_month& __x, const year_month& __y) noexcept
+        -: 1119:	= default;
+        -: 1120:
+        -: 1121:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1122:	friend constexpr year_month
+        -: 1123:	operator+(const year_month& __ym, const months& __dm) noexcept
+        -: 1124:	{
+        -: 1125:	  // TODO: Optimize?
+        -: 1126:	  auto __m = __ym.month() + __dm;
+        -: 1127:	  auto __i = int(unsigned(__ym.month())) - 1 + __dm.count();
+        -: 1128:	  auto __y = (__i < 0
+        -: 1129:		      ? __ym.year() + years{(__i - 11) / 12}
+        -: 1130:		      : __ym.year() + years{__i / 12});
+        -: 1131:	  return __y / __m;
+        -: 1132:	}
+        -: 1133:
+        -: 1134:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1135:	friend constexpr year_month
+        -: 1136:	operator+(const months& __dm, const year_month& __ym) noexcept
+        -: 1137:	{ return __ym + __dm; }
+        -: 1138:
+        -: 1139:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1140:	friend constexpr year_month
+        -: 1141:	operator-(const year_month& __ym, const months& __dm) noexcept
+        -: 1142:	{ return __ym + -__dm; }
+        -: 1143:
+        -: 1144:      friend constexpr months
+        -: 1145:      operator-(const year_month& __x, const year_month& __y) noexcept
+        -: 1146:      {
+        -: 1147:	return (__x.year() - __y.year()
+        -: 1148:		+ months{static_cast<int>(unsigned{__x.month()})
+        -: 1149:			 - static_cast<int>(unsigned{__y.month()})});
+        -: 1150:      }
+        -: 1151:
+        -: 1152:      friend constexpr year_month
+        -: 1153:      operator+(const year_month& __ym, const years& __dy) noexcept
+        -: 1154:      { return (__ym.year() + __dy) / __ym.month(); }
+        -: 1155:
+        -: 1156:      friend constexpr year_month
+        -: 1157:      operator+(const years& __dy, const year_month& __ym) noexcept
+        -: 1158:      { return __ym + __dy; }
+        -: 1159:
+        -: 1160:      friend constexpr year_month
+        -: 1161:      operator-(const year_month& __ym, const years& __dy) noexcept
+        -: 1162:      { return __ym + -__dy; }
+        -: 1163:
+        -: 1164:      friend constexpr year_month
+        -: 1165:      operator/(const chrono::year& __y, const chrono::month& __m) noexcept
+        -: 1166:      { return {__y, __m}; }
+        -: 1167:
+        -: 1168:      friend constexpr year_month
+        -: 1169:      operator/(const chrono::year& __y, int __m) noexcept
+        -: 1170:      { return {__y, chrono::month(unsigned(__m))}; }
+        -: 1171:
+        -: 1172:      friend constexpr year_month_day
+        -: 1173:      operator/(const year_month& __ym, int __d) noexcept;
+        -: 1174:
+        -: 1175:      friend constexpr year_month_day_last
+        -: 1176:      operator/(const year_month& __ym, last_spec) noexcept;
+        -: 1177:
+        -: 1178:      // TODO: Implement operator<<, from_stream.
+        -: 1179:    };
+        -: 1180:
+        -: 1181:    // YEAR_MONTH_DAY
+        -: 1182:
+        -: 1183:    class year_month_day
+        -: 1184:    {
+        -: 1185:    private:
+        -: 1186:      chrono::year _M_y;
+        -: 1187:      chrono::month _M_m;
+        -: 1188:      chrono::day _M_d;
+        -: 1189:
+        -: 1190:      static constexpr year_month_day _S_from_days(const days& __dp) noexcept;
+        -: 1191:
+        -: 1192:      constexpr days _M_days_since_epoch() const noexcept;
+        -: 1193:
+        -: 1194:    public:
+        -: 1195:      year_month_day() = default;
+        -: 1196:
+        -: 1197:      constexpr
+function _ZNSt6chrono14year_month_dayC2ERKNS_4yearERKNS_5monthERKNS_3dayE called 0 returned 0% blocks executed 0%
+    #####: 1198:      year_month_day(const chrono::year& __y, const chrono::month& __m,
+        -: 1199:		     const chrono::day& __d) noexcept
+    #####: 1200:      : _M_y{__y}, _M_m{__m}, _M_d{__d}
+    #####: 1201:      { }
+    $$$$$: 1201-block  0
+        -: 1202:
+        -: 1203:      constexpr
+        -: 1204:      year_month_day(const year_month_day_last& __ymdl) noexcept;
+        -: 1205:
+        -: 1206:      constexpr
+function _ZNSt6chrono14year_month_dayC2ERKNS_10time_pointINS_3_V212system_clockENS_8durationIlSt5ratioILl86400ELl1EEEEEE called 0 returned 0% blocks executed 0%
+    #####: 1207:      year_month_day(const sys_days& __dp) noexcept
+    #####: 1208:      : year_month_day(_S_from_days(__dp.time_since_epoch()))
+    $$$$$: 1208-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$: 1208-block  1
+    #####: 1209:      { }
+    $$$$$: 1209-block  0
+        -: 1210:
+        -: 1211:      explicit constexpr
+        -: 1212:      year_month_day(const local_days& __dp) noexcept
+        -: 1213:      : year_month_day(sys_days{__dp.time_since_epoch()})
+        -: 1214:      { }
+        -: 1215:
+        -: 1216:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1217:	constexpr year_month_day&
+        -: 1218:	operator+=(const months& __m) noexcept
+        -: 1219:	{
+        -: 1220:	  *this = *this + __m;
+        -: 1221:	  return *this;
+        -: 1222:	}
+        -: 1223:
+        -: 1224:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1225:	constexpr year_month_day&
+        -: 1226:	operator-=(const months& __m) noexcept
+        -: 1227:	{
+        -: 1228:	  *this = *this - __m;
+        -: 1229:	  return *this;
+        -: 1230:	}
+        -: 1231:
+        -: 1232:      constexpr year_month_day&
+        -: 1233:      operator+=(const years& __y) noexcept
+        -: 1234:      {
+        -: 1235:	*this = *this + __y;
+        -: 1236:	return *this;
+        -: 1237:      }
+        -: 1238:
+        -: 1239:      constexpr year_month_day&
+        -: 1240:      operator-=(const years& __y) noexcept
+        -: 1241:      {
+        -: 1242:	*this = *this - __y;
+        -: 1243:	return *this;
+        -: 1244:      }
+        -: 1245:
+        -: 1246:      constexpr chrono::year
+        -: 1247:      year() const noexcept
+        -: 1248:      { return _M_y; }
+        -: 1249:
+        -: 1250:      constexpr chrono::month
+        -: 1251:      month() const noexcept
+        -: 1252:      { return _M_m; }
+        -: 1253:
+        -: 1254:      constexpr chrono::day
+        -: 1255:      day() const noexcept
+        -: 1256:      { return _M_d; }
+        -: 1257:
+        -: 1258:      constexpr
+function _ZNKSt6chrono14year_month_daycvNS_10time_pointINS_3_V212system_clockENS_8durationIlSt5ratioILl86400ELl1EEEEEEEv called 1 returned 100% blocks executed 66%
+        1: 1259:      operator sys_days() const noexcept
+        1: 1260:      { return sys_days{_M_days_since_epoch()}; }
+        1: 1260-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1: 1260-block  1
+    $$$$$: 1260-block  2
+        -: 1261:
+        -: 1262:      explicit constexpr
+        -: 1263:      operator local_days() const noexcept
+        -: 1264:      { return local_days{sys_days{*this}.time_since_epoch()}; }
+        -: 1265:
+        -: 1266:      constexpr bool ok() const noexcept;
+        -: 1267:
+        -: 1268:      friend constexpr bool
+        -: 1269:      operator==(const year_month_day& __x, const year_month_day& __y) noexcept
+        -: 1270:      {
+        -: 1271:	return __x.year() == __y.year()
+        -: 1272:	  && __x.month() == __y.month()
+        -: 1273:	  && __x.day() == __y.day();
+        -: 1274:      }
+        -: 1275:
+        -: 1276:      friend constexpr strong_ordering
+        -: 1277:      operator<=>(const year_month_day& __x, const year_month_day& __y) noexcept
+        -: 1278:	= default;
+        -: 1279:
+        -: 1280:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1281:	friend constexpr year_month_day
+        -: 1282:	operator+(const year_month_day& __ymd, const months& __dm) noexcept
+        -: 1283:	{ return (__ymd.year() / __ymd.month() + __dm) / __ymd.day(); }
+        -: 1284:
+        -: 1285:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1286:	friend constexpr year_month_day
+        -: 1287:	operator+(const months& __dm, const year_month_day& __ymd) noexcept
+        -: 1288:	{ return __ymd + __dm; }
+        -: 1289:
+        -: 1290:      friend constexpr year_month_day
+        -: 1291:      operator+(const year_month_day& __ymd, const years& __dy) noexcept
+        -: 1292:      { return (__ymd.year() + __dy) / __ymd.month() / __ymd.day(); }
+        -: 1293:
+        -: 1294:      friend constexpr year_month_day
+        -: 1295:      operator+(const years& __dy, const year_month_day& __ymd) noexcept
+        -: 1296:      { return __ymd + __dy; }
+        -: 1297:
+        -: 1298:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1299:	friend constexpr year_month_day
+        -: 1300:	operator-(const year_month_day& __ymd, const months& __dm) noexcept
+        -: 1301:	{ return __ymd + -__dm; }
+        -: 1302:
+        -: 1303:      friend constexpr year_month_day
+        -: 1304:      operator-(const year_month_day& __ymd, const years& __dy) noexcept
+        -: 1305:      { return __ymd + -__dy; }
+        -: 1306:
+        -: 1307:      friend constexpr year_month_day
+        -: 1308:      operator/(const year_month& __ym, const chrono::day& __d) noexcept
+        -: 1309:      { return {__ym.year(), __ym.month(), __d}; }
+        -: 1310:
+        -: 1311:      friend constexpr year_month_day
+        -: 1312:      operator/(const year_month& __ym, int __d) noexcept
+        -: 1313:      { return __ym / chrono::day{unsigned(__d)}; }
+        -: 1314:
+        -: 1315:      friend constexpr year_month_day
+        -: 1316:      operator/(const chrono::year& __y, const month_day& __md) noexcept
+        -: 1317:      { return __y / __md.month() / __md.day(); }
+        -: 1318:
+        -: 1319:      friend constexpr year_month_day
+        -: 1320:      operator/(int __y, const month_day& __md) noexcept
+        -: 1321:      { return chrono::year{__y} / __md; }
+        -: 1322:
+        -: 1323:      friend constexpr year_month_day
+        -: 1324:      operator/(const month_day& __md, const chrono::year& __y) noexcept
+        -: 1325:      { return __y / __md; }
+        -: 1326:
+        -: 1327:      friend constexpr year_month_day
+        -: 1328:      operator/(const month_day& __md, int __y) noexcept
+        -: 1329:      { return chrono::year(__y) / __md; }
+        -: 1330:
+        -: 1331:      // TODO: Implement operator<<, from_stream.
+        -: 1332:    };
+        -: 1333:
+        -: 1334:    // Construct from days since 1970/01/01.
+        -: 1335:    // Proposition 6.3 of Neri and Schneider,
+        -: 1336:    // "Euclidean Affine Functions and Applications to Calendar Algorithms".
+        -: 1337:    // https://arxiv.org/abs/2102.06959
+        -: 1338:    constexpr year_month_day
+function _ZNSt6chrono14year_month_day12_S_from_daysERKNS_8durationIlSt5ratioILl86400ELl1EEEE called 0 returned 0% blocks executed 0%
+    #####: 1339:    year_month_day::_S_from_days(const days& __dp) noexcept
+        -: 1340:    {
+    #####: 1341:      constexpr auto __z2    = static_cast<uint32_t>(-1468000);
+    #####: 1342:      constexpr auto __r2_e3 = static_cast<uint32_t>(536895458);
+        -: 1343:
+    #####: 1344:      const auto __r0 = static_cast<uint32_t>(__dp.count()) + __r2_e3;
+        -: 1345:
+    #####: 1346:      const auto __n1 = 4 * __r0 + 3;
+    #####: 1347:      const auto __q1 = __n1 / 146097;
+    #####: 1348:      const auto __r1 = __n1 % 146097 / 4;
+        -: 1349:
+    #####: 1350:      constexpr auto __p32 = static_cast<uint64_t>(1) << 32;
+    #####: 1351:      const auto __n2 = 4 * __r1 + 3;
+    #####: 1352:      const auto __u2 = static_cast<uint64_t>(2939745) * __n2;
+    #####: 1353:      const auto __q2 = static_cast<uint32_t>(__u2 / __p32);
+    #####: 1354:      const auto __r2 = static_cast<uint32_t>(__u2 % __p32) / 2939745 / 4;
+        -: 1355:
+    #####: 1356:      constexpr auto __p16 = static_cast<uint32_t>(1) << 16;
+    #####: 1357:      const auto __n3 = 2141 * __r2 + 197913;
+    #####: 1358:      const auto __q3 = __n3 / __p16;
+    #####: 1359:      const auto __r3 = __n3 % __p16 / 2141;
+        -: 1360:
+    #####: 1361:      const auto __y0 = 100 * __q1 + __q2;
+    #####: 1362:      const auto __m0 = __q3;
+    #####: 1363:      const auto __d0 = __r3;
+        -: 1364:
+    #####: 1365:      const auto __j  = __r2 >= 306;
+    #####: 1366:      const auto __y1 = __y0 + __j;
+    #####: 1367:      const auto __m1 = __j ? __m0 - 12 : __m0;
+    $$$$$: 1367-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$: 1367-block  1
+    $$$$$: 1367-block  2
+    #####: 1368:      const auto __d1 = __d0 + 1;
+        -: 1369:
+    #####: 1370:      return year_month_day{chrono::year{static_cast<int>(__y1 + __z2)},
+    $$$$$: 1370-block  0
+    $$$$$: 1370-block  1
+    #####: 1371:			    chrono::month{__m1}, chrono::day{__d1}};
+        -: 1372:    }
+        -: 1373:
+        -: 1374:    // Days since 1970/01/01.
+        -: 1375:    // Proposition 6.2 of Neri and Schneider,
+        -: 1376:    // "Euclidean Affine Functions and Applications to Calendar Algorithms".
+        -: 1377:    // https://arxiv.org/abs/2102.06959
+        -: 1378:    constexpr days
+function _ZNKSt6chrono14year_month_day19_M_days_since_epochEv called 1 returned 100% blocks executed 66%
+        1: 1379:    year_month_day::_M_days_since_epoch() const noexcept
+        -: 1380:    {
+        1: 1381:      auto constexpr __z2    = static_cast<uint32_t>(-1468000);
+        1: 1382:      auto constexpr __r2_e3 = static_cast<uint32_t>(536895458);
+        -: 1383:
+        1: 1384:      const auto __y1 = static_cast<uint32_t>(static_cast<int>(_M_y)) - __z2;
+        1: 1385:      const auto __m1 = static_cast<uint32_t>(static_cast<unsigned>(_M_m));
+        1: 1386:      const auto __d1 = static_cast<uint32_t>(static_cast<unsigned>(_M_d));
+        -: 1387:
+        1: 1388:      const auto __j  = static_cast<uint32_t>(__m1 < 3);
+        1: 1389:      const auto __y0 = __y1 - __j;
+        1: 1390:      const auto __m0 = __j ? __m1 + 12 : __m1;
+        1: 1390-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1: 1390-block  1
+    $$$$$: 1390-block  2
+        1: 1391:      const auto __d0 = __d1 - 1;
+        -: 1392:
+        1: 1393:      const auto __q1 = __y0 / 100;
+        1: 1394:      const auto __yc = 1461 * __y0 / 4 - __q1 + __q1 / 4;
+        1: 1395:      const auto __mc = (979 *__m0 - 2919) / 32;
+        1: 1396:      const auto __dc = __d0;
+        -: 1397:
+        1: 1398:      return days{static_cast<int32_t>(__yc + __mc + __dc - __r2_e3)};
+        1: 1398-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1: 1398-block  1
+    $$$$$: 1398-block  2
+        -: 1399:    }
+        -: 1400:
+        -: 1401:    // YEAR_MONTH_DAY_LAST
+        -: 1402:
+        -: 1403:    class year_month_day_last
+        -: 1404:    {
+        -: 1405:    private:
+        -: 1406:      chrono::year _M_y;
+        -: 1407:      chrono::month_day_last _M_mdl;
+        -: 1408:
+        -: 1409:    public:
+        -: 1410:      constexpr
+        -: 1411:      year_month_day_last(const chrono::year& __y,
+        -: 1412:			  const chrono::month_day_last& __mdl) noexcept
+        -: 1413:      : _M_y{__y}, _M_mdl{__mdl}
+        -: 1414:      { }
+        -: 1415:
+        -: 1416:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1417:	constexpr year_month_day_last&
+        -: 1418:	operator+=(const months& __m) noexcept
+        -: 1419:	{
+        -: 1420:	  *this = *this + __m;
+        -: 1421:	  return *this;
+        -: 1422:	}
+        -: 1423:
+        -: 1424:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1425:	constexpr year_month_day_last&
+        -: 1426:	operator-=(const months& __m) noexcept
+        -: 1427:	{
+        -: 1428:	  *this = *this - __m;
+        -: 1429:	  return *this;
+        -: 1430:	}
+        -: 1431:
+        -: 1432:      constexpr year_month_day_last&
+        -: 1433:      operator+=(const years& __y)  noexcept
+        -: 1434:      {
+        -: 1435:	*this = *this + __y;
+        -: 1436:	return *this;
+        -: 1437:      }
+        -: 1438:
+        -: 1439:      constexpr year_month_day_last&
+        -: 1440:      operator-=(const years& __y)  noexcept
+        -: 1441:      {
+        -: 1442:	*this = *this - __y;
+        -: 1443:	return *this;
+        -: 1444:      }
+        -: 1445:
+        -: 1446:      constexpr chrono::year
+        -: 1447:      year() const noexcept
+        -: 1448:      { return _M_y; }
+        -: 1449:
+        -: 1450:      constexpr chrono::month
+        -: 1451:      month() const noexcept
+        -: 1452:      { return _M_mdl.month(); }
+        -: 1453:
+        -: 1454:      constexpr chrono::month_day_last
+        -: 1455:      month_day_last() const noexcept
+        -: 1456:      { return _M_mdl; }
+        -: 1457:
+        -: 1458:      // Return A day representing the last day of this year, month pair.
+        -: 1459:      constexpr chrono::day
+        -: 1460:      day() const noexcept
+        -: 1461:      {
+        -: 1462:	const auto __m = static_cast<unsigned>(month());
+        -: 1463:
+        -: 1464:	// Excluding February, the last day of month __m is either 30 or 31 or,
+        -: 1465:	// in another words, it is 30 + b = 30 | b, where b is in {0, 1}.
+        -: 1466:
+        -: 1467:	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if __m is odd.
+        -: 1468:	// Hence, b = __m & 1 = (__m ^ 0) & 1.
+        -: 1469:
+        -: 1470:	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if __m is even.
+        -: 1471:	// Hence, b = (__m ^ 1) & 1.
+        -: 1472:
+        -: 1473:	// Therefore, b = (__m ^ c) & 1, where c = 0, if __m < 8, or c = 1 if
+        -: 1474:	// __m >= 8, that is, c = __m >> 3.
+        -: 1475:
+        -: 1476:	// The above mathematically justifies this implementation whose
+        -: 1477:	// performance does not depend on look-up tables being on the L1 cache.
+        -: 1478:	return chrono::day{__m != 2 ? ((__m ^ (__m >> 3)) & 1) | 30
+        -: 1479:				    : _M_y.is_leap() ? 29 : 28};
+        -: 1480:      }
+        -: 1481:
+        -: 1482:      constexpr
+        -: 1483:      operator sys_days() const noexcept
+        -: 1484:      { return sys_days{year() / month() / day()}; }
+        -: 1485:
+        -: 1486:      explicit constexpr
+        -: 1487:      operator local_days() const noexcept
+        -: 1488:      { return local_days{sys_days{*this}.time_since_epoch()}; }
+        -: 1489:
+        -: 1490:      constexpr bool
+        -: 1491:      ok() const noexcept
+        -: 1492:      { return _M_y.ok() && _M_mdl.ok(); }
+        -: 1493:
+        -: 1494:      friend constexpr bool
+        -: 1495:      operator==(const year_month_day_last& __x,
+        -: 1496:		 const year_month_day_last& __y) noexcept
+        -: 1497:      {
+        -: 1498:	return __x.year() == __y.year()
+        -: 1499:	  && __x.month_day_last() == __y.month_day_last();
+        -: 1500:      }
+        -: 1501:
+        -: 1502:      friend constexpr strong_ordering
+        -: 1503:      operator<=>(const year_month_day_last& __x,
+        -: 1504:		  const year_month_day_last& __y) noexcept
+        -: 1505:	= default;
+        -: 1506:
+        -: 1507:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1508:	friend constexpr year_month_day_last
+        -: 1509:	operator+(const year_month_day_last& __ymdl,
+        -: 1510:		  const months& __dm) noexcept
+        -: 1511:	{ return (__ymdl.year() / __ymdl.month() + __dm) / last; }
+        -: 1512:
+        -: 1513:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1514:	friend constexpr year_month_day_last
+        -: 1515:	operator+(const months& __dm,
+        -: 1516:		  const year_month_day_last& __ymdl) noexcept
+        -: 1517:	{ return __ymdl + __dm; }
+        -: 1518:
+        -: 1519:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1520:	friend constexpr year_month_day_last
+        -: 1521:	operator-(const year_month_day_last& __ymdl,
+        -: 1522:		  const months& __dm) noexcept
+        -: 1523:	{ return __ymdl + -__dm; }
+        -: 1524:
+        -: 1525:      friend constexpr year_month_day_last
+        -: 1526:      operator+(const year_month_day_last& __ymdl,
+        -: 1527:		const years& __dy) noexcept
+        -: 1528:      { return {__ymdl.year() + __dy, __ymdl.month_day_last()}; }
+        -: 1529:
+        -: 1530:      friend constexpr year_month_day_last
+        -: 1531:      operator+(const years& __dy,
+        -: 1532:		const year_month_day_last& __ymdl) noexcept
+        -: 1533:      { return __ymdl + __dy; }
+        -: 1534:
+        -: 1535:      friend constexpr year_month_day_last
+        -: 1536:      operator-(const year_month_day_last& __ymdl,
+        -: 1537:		const years& __dy) noexcept
+        -: 1538:      { return __ymdl + -__dy; }
+        -: 1539:
+        -: 1540:      friend constexpr year_month_day_last
+        -: 1541:      operator/(const year_month& __ym, last_spec) noexcept
+        -: 1542:      { return {__ym.year(), chrono::month_day_last{__ym.month()}}; }
+        -: 1543:
+        -: 1544:      friend constexpr year_month_day_last
+        -: 1545:      operator/(const chrono::year& __y,
+        -: 1546:		const chrono::month_day_last& __mdl) noexcept
+        -: 1547:      { return {__y, __mdl}; }
+        -: 1548:
+        -: 1549:      friend constexpr year_month_day_last
+        -: 1550:      operator/(int __y, const chrono::month_day_last& __mdl) noexcept
+        -: 1551:      { return chrono::year(__y) / __mdl; }
+        -: 1552:
+        -: 1553:      friend constexpr year_month_day_last
+        -: 1554:      operator/(const chrono::month_day_last& __mdl,
+        -: 1555:		const chrono::year& __y) noexcept
+        -: 1556:      { return __y / __mdl; }
+        -: 1557:
+        -: 1558:      friend constexpr year_month_day_last
+        -: 1559:      operator/(const chrono::month_day_last& __mdl, int __y) noexcept
+        -: 1560:      { return chrono::year(__y) / __mdl; }
+        -: 1561:
+        -: 1562:      // TODO: Implement operator<<.
+        -: 1563:    };
+        -: 1564:
+        -: 1565:    // year_month_day ctor from year_month_day_last
+        -: 1566:    constexpr
+        -: 1567:    year_month_day::year_month_day(const year_month_day_last& __ymdl) noexcept
+        -: 1568:    : _M_y{__ymdl.year()}, _M_m{__ymdl.month()}, _M_d{__ymdl.day()}
+        -: 1569:    { }
+        -: 1570:
+        -: 1571:    constexpr bool
+        -: 1572:    year_month_day::ok() const noexcept
+        -: 1573:    {
+        -: 1574:      if (!_M_y.ok() || !_M_m.ok())
+        -: 1575:	return false;
+        -: 1576:      return chrono::day{1} <= _M_d && _M_d <= (_M_y / _M_m / last).day();
+        -: 1577:    }
+        -: 1578:
+        -: 1579:    // YEAR_MONTH_WEEKDAY
+        -: 1580:
+        -: 1581:    class year_month_weekday
+        -: 1582:    {
+        -: 1583:    private:
+        -: 1584:      chrono::year _M_y;
+        -: 1585:      chrono::month _M_m;
+        -: 1586:      chrono::weekday_indexed _M_wdi;
+        -: 1587:
+        -: 1588:      static constexpr year_month_weekday
+        -: 1589:      _S_from_sys_days(const sys_days& __dp)
+        -: 1590:      {
+        -: 1591:	year_month_day __ymd{__dp};
+        -: 1592:	chrono::weekday __wd{__dp};
+        -: 1593:	auto __index = __wd[(unsigned{__ymd.day()} - 1) / 7 + 1];
+        -: 1594:	return {__ymd.year(), __ymd.month(), __index};
+        -: 1595:      }
+        -: 1596:
+        -: 1597:    public:
+        -: 1598:      year_month_weekday() = default;
+        -: 1599:
+        -: 1600:      constexpr
+        -: 1601:      year_month_weekday(const chrono::year& __y, const chrono::month& __m,
+        -: 1602:			 const chrono::weekday_indexed& __wdi) noexcept
+        -: 1603:      : _M_y{__y}, _M_m{__m}, _M_wdi{__wdi}
+        -: 1604:      { }
+        -: 1605:
+        -: 1606:      constexpr
+        -: 1607:      year_month_weekday(const sys_days& __dp) noexcept
+        -: 1608:      : year_month_weekday{_S_from_sys_days(__dp)}
+        -: 1609:      { }
+        -: 1610:
+        -: 1611:      explicit constexpr
+        -: 1612:      year_month_weekday(const local_days& __dp) noexcept
+        -: 1613:      : year_month_weekday{sys_days{__dp.time_since_epoch()}}
+        -: 1614:      { }
+        -: 1615:
+        -: 1616:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1617:	constexpr year_month_weekday&
+        -: 1618:	operator+=(const months& __m) noexcept
+        -: 1619:	{
+        -: 1620:	  *this = *this + __m;
+        -: 1621:	  return *this;
+        -: 1622:	}
+        -: 1623:
+        -: 1624:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1625:	constexpr year_month_weekday&
+        -: 1626:	operator-=(const months& __m) noexcept
+        -: 1627:	{
+        -: 1628:	  *this = *this - __m;
+        -: 1629:	  return *this;
+        -: 1630:	}
+        -: 1631:
+        -: 1632:      constexpr year_month_weekday&
+        -: 1633:      operator+=(const years& __y) noexcept
+        -: 1634:      {
+        -: 1635:	*this = *this + __y;
+        -: 1636:	return *this;
+        -: 1637:      }
+        -: 1638:
+        -: 1639:      constexpr year_month_weekday&
+        -: 1640:      operator-=(const years& __y) noexcept
+        -: 1641:      {
+        -: 1642:	*this = *this - __y;
+        -: 1643:	return *this;
+        -: 1644:      }
+        -: 1645:
+        -: 1646:      constexpr chrono::year
+        -: 1647:      year() const noexcept
+        -: 1648:      { return _M_y; }
+        -: 1649:
+        -: 1650:      constexpr chrono::month
+        -: 1651:      month() const noexcept
+        -: 1652:      { return _M_m; }
+        -: 1653:
+        -: 1654:      constexpr chrono::weekday
+        -: 1655:      weekday() const noexcept
+        -: 1656:      { return _M_wdi.weekday(); }
+        -: 1657:
+        -: 1658:      constexpr unsigned
+        -: 1659:      index() const noexcept
+        -: 1660:      { return _M_wdi.index(); }
+        -: 1661:
+        -: 1662:      constexpr chrono::weekday_indexed
+        -: 1663:      weekday_indexed() const noexcept
+        -: 1664:      { return _M_wdi; }
+        -: 1665:
+        -: 1666:      constexpr
+        -: 1667:      operator sys_days() const noexcept
+        -: 1668:      {
+        -: 1669:	auto __d = sys_days{year() / month() / 1};
+        -: 1670:	return __d + (weekday() - chrono::weekday(__d)
+        -: 1671:		      + days{(static_cast<int>(index())-1)*7});
+        -: 1672:      }
+        -: 1673:
+        -: 1674:      explicit constexpr
+        -: 1675:      operator local_days() const noexcept
+        -: 1676:      { return local_days{sys_days{*this}.time_since_epoch()}; }
+        -: 1677:
+        -: 1678:      constexpr bool
+        -: 1679:      ok() const noexcept
+        -: 1680:      {
+        -: 1681:	if (!_M_y.ok() || !_M_m.ok() || !_M_wdi.ok())
+        -: 1682:	  return false;
+        -: 1683:	if (_M_wdi.index() <= 4)
+        -: 1684:	  return true;
+        -: 1685:	days __d = (_M_wdi.weekday()
+        -: 1686:		    - chrono::weekday{sys_days{_M_y / _M_m / 1}}
+        -: 1687:		    + days((_M_wdi.index()-1)*7 + 1));
+        -: 1688:	__glibcxx_assert(__d.count() >= 1);
+        -: 1689:	return __d.count() <= unsigned{(_M_y / _M_m / last).day()};
+        -: 1690:      }
+        -: 1691:
+        -: 1692:      friend constexpr bool
+        -: 1693:      operator==(const year_month_weekday& __x,
+        -: 1694:		 const year_month_weekday& __y) noexcept
+        -: 1695:      {
+        -: 1696:	return __x.year() == __y.year()
+        -: 1697:	  && __x.month() == __y.month()
+        -: 1698:	  && __x.weekday_indexed() == __y.weekday_indexed();
+        -: 1699:      }
+        -: 1700:
+        -: 1701:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1702:	friend constexpr year_month_weekday
+        -: 1703:	operator+(const year_month_weekday& __ymwd, const months& __dm) noexcept
+        -: 1704:	{
+        -: 1705:	  return ((__ymwd.year() / __ymwd.month() + __dm)
+        -: 1706:		  / __ymwd.weekday_indexed());
+        -: 1707:	}
+        -: 1708:
+        -: 1709:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1710:	friend constexpr year_month_weekday
+        -: 1711:	operator+(const months& __dm, const year_month_weekday& __ymwd) noexcept
+        -: 1712:	{ return __ymwd + __dm; }
+        -: 1713:
+        -: 1714:      friend constexpr year_month_weekday
+        -: 1715:      operator+(const year_month_weekday& __ymwd, const years& __dy) noexcept
+        -: 1716:      { return {__ymwd.year() + __dy, __ymwd.month(), __ymwd.weekday_indexed()}; }
+        -: 1717:
+        -: 1718:      friend constexpr year_month_weekday
+        -: 1719:      operator+(const years& __dy, const year_month_weekday& __ymwd) noexcept
+        -: 1720:      { return __ymwd + __dy; }
+        -: 1721:
+        -: 1722:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1723:	friend constexpr year_month_weekday
+        -: 1724:	operator-(const year_month_weekday& __ymwd, const months& __dm) noexcept
+        -: 1725:	{ return __ymwd + -__dm; }
+        -: 1726:
+        -: 1727:      friend constexpr year_month_weekday
+        -: 1728:      operator-(const year_month_weekday& __ymwd, const years& __dy) noexcept
+        -: 1729:      { return __ymwd + -__dy; }
+        -: 1730:
+        -: 1731:      friend constexpr year_month_weekday
+        -: 1732:      operator/(const year_month& __ym,
+        -: 1733:		const chrono::weekday_indexed& __wdi) noexcept
+        -: 1734:      { return {__ym.year(), __ym.month(), __wdi}; }
+        -: 1735:
+        -: 1736:      friend constexpr year_month_weekday
+        -: 1737:      operator/(const chrono::year& __y, const month_weekday& __mwd) noexcept
+        -: 1738:      { return {__y, __mwd.month(), __mwd.weekday_indexed()}; }
+        -: 1739:
+        -: 1740:      friend constexpr year_month_weekday
+        -: 1741:      operator/(int __y, const month_weekday& __mwd) noexcept
+        -: 1742:      { return chrono::year(__y) / __mwd; }
+        -: 1743:
+        -: 1744:      friend constexpr year_month_weekday
+        -: 1745:      operator/(const month_weekday& __mwd, const chrono::year& __y) noexcept
+        -: 1746:      { return __y / __mwd; }
+        -: 1747:
+        -: 1748:      friend constexpr year_month_weekday
+        -: 1749:      operator/(const month_weekday& __mwd, int __y) noexcept
+        -: 1750:      { return chrono::year(__y) / __mwd; }
+        -: 1751:
+        -: 1752:      // TODO: Implement operator<<.
+        -: 1753:    };
+        -: 1754:
+        -: 1755:    // YEAR_MONTH_WEEKDAY_LAST
+        -: 1756:
+        -: 1757:    class year_month_weekday_last
+        -: 1758:    {
+        -: 1759:    private:
+        -: 1760:      chrono::year _M_y;
+        -: 1761:      chrono::month _M_m;
+        -: 1762:      chrono::weekday_last _M_wdl;
+        -: 1763:
+        -: 1764:    public:
+        -: 1765:      constexpr
+        -: 1766:      year_month_weekday_last(const chrono::year& __y, const chrono::month& __m,
+        -: 1767:			      const chrono::weekday_last& __wdl) noexcept
+        -: 1768:      : _M_y{__y}, _M_m{__m}, _M_wdl{__wdl}
+        -: 1769:      { }
+        -: 1770:
+        -: 1771:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1772:	constexpr year_month_weekday_last&
+        -: 1773:	operator+=(const months& __m) noexcept
+        -: 1774:	{
+        -: 1775:	  *this = *this + __m;
+        -: 1776:	  return *this;
+        -: 1777:	}
+        -: 1778:
+        -: 1779:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1780:	constexpr year_month_weekday_last&
+        -: 1781:	operator-=(const months& __m) noexcept
+        -: 1782:	{
+        -: 1783:	  *this = *this - __m;
+        -: 1784:	  return *this;
+        -: 1785:	}
+        -: 1786:
+        -: 1787:      constexpr year_month_weekday_last&
+        -: 1788:      operator+=(const years& __y)  noexcept
+        -: 1789:      {
+        -: 1790:	*this = *this + __y;
+        -: 1791:	return *this;
+        -: 1792:      }
+        -: 1793:
+        -: 1794:      constexpr year_month_weekday_last&
+        -: 1795:      operator-=(const years& __y)  noexcept
+        -: 1796:      {
+        -: 1797:	*this = *this - __y;
+        -: 1798:	return *this;
+        -: 1799:      }
+        -: 1800:
+        -: 1801:      constexpr chrono::year
+        -: 1802:      year() const noexcept
+        -: 1803:      { return _M_y; }
+        -: 1804:
+        -: 1805:      constexpr chrono::month
+        -: 1806:      month() const noexcept
+        -: 1807:      { return _M_m; }
+        -: 1808:
+        -: 1809:      constexpr chrono::weekday
+        -: 1810:      weekday() const noexcept
+        -: 1811:      { return _M_wdl.weekday(); }
+        -: 1812:
+        -: 1813:      constexpr chrono::weekday_last
+        -: 1814:      weekday_last() const noexcept
+        -: 1815:      { return _M_wdl; }
+        -: 1816:
+        -: 1817:      constexpr
+        -: 1818:      operator sys_days() const noexcept
+        -: 1819:      {
+        -: 1820:	const auto __d = sys_days{_M_y / _M_m / last};
+        -: 1821:	return sys_days{(__d - (chrono::weekday{__d}
+        -: 1822:				- _M_wdl.weekday())).time_since_epoch()};
+        -: 1823:      }
+        -: 1824:
+        -: 1825:      explicit constexpr
+        -: 1826:      operator local_days() const noexcept
+        -: 1827:      { return local_days{sys_days{*this}.time_since_epoch()}; }
+        -: 1828:
+        -: 1829:      constexpr bool
+        -: 1830:      ok() const noexcept
+        -: 1831:      { return _M_y.ok() && _M_m.ok() && _M_wdl.ok(); }
+        -: 1832:
+        -: 1833:      friend constexpr bool
+        -: 1834:      operator==(const year_month_weekday_last& __x,
+        -: 1835:		 const year_month_weekday_last& __y) noexcept
+        -: 1836:      {
+        -: 1837:	return __x.year() == __y.year()
+        -: 1838:	  && __x.month() == __y.month()
+        -: 1839:	  && __x.weekday_last() == __y.weekday_last();
+        -: 1840:      }
+        -: 1841:
+        -: 1842:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1843:	friend constexpr year_month_weekday_last
+        -: 1844:	operator+(const year_month_weekday_last& __ymwdl,
+        -: 1845:		  const months& __dm) noexcept
+        -: 1846:	{
+        -: 1847:	  return ((__ymwdl.year() / __ymwdl.month() + __dm)
+        -: 1848:		  / __ymwdl.weekday_last());
+        -: 1849:	}
+        -: 1850:
+        -: 1851:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1852:	friend constexpr year_month_weekday_last
+        -: 1853:	operator+(const months& __dm,
+        -: 1854:		  const year_month_weekday_last& __ymwdl) noexcept
+        -: 1855:	{ return __ymwdl + __dm; }
+        -: 1856:
+        -: 1857:      friend constexpr year_month_weekday_last
+        -: 1858:      operator+(const year_month_weekday_last& __ymwdl,
+        -: 1859:		const years& __dy) noexcept
+        -: 1860:      { return {__ymwdl.year() + __dy, __ymwdl.month(), __ymwdl.weekday_last()}; }
+        -: 1861:
+        -: 1862:      friend constexpr year_month_weekday_last
+        -: 1863:      operator+(const years& __dy,
+        -: 1864:		const year_month_weekday_last& __ymwdl) noexcept
+        -: 1865:      { return __ymwdl + __dy; }
+        -: 1866:
+        -: 1867:      template<typename = __detail::__months_years_conversion_disambiguator>
+        -: 1868:	friend constexpr year_month_weekday_last
+        -: 1869:	operator-(const year_month_weekday_last& __ymwdl,
+        -: 1870:		  const months& __dm) noexcept
+        -: 1871:	{ return __ymwdl + -__dm; }
+        -: 1872:
+        -: 1873:      friend constexpr year_month_weekday_last
+        -: 1874:      operator-(const year_month_weekday_last& __ymwdl,
+        -: 1875:		const years& __dy) noexcept
+        -: 1876:      { return __ymwdl + -__dy; }
+        -: 1877:
+        -: 1878:      friend constexpr year_month_weekday_last
+        -: 1879:      operator/(const year_month& __ym,
+        -: 1880:		const chrono::weekday_last& __wdl) noexcept
+        -: 1881:      { return {__ym.year(), __ym.month(), __wdl}; }
+        -: 1882:
+        -: 1883:      friend constexpr year_month_weekday_last
+        -: 1884:      operator/(const chrono::year& __y,
+        -: 1885:		const chrono::month_weekday_last& __mwdl) noexcept
+        -: 1886:      { return {__y, __mwdl.month(), __mwdl.weekday_last()}; }
+        -: 1887:
+        -: 1888:      friend constexpr year_month_weekday_last
+        -: 1889:      operator/(int __y, const chrono::month_weekday_last& __mwdl) noexcept
+        -: 1890:      { return chrono::year(__y) / __mwdl; }
+        -: 1891:
+        -: 1892:      friend constexpr year_month_weekday_last
+        -: 1893:      operator/(const chrono::month_weekday_last& __mwdl,
+        -: 1894:		const chrono::year& __y) noexcept
+        -: 1895:      { return __y / __mwdl; }
+        -: 1896:
+        -: 1897:      friend constexpr year_month_weekday_last
+        -: 1898:      operator/(const chrono::month_weekday_last& __mwdl, int __y) noexcept
+        -: 1899:      { return chrono::year(__y) / __mwdl; }
+        -: 1900:
+        -: 1901:      // TODO: Implement operator<<.
+        -: 1902:    };
+        -: 1903:
+        -: 1904:    // HH_MM_SS
+        -: 1905:
+        -: 1906:    namespace __detail
+        -: 1907:    {
+        -: 1908:      consteval long long
+        -: 1909:      __pow10(unsigned __n)
+        -: 1910:      {
+        -: 1911:	long long __r = 1;
+        -: 1912:	while (__n-- > 0)
+        -: 1913:	  __r *= 10;
+        -: 1914:	return __r;
+        -: 1915:      }
+        -: 1916:    }
+        -: 1917:
+        -: 1918:    template<typename _Duration>
+        -: 1919:      class hh_mm_ss
+        -: 1920:      {
+        -: 1921:      private:
+        -: 1922:	static constexpr int
+        -: 1923:	_S_fractional_width()
+        -: 1924:	{
+        -: 1925:	  int __multiplicity_2 = 0;
+        -: 1926:	  int __multiplicity_5 = 0;
+        -: 1927:	  auto __den = _Duration::period::den;
+        -: 1928:	  while ((__den % 2) == 0)
+        -: 1929:	    {
+        -: 1930:	      ++__multiplicity_2;
+        -: 1931:	      __den /= 2;
+        -: 1932:	    }
+        -: 1933:	  while ((__den % 5) == 0)
+        -: 1934:	    {
+        -: 1935:	      ++__multiplicity_5;
+        -: 1936:	      __den /= 5;
+        -: 1937:	    }
+        -: 1938:	  if (__den != 1)
+        -: 1939:	    return 6;
+        -: 1940:
+        -: 1941:	  int __width = (__multiplicity_2 > __multiplicity_5
+        -: 1942:			 ? __multiplicity_2 : __multiplicity_5);
+        -: 1943:	  if (__width > 18)
+        -: 1944:	    __width = 18;
+        -: 1945:	  return __width;
+        -: 1946:	}
+        -: 1947:
+        -: 1948:	constexpr
+        -: 1949:	hh_mm_ss(_Duration __d, bool __is_neg)
+        -: 1950:	: _M_is_neg(__is_neg),
+        -: 1951:	  _M_h (duration_cast<chrono::hours>(__d)),
+        -: 1952:	  _M_m (duration_cast<chrono::minutes>(__d - hours())),
+        -: 1953:	  _M_s (duration_cast<chrono::seconds>(__d - hours() - minutes()))
+        -: 1954:	{
+        -: 1955:	  auto __ss = __d - hours() - minutes() - seconds();
+        -: 1956:	  if constexpr (treat_as_floating_point_v<typename precision::rep>)
+        -: 1957:	    _M_ss = __ss;
+        -: 1958:	  else
+        -: 1959:	    _M_ss = duration_cast<precision>(__ss);
+        -: 1960:	}
+        -: 1961:
+        -: 1962:	static constexpr _Duration
+        -: 1963:	_S_abs(_Duration __d)
+        -: 1964:	{
+        -: 1965:	  if constexpr (numeric_limits<typename _Duration::rep>::is_signed)
+        -: 1966:	    return chrono::abs(__d);
+        -: 1967:	  else
+        -: 1968:	    return __d;
+        -: 1969:	}
+        -: 1970:
+        -: 1971:      public:
+        -: 1972:	static constexpr unsigned fractional_width = {_S_fractional_width()};
+        -: 1973:
+        -: 1974:	using precision
+        -: 1975:	  = duration<common_type_t<typename _Duration::rep,
+        -: 1976:				   chrono::seconds::rep>,
+        -: 1977:		     ratio<1, __detail::__pow10(fractional_width)>>;
+        -: 1978:
+        -: 1979:	constexpr
+        -: 1980:	hh_mm_ss() noexcept
+        -: 1981:	: hh_mm_ss{_Duration::zero()}
+        -: 1982:	{ }
+        -: 1983:
+        -: 1984:	constexpr explicit
+        -: 1985:	hh_mm_ss(_Duration __d)
+        -: 1986:	: hh_mm_ss(_S_abs(__d), __d < _Duration::zero())
+        -: 1987:	{ }
+        -: 1988:
+        -: 1989:	constexpr bool
+        -: 1990:	is_negative() const noexcept
+        -: 1991:	{ return _M_is_neg; }
+        -: 1992:
+        -: 1993:	constexpr chrono::hours
+        -: 1994:	hours() const noexcept
+        -: 1995:	{ return _M_h; }
+        -: 1996:
+        -: 1997:	constexpr chrono::minutes
+        -: 1998:	minutes() const noexcept
+        -: 1999:	{ return _M_m; }
+        -: 2000:
+        -: 2001:	constexpr chrono::seconds
+        -: 2002:	seconds() const noexcept
+        -: 2003:	{ return _M_s; }
+        -: 2004:
+        -: 2005:	constexpr precision
+        -: 2006:	subseconds() const noexcept
+        -: 2007:	{ return _M_ss; }
+        -: 2008:
+        -: 2009:	constexpr explicit
+        -: 2010:	operator precision() const noexcept
+        -: 2011:	{ return to_duration(); }
+        -: 2012:
+        -: 2013:	constexpr precision
+        -: 2014:	to_duration() const noexcept
+        -: 2015:	{
+        -: 2016:	  if (_M_is_neg)
+        -: 2017:	    return -(_M_h + _M_m + _M_s + _M_ss);
+        -: 2018:	  else
+        -: 2019:	    return _M_h + _M_m + _M_s + _M_ss;
+        -: 2020:	}
+        -: 2021:
+        -: 2022:	// TODO: Implement operator<<.
+        -: 2023:
+        -: 2024:      private:
+        -: 2025:	bool _M_is_neg;
+        -: 2026:	chrono::hours _M_h;
+        -: 2027:	chrono::minutes _M_m;
+        -: 2028:	chrono::seconds _M_s;
+        -: 2029:	precision _M_ss;
+        -: 2030:      };
+        -: 2031:
+        -: 2032:    // 12/24 HOURS FUNCTIONS
+        -: 2033:
+        -: 2034:    constexpr bool
+        -: 2035:    is_am(const hours& __h) noexcept
+        -: 2036:    { return 0h <= __h && __h <= 11h; }
+        -: 2037:
+        -: 2038:    constexpr bool
+        -: 2039:    is_pm(const hours& __h) noexcept
+        -: 2040:    { return 12h <= __h && __h <= 23h; }
+        -: 2041:
+        -: 2042:    constexpr hours
+        -: 2043:    make12(const hours& __h) noexcept
+        -: 2044:    {
+        -: 2045:      if (__h == 0h)
+        -: 2046:	return 12h;
+        -: 2047:      else if (__h > 12h)
+        -: 2048:	return __h - 12h;
+        -: 2049:      return __h;
+        -: 2050:    }
+        -: 2051:
+        -: 2052:    constexpr hours
+        -: 2053:    make24(const hours& __h, bool __is_pm) noexcept
+        -: 2054:    {
+        -: 2055:      if (!__is_pm)
+        -: 2056:	{
+        -: 2057:	  if (__h == 12h)
+        -: 2058:	    return 0h;
+        -: 2059:	  else
+        -: 2060:	    return __h;
+        -: 2061:	}
+        -: 2062:      else
+        -: 2063:	{
+        -: 2064:	  if (__h == 12h)
+        -: 2065:	    return __h;
+        -: 2066:	  else
+        -: 2067:	    return __h + 12h;
+        -: 2068:	}
+        -: 2069:    }
+        -: 2070:    /// @} group chrono
+        -: 2071:#endif // C++20
+        -: 2072:  } // namespace chrono
+        -: 2073:
+        -: 2074:#if __cplusplus >= 202002L
+        -: 2075:  inline namespace literals
+        -: 2076:  {
+        -: 2077:  inline namespace chrono_literals
+        -: 2078:  {
+        -: 2079:    /// @addtogroup chrono
+        -: 2080:    /// @{
+        -: 2081:#pragma GCC diagnostic push
+        -: 2082:#pragma GCC diagnostic ignored "-Wliteral-suffix"
+        -: 2083:    /// Literal suffix for creating chrono::day objects.
+        -: 2084:    /// @since C++20
+        -: 2085:    constexpr chrono::day
+        -: 2086:    operator""d(unsigned long long __d) noexcept
+        -: 2087:    { return chrono::day{static_cast<unsigned>(__d)}; }
+        -: 2088:
+        -: 2089:    /// Literal suffix for creating chrono::year objects.
+        -: 2090:    /// @since C++20
+        -: 2091:    constexpr chrono::year
+        -: 2092:    operator""y(unsigned long long __y) noexcept
+        -: 2093:    { return chrono::year{static_cast<int>(__y)}; }
+        -: 2094:#pragma GCC diagnostic pop
+        -: 2095:    /// @}
+        -: 2096:  } // inline namespace chrono_literals
+        -: 2097:  } // inline namespace literals
+        -: 2098:
+        -: 2099:  namespace chrono
+        -: 2100:  {
+        -: 2101:    /// @addtogroup chrono
+        -: 2102:    /// @{
+        -: 2103:
+        -: 2104:    /// @cond undocumented
+        -: 2105:    namespace __detail
+        -: 2106:    {
+        -: 2107:      template<typename _Period>
+        -: 2108:	const char*
+        -: 2109:	__units_suffix_misc(char* __buf, size_t __n) noexcept
+        -: 2110:	{
+        -: 2111:	  namespace __tc = std::__detail;
+        -: 2112:	  char* __p = __buf;
+        -: 2113:	  __p[0] = '[';
+        -: 2114:	  unsigned __nlen = __tc::__to_chars_len((uintmax_t)_Period::num);
+        -: 2115:	  __tc::__to_chars_10_impl(__p + 1, __nlen, (uintmax_t)_Period::num);
+        -: 2116:	  __p += 1 + __nlen;
+        -: 2117:	  if constexpr (_Period::den != 1)
+        -: 2118:	    {
+        -: 2119:	      __p[0] = '/';
+        -: 2120:	      unsigned __dlen = __tc::__to_chars_len((uintmax_t)_Period::den);
+        -: 2121:	      __tc::__to_chars_10_impl(__p + 1, __dlen, (uintmax_t)_Period::den);
+        -: 2122:	      __p += 1 + __dlen;
+        -: 2123:	    }
+        -: 2124:	  __p[0] = ']';
+        -: 2125:	  __p[1] = 's';
+        -: 2126:	  __p[2] = '\0';
+        -: 2127:	  return __buf;
+        -: 2128:	}
+        -: 2129:
+        -: 2130:      template<typename _Period, typename _CharT>
+        -: 2131:	auto
+        -: 2132:	__units_suffix(char* __buf, size_t __n) noexcept
+        -: 2133:	{
+        -: 2134:#define _GLIBCXX_UNITS_SUFFIX(period, suffix) \
+        -: 2135:	if constexpr (is_same_v<_Period, period>)	\
+        -: 2136:	  {						\
+        -: 2137:	    if constexpr (is_same_v<_CharT, wchar_t>)	\
+        -: 2138:	      return L##suffix;				\
+        -: 2139:	    else					\
+        -: 2140:	      return suffix;				\
+        -: 2141:	  }						\
+        -: 2142:	else
+        -: 2143:
+        -: 2144:	  _GLIBCXX_UNITS_SUFFIX(atto, "as")
+        -: 2145:	  _GLIBCXX_UNITS_SUFFIX(femto, "fs")
+        -: 2146:	  _GLIBCXX_UNITS_SUFFIX(pico, "ps")
+        -: 2147:	  _GLIBCXX_UNITS_SUFFIX(nano, "ns")
+        -: 2148:	  _GLIBCXX_UNITS_SUFFIX(micro, "\u00b5s")
+        -: 2149:	  _GLIBCXX_UNITS_SUFFIX(milli, "ms")
+        -: 2150:	  _GLIBCXX_UNITS_SUFFIX(centi, "cs")
+        -: 2151:	  _GLIBCXX_UNITS_SUFFIX(deci, "ds")
+        -: 2152:	  _GLIBCXX_UNITS_SUFFIX(ratio<1>, "s")
+        -: 2153:	  _GLIBCXX_UNITS_SUFFIX(deca, "das")
+        -: 2154:	  _GLIBCXX_UNITS_SUFFIX(hecto, "hs")
+        -: 2155:	  _GLIBCXX_UNITS_SUFFIX(kilo, "ks")
+        -: 2156:	  _GLIBCXX_UNITS_SUFFIX(mega, "Ms")
+        -: 2157:	  _GLIBCXX_UNITS_SUFFIX(giga, "Gs")
+        -: 2158:	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
+        -: 2159:	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
+        -: 2160:	  _GLIBCXX_UNITS_SUFFIX(peta, "Ps")
+        -: 2161:	  _GLIBCXX_UNITS_SUFFIX(exa, "Es")
+        -: 2162:	  _GLIBCXX_UNITS_SUFFIX(ratio<60>, "min")
+        -: 2163:	  _GLIBCXX_UNITS_SUFFIX(ratio<3600>, "h")
+        -: 2164:	  _GLIBCXX_UNITS_SUFFIX(ratio<86400>, "d")
+        -: 2165:#undef _GLIBCXX_UNITS_SUFFIX
+        -: 2166:	  return __detail::__units_suffix_misc<_Period>(__buf, __n);
+        -: 2167:	}
+        -: 2168:    } // namespace __detail
+        -: 2169:    /// @endcond
+        -: 2170:
+        -: 2171:    template<typename _CharT, typename _Traits,
+        -: 2172:	     typename _Rep, typename _Period>
+        -: 2173:      inline basic_ostream<_CharT, _Traits>&
+        -: 2174:      operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+        -: 2175:		const duration<_Rep, _Period>& __d)
+        -: 2176:      {
+        -: 2177:	using period = typename _Period::type;
+        -: 2178:	char __buf[sizeof("[/]s") + 2 * numeric_limits<intmax_t>::digits10];
+        -: 2179:	std::basic_ostringstream<_CharT, _Traits> __s;
+        -: 2180:	__s.flags(__os.flags());
+        -: 2181:	__s.imbue(__os.getloc());
+        -: 2182:	__s.precision(__os.precision());
+        -: 2183:	__s << __d.count();
+        -: 2184:	__s << __detail::__units_suffix<period, _CharT>(__buf, sizeof(__buf));
+        -: 2185:	__os << std::move(__s).str();
+        -: 2186:	return __os;
+        -: 2187:      }
+        -: 2188:
+        -: 2189:    // TODO: from_stream for duration
+        -: 2190:
+        -: 2191:    /// @} group chrono
+        -: 2192:  } // namespace chrono
+        -: 2193:#endif // C++20
+        -: 2194:
+        -: 2195:_GLIBCXX_END_NAMESPACE_VERSION
+        -: 2196:} // namespace std
+        -: 2197:
+        -: 2198:#endif // C++11
+        -: 2199:
+        -: 2200:#endif //_GLIBCXX_CHRONO

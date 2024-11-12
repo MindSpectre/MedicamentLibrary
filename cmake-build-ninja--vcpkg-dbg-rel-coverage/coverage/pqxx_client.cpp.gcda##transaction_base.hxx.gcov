@@ -1,0 +1,1210 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/pqxx/transaction_base.hxx
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Common code and definitions for the transaction classes.
+        -:    2: *
+        -:    3: * pqxx::transaction_base defines the interface for any abstract class that
+        -:    4: * represents a database transaction.
+        -:    5: *
+        -:    6: * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/transaction_base instead.
+        -:    7: *
+        -:    8: * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+        -:    9: *
+        -:   10: * See COPYING for copyright license.  If you did not receive a file called
+        -:   11: * COPYING with this source code, please notify the distributor of this
+        -:   12: * mistake, or contact the author.
+        -:   13: */
+        -:   14:#ifndef PQXX_H_TRANSACTION_BASE
+        -:   15:#define PQXX_H_TRANSACTION_BASE
+        -:   16:
+        -:   17:#if !defined(PQXX_HEADER_PRE)
+        -:   18:#  error "Include libpqxx headers as <pqxx/header>, not <pqxx/header.hxx>."
+        -:   19:#endif
+        -:   20:
+        -:   21:#include <string_view>
+        -:   22:
+        -:   23:/* End-user programs need not include this file, unless they define their own
+        -:   24: * transaction classes.  This is not something the typical program should want
+        -:   25: * to do.
+        -:   26: *
+        -:   27: * However, reading this file is worthwhile because it defines the public
+        -:   28: * interface for the available transaction classes such as transaction and
+        -:   29: * nontransaction.
+        -:   30: */
+        -:   31:
+        -:   32:#include "pqxx/connection.hxx"
+        -:   33:#include "pqxx/internal/concat.hxx"
+        -:   34:#include "pqxx/internal/encoding_group.hxx"
+        -:   35:#include "pqxx/internal/stream_query.hxx"
+        -:   36:#include "pqxx/isolation.hxx"
+        -:   37:#include "pqxx/result.hxx"
+        -:   38:#include "pqxx/row.hxx"
+        -:   39:#include "pqxx/util.hxx"
+        -:   40:
+        -:   41:namespace pqxx::internal::gate
+        -:   42:{
+        -:   43:class transaction_subtransaction;
+        -:   44:class transaction_sql_cursor;
+        -:   45:class transaction_stream_to;
+        -:   46:class transaction_transaction_focus;
+        -:   47:} // namespace pqxx::internal::gate
+        -:   48:
+        -:   49:
+        -:   50:namespace pqxx
+        -:   51:{
+        -:   52:using namespace std::literals;
+        -:   53:
+        -:   54:
+        -:   55:class transaction_focus;
+        -:   56:
+        -:   57:
+        -:   58:/**
+        -:   59: * @defgroup transactions Transaction classes
+        -:   60: *
+        -:   61: * All database access goes through instances of these classes.  In libpqxx
+        -:   62: * you can't execute SQL directly on the connection object; that all happens
+        -:   63: * only on a transaction object.  If you don't actually want to start a
+        -:   64: * transaction on the server, there's a @ref nontransaction class which
+        -:   65: * operates in _autocommit,_ i.e. without a transaction.
+        -:   66: *
+        -:   67: * (Why do you always need a transaction object?  It ended up being the cleaner
+        -:   68: * choice in terms of interface design.  It avoids a bunch of API maladies:
+        -:   69: * duplicating API between classes, messy inheritance, inviting mistakes by
+        -:   70: * making the transaction afterthought, and so on.)
+        -:   71: *
+        -:   72: * Like most other things in libpqxx, transactions follow RAII principles.
+        -:   73: * Creating a transaction object starts the transaction on the backend (if
+        -:   74: * appropriate), and to destroying one ends the transaction.  But there's one
+        -:   75: * extra step: if you want to make the transaction's changes permanent, you
+        -:   76: * need to _commit_ it before you destroy it.  If you destroy the transaction
+        -:   77: * object without committing, or if you call its `abort()` member function,
+        -:   78: * then any transaction type (other than @ref nontransaction) will roll back
+        -:   79: * its changes to the database instead.
+        -:   80: *
+        -:   81: * There is a choice of transaction types.  To start with you'll probably want
+        -:   82: * to use @ref work, represents a regular, vanilla transaction with the default
+        -:   83: * isolation level.
+        -:   84: *
+        -:   85: * All the actual transaction functionality, including all the functions for
+        -:   86: * executing SQL statements, lives in the abstract @ref transaction_base class.
+        -:   87: * It defines the API for each type of transaction.  You create a transaction,
+        -:   88: * you use it by calling @ref transaction_base member functions, and then you
+        -:   89: * either commit or (in the case of failure) abort.  If you destroy your
+        -:   90: * transaction object without doing either, it automatically aborts.
+        -:   91: *
+        -:   92: * Once you're done with your transaction, you can start a new one using the
+        -:   93: * same connection.  But there can be only one main transaction going on on a
+        -:   94: * connection at any given time.  (You _can_ have more "nested" transactions,
+        -:   95: * but I'm not counting those as "main" transactions here.  See below.)
+        -:   96: *
+        -:   97: * The concrete transaction types, all derived from @ref transaction_base, are:
+        -:   98: *
+        -:   99: * First and foremost, the plain @ref transaction template.  Template
+        -:  100: * parameters let you select isolation level, and whether it should be
+        -:  101: * read-only.  Two aliases are usually more convenient: @ref work is a
+        -:  102: * regular, run-of-the-mill default transaction.  @ref read_transaction is a
+        -:  103: * read-only transaction that will not let you modify the database.
+        -:  104: *
+        -:  105: * Then there's @ref nontransaction.  This one runs in autocommit, meaning
+        -:  106: * that we don't start any transaction at all.  (Technically in this mode each
+        -:  107: * SQL command runs in its own little transaction, hence the term
+        -:  108: * "autocommit."  There is no way to "undo" an SQL statement in this kind of
+        -:  109: * transaction.)  Autocommit is sometimes a bit faster, and sometimes a bit
+        -:  110: * slower.  Mainly you'll use it for specific operations that cannot be done
+        -:  111: *inside a database transaction, such as some kinds of schema changes.
+        -:  112: *
+        -:  113: * And then ther's @ref robusttransaction to help you deal with those painful
+        -:  114: * situations where you don't know for sure whether a transaction actually
+        -:  115: * succeeded.  This can happen if you lose your network connection to the
+        -:  116: * database _just_ while you're trying to commit your transaction, before you
+        -:  117: * receive word about the outcome.  You can re-connect and find out, but what
+        -:  118: * if the server is still executing the commit?
+        -:  119: *
+        -:  120: * You could say that @ref robusttransaction is not more robust, exactly, but
+        -:  121: * it goes to some extra effort to try and figure these situations out and give
+        -:  122: * you clarity.  Extra effort does actually mean more things that can go wrong,
+        -:  123: * and it may be a litte slower, so investigate carefully before using this
+        -:  124: * transaction class.
+        -:  125: *
+        -:  126: * All of the transaction types that actually begin and commit/abort on the
+        -:  127: * database itself are derived from @ref dbtransaction, which can be a useful
+        -:  128: * type if your code needs a reference to such a transaction but doesn't need
+        -:  129: * to enforce a particular one.  These types are @ref transaction, @ref work,
+        -:  130: * @ref read_transaction, and @ref robusttransaction.
+        -:  131: *
+        -:  132: * Finally, there's @ref subtransaction.  This one is not at all like the
+        -:  133: * others: it can only exist inside a @ref dbtransaction.  (Which includes
+        -:  134: * @ref subtransaction itself: you can nest them freely.)  You can only
+        -:  135: * operate on the "innermost" active subtransaction at any given time, until
+        -:  136: * you either commit or abort it.  Subtransactions are built on _savepoints_
+        -:  137: * in the database; these are efficient to a point but do consume some server
+        -:  138: * resources.  So use them when they make sense, e.g. to try an SQL statement
+        -:  139: * but continue your main transation if it fails.  But don't create them in
+        -:  140: * enormous numbers, or performance may start to suffer.
+        -:  141: */
+        -:  142:
+        -:  143:/// Interface definition (and common code) for "transaction" classes.
+        -:  144:/**
+        -:  145: * @ingroup transactions
+        -:  146: *
+        -:  147: * Abstract base class for all transaction types.
+        -:  148: */
+        -:  149:class PQXX_LIBEXPORT PQXX_NOVTABLE transaction_base
+        -:  150:{
+        -:  151:public:
+        -:  152:  transaction_base() = delete;
+        -:  153:  transaction_base(transaction_base const &) = delete;
+        -:  154:  transaction_base(transaction_base &&) = delete;
+        -:  155:  transaction_base &operator=(transaction_base const &) = delete;
+        -:  156:  transaction_base &operator=(transaction_base &&) = delete;
+        -:  157:
+        -:  158:  virtual ~transaction_base() = 0;
+        -:  159:
+        -:  160:  /// Commit the transaction.
+        -:  161:  /** Make the effects of this transaction definite.  If you destroy a
+        -:  162:   * transaction without invoking its @ref commit() first, that will implicitly
+        -:  163:   * abort it.  (For the @ref nontransaction class though, "commit" and "abort"
+        -:  164:   * really don't do anything, hence its name.)
+        -:  165:   *
+        -:  166:   * There is, however, a minute risk that you might lose your connection to
+        -:  167:   * the database at just the wrong moment here.  In that case, libpqxx may be
+        -:  168:   * unable to determine whether the database was able to complete the
+        -:  169:   * transaction, or had to roll it back.  In that scenario, @ref commit() will
+        -:  170:   * throw an in_doubt_error.  There is a different transaction class called
+        -:  171:   * @ref robusttransaction which takes some special precautions to reduce this
+        -:  172:   * risk.
+        -:  173:   */
+        -:  174:  void commit();
+        -:  175:
+        -:  176:  /// Abort the transaction.
+        -:  177:  /** No special effort is required to call this function; it will be called
+        -:  178:   * implicitly when the transaction is destructed.
+        -:  179:   */
+        -:  180:  void abort();
+        -:  181:
+        -:  182:  /**
+        -:  183:   * @ingroup escaping-functions
+        -:  184:   *
+        -:  185:   * Use these when writing SQL queries that incorporate C++ values as SQL
+        -:  186:   * constants.
+        -:  187:   *
+        -:  188:   * The functions you see here are just convenience shortcuts to the same
+        -:  189:   * functions on the connection object.
+        -:  190:   */
+        -:  191:  //@{
+        -:  192:  /// Escape string for use as SQL string literal in this transaction.
+        -:  193:  template<typename... ARGS> [[nodiscard]] auto esc(ARGS &&...args) const
+        -:  194:  {
+        -:  195:    return conn().esc(std::forward<ARGS>(args)...);
+        -:  196:  }
+        -:  197:
+        -:  198:  /// Escape binary data for use as SQL string literal in this transaction.
+        -:  199:  /** Raw, binary data is treated differently from regular strings.  Binary
+        -:  200:   * strings are never interpreted as text, so they may safely include byte
+        -:  201:   * values or byte sequences that don't happen to represent valid characters
+        -:  202:   * in the character encoding being used.
+        -:  203:   *
+        -:  204:   * The binary string does not stop at the first zero byte, as is the case
+        -:  205:   * with textual strings.  Instead, it may contain zero bytes anywhere.  If
+        -:  206:   * it happens to contain bytes that look like quote characters, or other
+        -:  207:   * things that can disrupt their use in SQL queries, they will be replaced
+        -:  208:   * with special escape sequences.
+        -:  209:   */
+        -:  210:  template<typename... ARGS> [[nodiscard]] auto esc_raw(ARGS &&...args) const
+        -:  211:  {
+        -:  212:    return conn().esc_raw(std::forward<ARGS>(args)...);
+        -:  213:  }
+        -:  214:
+        -:  215:  /// Unescape binary data, e.g. from a table field or notification payload.
+        -:  216:  /** Takes a binary string as escaped by PostgreSQL, and returns a restored
+        -:  217:   * copy of the original binary data.
+        -:  218:   */
+        -:  219:  [[nodiscard, deprecated("Use unesc_bin() instead.")]] std::string
+        -:  220:  unesc_raw(zview text) const
+        -:  221:  {
+        -:  222:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  223:    return conn().unesc_raw(text);
+        -:  224:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  225:  }
+        -:  226:
+        -:  227:  /// Unescape binary data, e.g. from a table field or notification payload.
+        -:  228:  /** Takes a binary string as escaped by PostgreSQL, and returns a restored
+        -:  229:   * copy of the original binary data.
+        -:  230:   */
+        -:  231:  [[nodiscard]] bytes unesc_bin(zview text) { return conn().unesc_bin(text); }
+        -:  232:
+        -:  233:  /// Unescape binary data, e.g. from a table field or notification payload.
+        -:  234:  /** Takes a binary string as escaped by PostgreSQL, and returns a restored
+        -:  235:   * copy of the original binary data.
+        -:  236:   */
+        -:  237:  [[nodiscard, deprecated("Use unesc_bin() instead.")]] std::string
+        -:  238:  unesc_raw(char const *text) const
+        -:  239:  {
+        -:  240:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  241:    return conn().unesc_raw(text);
+        -:  242:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  243:  }
+        -:  244:
+        -:  245:  /// Unescape binary data, e.g. from a table field or notification payload.
+        -:  246:  /** Takes a binary string as escaped by PostgreSQL, and returns a restored
+        -:  247:   * copy of the original binary data.
+        -:  248:   */
+        -:  249:  [[nodiscard]] bytes unesc_bin(char const text[])
+        -:  250:  {
+        -:  251:    return conn().unesc_bin(text);
+        -:  252:  }
+        -:  253:
+        -:  254:  /// Represent object as SQL string, including quoting & escaping.
+        -:  255:  /** Nulls are recognized and represented as SQL nulls. */
+        -:  256:  template<typename T> [[nodiscard]] std::string quote(T const &t) const
+        -:  257:  {
+        -:  258:    return conn().quote(t);
+        -:  259:  }
+        -:  260:
+        -:  261:  [[deprecated("Use bytes instead of binarystring.")]] std::string
+        -:  262:  quote(binarystring const &t) const
+        -:  263:  {
+        -:  264:    return conn().quote(t.bytes_view());
+        -:  265:  }
+        -:  266:
+        -:  267:  /// Binary-escape and quote a binary string for use as an SQL constant.
+        -:  268:  [[deprecated("Use quote(pqxx::bytes_view).")]] std::string
+        -:  269:  quote_raw(unsigned char const bin[], std::size_t len) const
+        -:  270:  {
+        -:  271:    return quote(binary_cast(bin, len));
+        -:  272:  }
+        -:  273:
+        -:  274:  /// Binary-escape and quote a binary string for use as an SQL constant.
+        -:  275:  [[deprecated("Use quote(pqxx::bytes_view).")]] std::string
+        -:  276:  quote_raw(zview bin) const;
+        -:  277:
+        -:  278:#if defined(PQXX_HAVE_CONCEPTS)
+        -:  279:  /// Binary-escape and quote a binary string for use as an SQL constant.
+        -:  280:  /** For binary data you can also just use @ref quote(data). */
+        -:  281:  template<binary DATA>
+        -:  282:  [[nodiscard]] std::string quote_raw(DATA const &data) const
+        -:  283:  {
+        -:  284:    return conn().quote_raw(data);
+        -:  285:  }
+        -:  286:#endif
+        -:  287:
+        -:  288:  /// Escape an SQL identifier for use in a query.
+        -:  289:  [[nodiscard]] std::string quote_name(std::string_view identifier) const
+        -:  290:  {
+        -:  291:    return conn().quote_name(identifier);
+        -:  292:  }
+        -:  293:
+        -:  294:  /// Escape string for literal LIKE match.
+        -:  295:  [[nodiscard]] std::string
+        -:  296:  esc_like(std::string_view bin, char escape_char = '\\') const
+        -:  297:  {
+        -:  298:    return conn().esc_like(bin, escape_char);
+        -:  299:  }
+        -:  300:  //@}
+        -:  301:
+        -:  302:  /**
+        -:  303:   * @name Command execution
+        -:  304:   *
+        -:  305:   * There are many functions for executing (or "performing") a command (or
+        -:  306:   * "query").  This is the most fundamental thing you can do in libpqxx, and
+        -:  307:   * it always starts at a transaction class.
+        -:  308:   *
+        -:  309:   * Command execution can throw many types of exception, including sql_error,
+        -:  310:   * broken_connection, and many sql_error subtypes such as
+        -:  311:   * feature_not_supported or insufficient_privilege.  But any exception thrown
+        -:  312:   * by the C++ standard library may also occur here.  All exceptions you will
+        -:  313:   * see libpqxx throw are derived from std::exception.
+        -:  314:   *
+        -:  315:   * Most of the differences between the query execution functions are in how
+        -:  316:   * they return the query's results.
+        -:  317:   *
+        -:  318:   * * The "query" functions run your query, wait for it to complete, and load
+        -:  319:   *   all of the results into memory on the client side.  You can then access
+        -:  320:   *   rows of result data, converted to C++ types that you request.
+        -:  321:   * * The "stream" functions execute your query in a completely different way.
+        -:  322:   *   Called _streaming queries,_ these don't support quite the full range of
+        -:  323:   *   SQL queries, and they're a bit slower to start.  But they are
+        -:  324:   *   significantly _faster_ for queries that return larger numbers of rows.
+        -:  325:   *   They don't load the entire result set, so you can start processing data
+        -:  326:   *   as soon as the first row of data comes in from the database.  This can
+        -:  327:   *   This can save you a lot of time.  Processing itself may also be faster.
+        -:  328:   *   And of course, it also means you don't need enough memory to hold the
+        -:  329:   *   entire result set, just the row you're working on.
+        -:  330:   * * The "exec" functions are a more low-level interface.  Most of them
+        -:  331:   *   return a pqxx::result object.  This is an object that contains all
+        -:  332:   *   information abouut the query's result: the data itself, but also the
+        -:  333:   *   number of rows in the result, the column names, the number of rows that
+        -:  334:   *   your query may have modified, and so on.
+        -:  335:   *
+        -:  336:   * Some of these functions also give you the option to specify how many rows
+        -:  337:   * of data you expect to get: `exec0()` reports a failure if the query
+        -:  338:   * returns any rows of data at all, `exec1()` expects a single row of data
+        -:  339:   * (and so returns a pqxx::row rather than a pqxx::result), `exec_n()` lets
+        -:  340:   * you specify the number of rows you expect, and so on.
+        -:  341:   */
+        -:  342:  //@{
+        -:  343:
+        -:  344:  /// Execute a command.
+        -:  345:  /**
+        -:  346:   * @param query Query or command to execute.
+        -:  347:   * @param desc Optional identifier for query, to help pinpoint SQL errors.
+        -:  348:   * @return A result set describing the query's or command's result.
+        -:  349:   */
+        -:  350:  [[deprecated("The desc parameter is going away.")]] result
+        -:  351:  exec(std::string_view query, std::string_view desc);
+        -:  352:
+        -:  353:  /// Execute a command.
+        -:  354:  /**
+        -:  355:   * @param query Query or command to execute.
+        -:  356:   * @return A result set describing the query's or command's result.
+        -:  357:   */
+function _ZN4pqxx16transaction_base4execESt17basic_string_viewIcSt11char_traitsIcEE called 2591 returned 100% blocks executed 100%
+     2591:  358:  result exec(std::string_view query)
+        -:  359:  {
+        -:  360:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+     2591:  361:    return exec(query, std::string_view{});
+     2591:  361-block  0
+        -:  362:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  363:  }
+        -:  364:
+        -:  365:  /// Execute a command.
+        -:  366:  /**
+        -:  367:   * @param query Query or command to execute.
+        -:  368:   * @param desc Optional identifier for query, to help pinpoint SQL errors.
+        -:  369:   * @return A result set describing the query's or command's result.
+        -:  370:   */
+        -:  371:  [[deprecated(
+        -:  372:    "Pass your query as a std::string_view, not stringstream.")]] result
+        -:  373:  exec(std::stringstream const &query, std::string_view desc)
+        -:  374:  {
+        -:  375:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  376:    return exec(query.str(), desc);
+        -:  377:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  378:  }
+        -:  379:
+        -:  380:  /// Execute command, which should return zero rows of data.
+        -:  381:  /** Works like @ref exec, but fails if the result contains data.  It still
+        -:  382:   * returns a result, however, which may contain useful metadata.
+        -:  383:   *
+        -:  384:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  385:   */
+        -:  386:  [[deprecated("The desc parameter is going away.")]] result
+        -:  387:  exec0(zview query, std::string_view desc)
+        -:  388:  {
+        -:  389:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  390:    return exec_n(0, query, desc);
+        -:  391:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  392:  }
+        -:  393:
+        -:  394:  /// Execute command, which should return zero rows of data.
+        -:  395:  /** Works like @ref exec, but fails if the result contains data.  It still
+        -:  396:   * returns a result, however, which may contain useful metadata.
+        -:  397:   *
+        -:  398:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  399:   */
+        -:  400:  result exec0(zview query) { return exec_n(0, query); }
+        -:  401:
+        -:  402:  /// Execute command returning a single row of data.
+        -:  403:  /** Works like @ref exec, but requires the result to contain exactly one row.
+        -:  404:   * The row can be addressed directly, without the need to find the first row
+        -:  405:   * in a result set.
+        -:  406:   *
+        -:  407:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  408:   */
+        -:  409:  [[deprecated("The desc parameter is going away.")]] row
+        -:  410:  exec1(zview query, std::string_view desc)
+        -:  411:  {
+        -:  412:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  413:    return exec_n(1, query, desc).front();
+        -:  414:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  415:  }
+        -:  416:
+        -:  417:  /// Execute command returning a single row of data.
+        -:  418:  /** Works like @ref exec, but requires the result to contain exactly one row.
+        -:  419:   * The row can be addressed directly, without the need to find the first row
+        -:  420:   * in a result set.
+        -:  421:   *
+        -:  422:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  423:   */
+        -:  424:  row exec1(zview query) { return exec_n(1, query).front(); }
+        -:  425:
+        -:  426:  /// Execute command, expect given number of rows.
+        -:  427:  /** Works like @ref exec, but checks that the result has exactly the expected
+        -:  428:   * number of rows.
+        -:  429:   *
+        -:  430:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  431:   */
+        -:  432:  [[deprecated("The desc parameter is going away.")]] result
+        -:  433:  exec_n(result::size_type rows, zview query, std::string_view desc);
+        -:  434:
+        -:  435:  /// Execute command, expect given number of rows.
+        -:  436:  /** Works like @ref exec, but checks that the result has exactly the expected
+        -:  437:   * number of rows.
+        -:  438:   *
+        -:  439:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  440:   */
+        -:  441:  result exec_n(result::size_type rows, zview query)
+        -:  442:  {
+        -:  443:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  444:    return exec_n(rows, query, std::string_view{});
+        -:  445:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  446:  }
+        -:  447:
+        -:  448:  /// Perform query, expecting exactly 1 row with 1 field, and convert it.
+        -:  449:  /** This is convenience shorthand for querying exactly one value from the
+        -:  450:   * database.  It returns that value, converted to the type you specify.
+        -:  451:   */
+        -:  452:  template<typename TYPE>
+        -:  453:  [[deprecated("The desc parameter is going away.")]] TYPE
+        -:  454:  query_value(zview query, std::string_view desc)
+        -:  455:  {
+        -:  456:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  457:    row const r{exec1(query, desc)};
+        -:  458:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  459:    if (std::size(r) != 1)
+        -:  460:      throw usage_error{internal::concat(
+        -:  461:        "Queried single value from result with ", std::size(r), " columns.")};
+        -:  462:    return r[0].as<TYPE>();
+        -:  463:  }
+        -:  464:
+        -:  465:  /// Perform query, expecting exactly 1 row with 1 field, and convert it.
+        -:  466:  /** This is convenience shorthand for querying exactly one value from the
+        -:  467:   * database.  It returns that value, converted to the type you specify.
+        -:  468:   *
+        -:  469:   * @throw unexpected_rows If the query did not return exactly 1 row.
+        -:  470:   * @throw usage_error If the row did not contain exactly 1 field.
+        -:  471:   */
+        -:  472:  template<typename TYPE> TYPE query_value(zview query)
+        -:  473:  {
+        -:  474:    row const r{exec1(query)};
+        -:  475:    if (std::size(r) != 1)
+        -:  476:      throw usage_error{internal::concat(
+        -:  477:        "Queried single value from result with ", std::size(r), " columns.")};
+        -:  478:    return r[0].as<TYPE>();
+        -:  479:  }
+        -:  480:
+        -:  481:  /// Perform query returning exactly one row, and convert its fields.
+        -:  482:  /** This is a convenient way of querying one row's worth of data, and
+        -:  483:   * converting its fields to a tuple of the C++-side types you specify.
+        -:  484:   *
+        -:  485:   * @throw unexpected_rows If the query did not return exactly 1 row.
+        -:  486:   * @throw usage_error If the number of columns in the result does not match
+        -:  487:   * the number of fields in the tuple.
+        -:  488:   */
+        -:  489:  template<typename... TYPE>
+        -:  490:  [[nodiscard]] std::tuple<TYPE...> query1(zview query)
+        -:  491:  {
+        -:  492:    return exec1(query).as<TYPE...>();
+        -:  493:  }
+        -:  494:
+        -:  495:  /// Query at most one row of data, and if there is one, convert it.
+        -:  496:  /** If the query produced a row of data, this converts it to a tuple of the
+        -:  497:   * C++ types you specify.  Otherwise, this returns no tuple.
+        -:  498:   *
+        -:  499:   * @throw unexpected_rows If the query returned more than 1 row.
+        -:  500:   * @throw usage_error If the number of columns in the result does not match
+        -:  501:   * the number of fields in the tuple.
+        -:  502:   */
+        -:  503:  template<typename... TYPE>
+        -:  504:  [[nodiscard]] std::optional<std::tuple<TYPE...>> query01(zview query)
+        -:  505:  {
+        -:  506:    result res{exec(query)};
+        -:  507:    auto const rows{std::size(res)};
+        -:  508:    switch (rows)
+        -:  509:    {
+        -:  510:    case 0: return {};
+        -:  511:    case 1: return {res[0].as<TYPE...>()};
+        -:  512:    default:
+        -:  513:      throw unexpected_rows{internal::concat(
+        -:  514:        "Expected at most one row of data, got "sv, rows, "."sv)};
+        -:  515:    }
+        -:  516:  }
+        -:  517:
+        -:  518:  /// Execute a query, in streaming fashion; loop over the results row by row.
+        -:  519:  /** Converts the rows to `std::tuple`, of the column types you specify.
+        -:  520:   *
+        -:  521:   * Use this with a range-based "for" loop.  It executes the query, and
+        -:  522:   * directly maps the resulting rows onto a `std::tuple` of the types you
+        -:  523:   * specify.  Unlike with the "exec" functions, processing can start before
+        -:  524:   * all the data from the server is in.
+        -:  525:   *
+        -:  526:   * Streaming is also documented in @ref streams.
+        -:  527:   *
+        -:  528:   * The column types must all be types that have conversions from PostgreSQL's
+        -:  529:   * text format defined.  Many built-in types such as `int` or `std::string`
+        -:  530:   * have pre-defined conversions; if you want to define your own conversions
+        -:  531:   * for additional types, see @ref datatypes.
+        -:  532:   *
+        -:  533:   * As a special case, tuple may contain `std::string_view` fields, but the
+        -:  534:   * strings to which they point will only remain valid until you extract the
+        -:  535:   * next row.  After that, the memory holding the string may be overwritten or
+        -:  536:   * deallocated.
+        -:  537:   *
+        -:  538:   * If any of the columns can be null, and the C++ type to which you're
+        -:  539:   * translating it does not have a null value, wrap the type in a
+        -:  540:   * `std::optional<>` (or if you prefer, a `std::shared_ptr<>` or a
+        -:  541:   * `std::unique_ptr`).  These templates do support null values, and libpqxx
+        -:  542:   * will know how to convert to them.
+        -:  543:   *
+        -:  544:   * The stream lives entirely within the lifetime of the transaction.  Make
+        -:  545:   * sure you complete the stream before you destroy the transaction.  Until
+        -:  546:   * the stream has finished, the transaction and the connection are in a
+        -:  547:   * special state where they cannot be used for anything else.
+        -:  548:   *
+        -:  549:   * @warning If the stream fails, you will have to destroy the transaction
+        -:  550:   * and the connection.  If this is a problem, use the "exec" functions
+        -:  551:   * instead.
+        -:  552:   *
+        -:  553:   * Streaming your query is likely to be faster than the `exec()` methods for
+        -:  554:   * larger results (but slower for small results), and start useful processing
+        -:  555:   * sooner.  Also, `stream()` scales better in terms of memory usage: it only
+        -:  556:   * needs to keep the current row in memory.  The "exec" functions read the
+        -:  557:   * entire result into memory at once.
+        -:  558:   *
+        -:  559:   * Your query executes as part of a COPY command, not as a stand-alone query,
+        -:  560:   * so there are limitations to what you can do in the query.  It can be
+        -:  561:   * either a SELECT or VALUES query; or an INSERT, UPDATE, or DELETE with a
+        -:  562:   * RETURNING clause.  See the documentation for PostgreSQL's
+        -:  563:   * [COPY command](https://www.postgresql.org/docs/current/sql-copy.html) for
+        -:  564:   * the exact restrictions.
+        -:  565:   *
+        -:  566:   * Iterating in this way does require each of the field types you pass to be
+        -:  567:   * default-constructible, copy-constructible, and assignable.  These
+        -:  568:   * requirements may loosen a bit once libpqxx moves on to C++20.
+        -:  569:   */
+        -:  570:  template<typename... TYPE>
+        -:  571:  [[nodiscard]] auto stream(std::string_view query) &
+        -:  572:  {
+        -:  573:    return pqxx::internal::stream_query<TYPE...>{*this, query};
+        -:  574:  }
+        -:  575:
+        -:  576:  // C++20: Concept like std::invocable, but without specifying param types.
+        -:  577:  /// Perform a streaming query, and for each result row, call `func`.
+        -:  578:  /** Here, `func` can be a function, a `std::function`, a lambda, or an
+        -:  579:   * object that supports the function call operator.  Of course `func` must
+        -:  580:   * have an unambiguous signature; it can't be overloaded or generic.
+        -:  581:   *
+        -:  582:   * The `for_stream` function executes `query` in a stream similar to
+        -:  583:   * @ref stream.  Every time a row of data comes in from the server, it
+        -:  584:   * converts the row's fields to the types of `func`'s respective parameters,
+        -:  585:   * and calls `func` with those values.
+        -:  586:   *
+        -:  587:   * This will not work for all queries, but straightforward `SELECT` and
+        -:  588:   * `UPDATE ... RETURNING` queries should work.  Consult the documentation for
+        -:  589:   * @ref pqxx::internal::stream_query and PostgreSQL's underlying `COPY`
+        -:  590:   * command for the full details.
+        -:  591:   *
+        -:  592:   * Streaming a query like this is likely to be slower than the @ref exec()
+        -:  593:   * functions for small result sets, but faster for larger result sets.  So if
+        -:  594:   * performance matters, you'll want to use `for_stream` if you query large
+        -:  595:   * amounts of data, but not if you do lots of queries with small outputs.
+        -:  596:   *
+        -:  597:   * However, the transaction and the connection are in a special state while
+        -:  598:   * the iteration is ongoing.  If `func` throws an exception, or the iteration
+        -:  599:   * fails in some way, the only way out is to destroy the transaction and the
+        -:  600:   * connection.
+        -:  601:   *
+        -:  602:   * Each of the parameter types must have a conversion from PostgreSQL's text
+        -:  603:   * format defined.  To define conversions for additional types, see
+        -:  604:   * @ref datatypes.
+        -:  605:   */
+        -:  606:  template<typename CALLABLE>
+        -:  607:  auto for_stream(std::string_view query, CALLABLE &&func)
+        -:  608:  {
+        -:  609:    using param_types =
+        -:  610:      pqxx::internal::strip_types_t<pqxx::internal::args_t<CALLABLE>>;
+        -:  611:    param_types const *const sample{nullptr};
+        -:  612:    auto data_stream{stream_like(query, sample)};
+        -:  613:    for (auto const &fields : data_stream) std::apply(func, fields);
+        -:  614:  }
+        -:  615:
+        -:  616:  template<typename CALLABLE>
+        -:  617:  [[deprecated(
+        -:  618:    "pqxx::transaction_base::for_each is now called for_stream.")]] auto
+        -:  619:  for_each(std::string_view query, CALLABLE &&func)
+        -:  620:  {
+        -:  621:    return for_stream(query, std::forward<CALLABLE>(func));
+        -:  622:  }
+        -:  623:
+        -:  624:  /// Execute query, read full results, then iterate rows of data.
+        -:  625:  /** Converts each row of the result to a `std::tuple` of the types you pass
+        -:  626:   * as template arguments.  (The number of template arguments must match the
+        -:  627:   * number of columns in the query's result.)
+        -:  628:   *
+        -:  629:   * Example:
+        -:  630:   *
+        -:  631:   * ```cxx
+        -:  632:   *     for (
+        -:  633:   *         auto [name, salary] :
+        -:  634:   *             tx.query<std::string_view, int>(
+        -:  635:   *                 "SELECT name, salary FROM employee"
+        -:  636:                 )
+        -:  637:   *     )
+        -:  638:   *         std::cout << name << " earns " << salary << ".\n";
+        -:  639:   * ```
+        -:  640:   *
+        -:  641:   * You can't normally convert a field value to `std::string_view`, but this
+        -:  642:   * is one of the places where you can.  The underlying string to which the
+        -:  643:   * `string_view` points exists only for the duration of the one iteration.
+        -:  644:   * After that, the buffer that holds the actual string may have disappeared,
+        -:  645:   * or it may contain a new string value.
+        -:  646:   *
+        -:  647:   * If you expect a lot of rows from your query, it's probably faster to use
+        -:  648:   * transaction_base::stream() instead.  Or if you need to access metadata of
+        -:  649:   * the result, such as the number of rows in the result, or the number of
+        -:  650:   * rows that your query updates, then you'll need to use
+        -:  651:   * transaction_base::exec() instead.
+        -:  652:   *
+        -:  653:   * @return Something you can iterate using "range `for`" syntax.  The actual
+        -:  654:   * type details may change.
+        -:  655:   */
+        -:  656:  template<typename... TYPE> auto query(zview query)
+        -:  657:  {
+        -:  658:    return exec(query).iter<TYPE...>();
+        -:  659:  }
+        -:  660:
+        -:  661:  /// Perform query, expect given number of rows, iterate results.
+        -:  662:  /** Works like @ref query, but checks that the result has exactly the
+        -:  663:   * expected number of rows.
+        -:  664:   *
+        -:  665:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  666:   *
+        -:  667:   * @return Something you can iterate using "range `for`" syntax.  The actual
+        -:  668:   * type details may change.
+        -:  669:   */
+        -:  670:  template<typename... TYPE> auto query_n(result::size_type rows, zview query)
+        -:  671:  {
+        -:  672:    return exec_n(rows, query).iter<TYPE...>();
+        -:  673:  }
+        -:  674:
+        -:  675:  // C++20: Concept like std::invocable, but without specifying param types.
+        -:  676:  /// Execute a query, load the full result, and perform `func` for each row.
+        -:  677:  /** Converts each row to data types matching `func`'s parameter types.  The
+        -:  678:   * number of columns in the result set must match the number of parameters.
+        -:  679:   *
+        -:  680:   * This is a lot like for_stream().  The differences are:
+        -:  681:   * 1. It can execute some unusual queries that for_stream() can't.
+        -:  682:   * 2. The `exec` functions are faster for small results, but slower for large
+        -:  683:   *    results.
+        -:  684:   */
+        -:  685:  template<typename CALLABLE> void for_query(zview query, CALLABLE &&func)
+        -:  686:  {
+        -:  687:    exec(query).for_each(std::forward<CALLABLE>(func));
+        -:  688:  }
+        -:  689:
+        -:  690:  /**
+        -:  691:   * @name Parameterized statements
+        -:  692:   *
+        -:  693:   * You'll often need parameters in the queries you execute: "select the
+        -:  694:   * car with this licence plate."  If the parameter is a string, you need to
+        -:  695:   * quote it and escape any special characters inside it, or it may become a
+        -:  696:   * target for an SQL injection attack.  If it's an integer (for example),
+        -:  697:   * you need to convert it to a string, but in the database's format, without
+        -:  698:   * locale-specific niceties like "," separators between the thousands.
+        -:  699:   *
+        -:  700:   * Parameterised statements are an easier and safer way to do this.  They're
+        -:  701:   * like prepared statements, but for a single use.  You don't need to name
+        -:  702:   * them, and you don't need to prepare them first.
+        -:  703:   *
+        -:  704:   * Your query will include placeholders like `$1` and `$2` etc. in the places
+        -:  705:   * where you want the arguments to go.  Then, you pass the argument values
+        -:  706:   * and the actual query is constructed for you.
+        -:  707:   *
+        -:  708:   * Pass the exact right number of parameters, and in the right order.  The
+        -:  709:   * parameters in the query don't have to be neatly ordered from `$1` to
+        -:  710:   * `$2` to `$3` - but you must pass the argument for `$1` first, the one
+        -:  711:   * for `$2` second, etc.
+        -:  712:   *
+        -:  713:   * @warning Beware of "nul" bytes.  Any string you pass as a parameter will
+        -:  714:   * end at the first char with value zero.  If you pass a string that contains
+        -:  715:   * a zero byte, the last byte in the value will be the one just before the
+        -:  716:   * zero.
+        -:  717:   */
+        -:  718:  //@{
+        -:  719:
+        -:  720:  /// Execute an SQL statement with parameters.
+        -:  721:  /** This is like calling `exec()`, except it will substitute the first
+        -:  722:   * parameter after `query` (the first in `args`) for a `$1` in the query, the
+        -:  723:   * next one for `$2`, etc.
+        -:  724:   */
+function _ZN4pqxx16transaction_base11exec_paramsIJRKNS_6paramsEEEENS_6resultENS_5zviewEDpOT_ called 100081 returned 100% blocks executed 42%
+   100081:  725:  template<typename... Args> result exec_params(zview query, Args &&...args)
+        -:  726:  {
+   100081:  727:    params pp{args...};
+   100081:  728:    return internal_exec_params(query, pp.make_c_params());
+   100081:  728-block  0
+branch  0 taken 100081
+branch  1 taken 0
+   100081:  728-block  1
+branch  2 taken 100081
+branch  3 taken 0
+    $$$$$:  728-block  2
+   100081:  729:  }
+   100081:  729-block  0
+    $$$$$:  729-block  1
+    $$$$$:  729-block  2
+    $$$$$:  729-block  3
+        -:  730:
+        -:  731:  // Execute parameterised statement, expect a single-row result.
+        -:  732:  /** @throw unexpected_rows if the result does not consist of exactly one row.
+        -:  733:   */
+        -:  734:  template<typename... Args> row exec_params1(zview query, Args &&...args)
+        -:  735:  {
+        -:  736:    return exec_params_n(1, query, std::forward<Args>(args)...).front();
+        -:  737:  }
+        -:  738:
+        -:  739:  // Execute parameterised statement, expect a result with zero rows.
+        -:  740:  /** @throw unexpected_rows if the result contains rows.
+        -:  741:   */
+        -:  742:  template<typename... Args> result exec_params0(zview query, Args &&...args)
+        -:  743:  {
+        -:  744:    return exec_params_n(0, query, std::forward<Args>(args)...);
+        -:  745:  }
+        -:  746:
+        -:  747:  // Execute parameterised statement, expect exactly a given number of rows.
+        -:  748:  /** @throw unexpected_rows if the result contains the wrong number of rows.
+        -:  749:   */
+        -:  750:  template<typename... Args>
+        -:  751:  result exec_params_n(std::size_t rows, zview query, Args &&...args)
+        -:  752:  {
+        -:  753:    auto const r{exec_params(query, std::forward<Args>(args)...)};
+        -:  754:    // The cast isn't to get the type of the right width.  Automatic promotion
+        -:  755:    // will take care of that.  But we do need it unsigned first.
+        -:  756:    check_rowcount_params(rows, static_cast<unsigned>(std::size(r)));
+        -:  757:    return r;
+        -:  758:  }
+        -:  759:
+        -:  760:  // Execute parameterised statement, expect exactly a given number of rows.
+        -:  761:  /** @throw unexpected_rows if the result contains the wrong number of rows.
+        -:  762:   */
+        -:  763:  template<typename... Args>
+        -:  764:  result exec_params_n(result::size_type rows, zview query, Args &&...args)
+        -:  765:  {
+        -:  766:    auto const r{exec_params(query, std::forward<Args>(args)...)};
+        -:  767:    // The casts aren't to get the type of the right width.  Automatic
+        -:  768:    // promotion will take care of that.  But we do need these unsigned first.
+        -:  769:    check_rowcount_params(
+        -:  770:      static_cast<unsigned>(rows), static_cast<unsigned>(std::size(r)));
+        -:  771:    return r;
+        -:  772:  }
+        -:  773:
+        -:  774:  /// Execute parameterised query, read full results, iterate rows of data.
+        -:  775:  /** Like @ref query, but the query can contain parameters.
+        -:  776:   *
+        -:  777:   * Converts each row of the result to a `std::tuple` of the types you pass
+        -:  778:   * as template arguments.  (The number of template arguments must match the
+        -:  779:   * number of columns in the query's result.)
+        -:  780:   *
+        -:  781:   * Example:
+        -:  782:   *
+        -:  783:   * ```cxx
+        -:  784:   *     for (
+        -:  785:   *         auto [name, salary] :
+        -:  786:   *             tx.query<std::string_view, int>(
+        -:  787:   *                 "SELECT name, salary FROM employee"
+        -:  788:                 )
+        -:  789:   *     )
+        -:  790:   *         std::cout << name << " earns " << salary << ".\n";
+        -:  791:   * ```
+        -:  792:   *
+        -:  793:   * You can't normally convert a field value to `std::string_view`, but this
+        -:  794:   * is one of the places where you can.  The underlying string to which the
+        -:  795:   * `string_view` points exists only for the duration of the one iteration.
+        -:  796:   * After that, the buffer that holds the actual string may have disappeared,
+        -:  797:   * or it may contain a new string value.
+        -:  798:   *
+        -:  799:   * If you expect a lot of rows from your query, it's probably faster to use
+        -:  800:   * transaction_base::stream() instead.  Or if you need to access metadata of
+        -:  801:   * the result, such as the number of rows in the result, or the number of
+        -:  802:   * rows that your query updates, then you'll need to use
+        -:  803:   * transaction_base::exec() instead.
+        -:  804:   *
+        -:  805:   * @return Something you can iterate using "range `for`" syntax.  The actual
+        -:  806:   * type details may change.
+        -:  807:   */
+        -:  808:  template<typename... TYPE> auto query(zview query, params const &parms)
+        -:  809:  {
+        -:  810:    return exec_params(query, parms).iter<TYPE...>();
+        -:  811:  }
+        -:  812:
+        -:  813:  /// Perform query parameterised, expect given number of rows, iterate
+        -:  814:  /// results.
+        -:  815:  /** Works like @ref query, but checks that the result has exactly the
+        -:  816:   * expected number of rows.
+        -:  817:   *
+        -:  818:   * @throw unexpected_rows If the query returned the wrong number of rows.
+        -:  819:   *
+        -:  820:   * @return Something you can iterate using "range `for`" syntax.  The actual
+        -:  821:   * type details may change.
+        -:  822:   */
+        -:  823:  template<typename... TYPE>
+        -:  824:  auto query_n(result::size_type rows, zview query, params const &parms)
+        -:  825:  {
+        -:  826:    return exec_params_n(rows, query, parms).iter<TYPE...>();
+        -:  827:  }
+        -:  828:
+        -:  829:  /// Perform query, expecting exactly 1 row with 1 field, and convert it.
+        -:  830:  /** This is convenience shorthand for querying exactly one value from the
+        -:  831:   * database.  It returns that value, converted to the type you specify.
+        -:  832:   *
+        -:  833:   * @throw unexpected_rows If the query did not return exactly 1 row.
+        -:  834:   * @throw usage_error If the row did not contain exactly 1 field.
+        -:  835:   */
+        -:  836:  template<typename TYPE> TYPE query_value(zview query, params const &parms)
+        -:  837:  {
+        -:  838:    row const r{exec_params1(query, parms)};
+        -:  839:    if (std::size(r) != 1)
+        -:  840:      throw usage_error{internal::concat(
+        -:  841:        "Queried single value from result with ", std::size(r), " columns.")};
+        -:  842:    return r[0].as<TYPE>();
+        -:  843:  }
+        -:  844:
+        -:  845:  /// Perform query returning exactly one row, and convert its fields.
+        -:  846:  /** This is a convenient way of querying one row's worth of data, and
+        -:  847:   * converting its fields to a tuple of the C++-side types you specify.
+        -:  848:   *
+        -:  849:   * @throw unexpected_rows If the query did not return exactly 1 row.
+        -:  850:   * @throw usage_error If the number of columns in the result does not match
+        -:  851:   * the number of fields in the tuple.
+        -:  852:   */
+        -:  853:  template<typename... TYPE>
+        -:  854:  [[nodiscard]] std::tuple<TYPE...> query1(zview query, params const &parms)
+        -:  855:  {
+        -:  856:    result const r{exec_params_n(1, query, parms)};
+        -:  857:    return r[0].as<TYPE...>();
+        -:  858:  }
+        -:  859:
+        -:  860:  /// Query at most one row of data, and if there is one, convert it.
+        -:  861:  /** If the query produced a row of data, this converts it to a tuple of the
+        -:  862:   * C++ types you specify.  Otherwise, this returns no tuple.
+        -:  863:   *
+        -:  864:   * @throw unexpected_rows If the query returned more than 1 row.
+        -:  865:   * @throw usage_error If the number of columns in the result does not match
+        -:  866:   * the number of fields in the tuple.
+        -:  867:   */
+        -:  868:  template<typename... TYPE>
+        -:  869:  [[nodiscard]] std::optional<std::tuple<TYPE...>>
+        -:  870:  query01(zview query, params const &parms)
+        -:  871:  {
+        -:  872:    result res{exec_params(query, parms)};
+        -:  873:    auto const rows{std::size(res)};
+        -:  874:    switch (rows)
+        -:  875:    {
+        -:  876:    case 0: return {};
+        -:  877:    case 1: return {res[0].as<TYPE...>()};
+        -:  878:    default:
+        -:  879:      throw unexpected_rows{internal::concat(
+        -:  880:        "Expected at most one row of data, got "sv, rows, "."sv)};
+        -:  881:    }
+        -:  882:  }
+        -:  883:
+        -:  884:  // C++20: Concept like std::invocable, but without specifying param types.
+        -:  885:  /// Execute a query, load the full result, and perform `func` for each row.
+        -:  886:  /** The query may use parameters.  So for example, the query may contain `$1`
+        -:  887:   * to denote the first parameter value in `parms`, and so on.
+        -:  888:   *
+        -:  889:   * Converts each row to data types matching `func`'s parameter types.  The
+        -:  890:   * number of columns in the result set must match the number of parameters.
+        -:  891:   *
+        -:  892:   * This is a lot like for_stream().  The differences are:
+        -:  893:   * 1. It can execute some unusual queries that for_stream() can't.
+        -:  894:   * 2. The `exec` functions are faster for small results, but slower for large
+        -:  895:   *    results.
+        -:  896:   */
+        -:  897:  template<typename CALLABLE>
+        -:  898:  void for_query(zview query, CALLABLE &&func, params const &parms)
+        -:  899:  {
+        -:  900:    exec_params(query, parms).for_each(std::forward<CALLABLE>(func));
+        -:  901:  }
+        -:  902:  //@}
+        -:  903:
+        -:  904:  /**
+        -:  905:   * @name Prepared statements
+        -:  906:   *
+        -:  907:   * These are very similar to parameterised statements.  The difference is
+        -:  908:   * that you prepare them in advance, giving them identifying names.  You can
+        -:  909:   * then call them by these names, passing in the argument values appropriate
+        -:  910:   * for that call.
+        -:  911:   *
+        -:  912:   * You prepare a statement on the connection, using
+        -:  913:   * @ref pqxx::connection::prepare().  But you then call the statement in a
+        -:  914:   * transaction, using the functions you see here.
+        -:  915:   *
+        -:  916:   * Never try to prepare, execute, or unprepare a prepared statement manually
+        -:  917:   * using direct SQL queries when you also use the libpqxx equivalents.  For
+        -:  918:   * any given statement, either prepare, manage, and execute it through the
+        -:  919:   * dedicated libpqxx functions; or do it all directly in SQL.  Don't mix the
+        -:  920:   * two, or the code may get confused.
+        -:  921:   *
+        -:  922:   * See \ref prepared for a full discussion.
+        -:  923:   *
+        -:  924:   * @warning Beware of "nul" bytes.  Any string you pass as a parameter will
+        -:  925:   * end at the first char with value zero.  If you pass a string that contains
+        -:  926:   * a zero byte, the last byte in the value will be the one just before the
+        -:  927:   * zero.  If you need a zero byte, you're dealing with binary strings, not
+        -:  928:   * regular strings.  Represent binary strings on the SQL side as `BYTEA`
+        -:  929:   * (or as large objects).  On the C++ side, use types like `pqxx::bytes` or
+        -:  930:   * `pqxx::bytes_view` or (in C++20) `std::vector<std::byte>`.  Also, consider
+        -:  931:   * large objects on the SQL side and @ref blob on the C++ side.
+        -:  932:   *
+        -:  933:   * @warning Passing the wrong number of parameters to a prepared or
+        -:  934:   * parameterised statement will _break the connection._  The usual exception
+        -:  935:   * that occurs in this situation is @ref pqxx::protocol_violation.  It's a
+        -:  936:   * subclass of @ref pqxx::broken_connection, but where `broken_connection`
+        -:  937:   * usually indicates a networking problem, `protocol_violation` indicates
+        -:  938:   * that the communication with the server has deviated from protocol.  Once
+        -:  939:   * something like that happens, communication is broken and there is nothing
+        -:  940:   * for it but to discard the connection.  A networking problem is usually
+        -:  941:   * worth retrying, but a protocol violation is not.  The same violation will
+        -:  942:   * probably just happen again.
+        -:  943:   */
+        -:  944:  //@{
+        -:  945:
+        -:  946:  /// Execute a prepared statement, with optional arguments.
+        -:  947:  template<typename... Args>
+        -:  948:  result exec_prepared(zview statement, Args &&...args)
+        -:  949:  {
+        -:  950:    params pp(args...);
+        -:  951:    return internal_exec_prepared(statement, pp.make_c_params());
+        -:  952:  }
+        -:  953:
+        -:  954:  /// Execute a prepared statement, and expect a single-row result.
+        -:  955:  /** @throw pqxx::unexpected_rows if the result was not exactly 1 row.
+        -:  956:   */
+        -:  957:  template<typename... Args>
+        -:  958:  row exec_prepared1(zview statement, Args &&...args)
+        -:  959:  {
+        -:  960:    return exec_prepared_n(1, statement, std::forward<Args>(args)...).front();
+        -:  961:  }
+        -:  962:
+        -:  963:  /// Execute a prepared statement, and expect a result with zero rows.
+        -:  964:  /** @throw pqxx::unexpected_rows if the result contained rows.
+        -:  965:   */
+        -:  966:  template<typename... Args>
+        -:  967:  result exec_prepared0(zview statement, Args &&...args)
+        -:  968:  {
+        -:  969:    return exec_prepared_n(0, statement, std::forward<Args>(args)...);
+        -:  970:  }
+        -:  971:
+        -:  972:  /// Execute a prepared statement, expect a result with given number of rows.
+        -:  973:  /** @throw pqxx::unexpected_rows if the result did not contain exactly the
+        -:  974:   *  given number of rows.
+        -:  975:   */
+        -:  976:  template<typename... Args>
+        -:  977:  result
+        -:  978:  exec_prepared_n(result::size_type rows, zview statement, Args &&...args)
+        -:  979:  {
+        -:  980:    auto const r{exec_prepared(statement, std::forward<Args>(args)...)};
+        -:  981:    check_rowcount_prepared(statement, rows, std::size(r));
+        -:  982:    return r;
+        -:  983:  }
+        -:  984:
+        -:  985:  //@}
+        -:  986:
+        -:  987:  /**
+        -:  988:   * @name Error/warning output
+        -:  989:   */
+        -:  990:  //@{
+        -:  991:  /// Have connection process a warning message.
+        -:  992:  void process_notice(char const msg[]) const { m_conn.process_notice(msg); }
+        -:  993:  /// Have connection process a warning message.
+        -:  994:  void process_notice(zview msg) const { m_conn.process_notice(msg); }
+        -:  995:  //@}
+        -:  996:
+        -:  997:  /// The connection in which this transaction lives.
+        -:  998:  [[nodiscard]] constexpr connection &conn() const noexcept { return m_conn; }
+        -:  999:
+        -: 1000:  /// Set session variable using SQL "SET" command.
+        -: 1001:  /** @deprecated To set a transaction-local variable, execute an SQL `SET`
+        -: 1002:   * command.  To set a session variable, use the connection's
+        -: 1003:   * @ref set_session_var function.
+        -: 1004:   *
+        -: 1005:   * @warning When setting a string value, you must make sure that the string
+        -: 1006:   * is "safe."  If you call @ref quote() on the string, it will return a
+        -: 1007:   * safely escaped and quoted version for use as an SQL literal.
+        -: 1008:   *
+        -: 1009:   * @warning This function executes SQL.  Do not try to set or get variables
+        -: 1010:   * while a pipeline or table stream is active.
+        -: 1011:   *
+        -: 1012:   * @param var The variable to set.
+        -: 1013:   * @param value The new value to store in the variable.  This can be any SQL
+        -: 1014:   * expression.
+        -: 1015:   */
+        -: 1016:  [[deprecated(
+        -: 1017:    "Set transaction-local variables using SQL SET statements.")]] void
+        -: 1018:  set_variable(std::string_view var, std::string_view value);
+        -: 1019:
+        -: 1020:  /// Read session variable using SQL "SHOW" command.
+        -: 1021:  /** @warning This executes SQL.  Do not try to set or get variables while a
+        -: 1022:   * pipeline or table stream is active.
+        -: 1023:   */
+        -: 1024:  [[deprecated("Read variables using SQL SHOW statements.")]] std::string
+        -: 1025:    get_variable(std::string_view);
+        -: 1026:
+        -: 1027:  // C++20: constexpr.
+        -: 1028:  /// Transaction name, if you passed one to the constructor; or empty string.
+        -: 1029:  [[nodiscard]] std::string_view name() const & noexcept { return m_name; }
+        -: 1030:
+        -: 1031:protected:
+        -: 1032:  /// Create a transaction (to be called by implementation classes only).
+        -: 1033:  /** The name, if nonempty, must begin with a letter and may contain letters
+        -: 1034:   * and digits only.
+        -: 1035:   */
+function _ZN4pqxx16transaction_baseC2ERNS_10connectionESt17basic_string_viewIcSt11char_traitsIcEESt10shared_ptrINSt7__cxx1112basic_stringIcS5_SaIcEEEE called 20 returned 100% blocks executed 50%
+       20: 1036:  transaction_base(
+        -: 1037:    connection &c, std::string_view tname,
+        -: 1038:    std::shared_ptr<std::string> rollback_cmd) :
+       40: 1039:          m_conn{c}, m_name{tname}, m_rollback_cmd{rollback_cmd}
+       20: 1039-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20: 1039-block  1
+branch  2 taken 20
+branch  3 taken 0
+    $$$$$: 1039-block  2
+    $$$$$: 1039-block  3
+       20: 1040:  {}
+       20: 1040-block  0
+        -: 1041:
+        -: 1042:  /// Create a transaction (to be called by implementation classes only).
+        -: 1043:  /** Its rollback command will be "ROLLBACK".
+        -: 1044:   *
+        -: 1045:   * The name, if nonempty, must begin with a letter and may contain letters
+        -: 1046:   * and digits only.
+        -: 1047:   */
+        -: 1048:  transaction_base(connection &c, std::string_view tname);
+        -: 1049:
+        -: 1050:  /// Create a transaction (to be called by implementation classes only).
+        -: 1051:  explicit transaction_base(connection &c);
+        -: 1052:
+        -: 1053:  /// Register this transaction with the connection.
+        -: 1054:  void register_transaction();
+        -: 1055:
+        -: 1056:  /// End transaction.  To be called by implementing class' destructor.
+        -: 1057:  void close() noexcept;
+        -: 1058:
+        -: 1059:  /// To be implemented by derived implementation class: commit transaction.
+        -: 1060:  virtual void do_commit() = 0;
+        -: 1061:
+        -: 1062:  /// Transaction type-specific way of aborting a transaction.
+        -: 1063:  /** @warning This will become "final", since this function can be called
+        -: 1064:   * from the implementing class destructor.
+        -: 1065:   */
+        -: 1066:  virtual void do_abort();
+        -: 1067:
+        -: 1068:  /// Set the rollback command.
+        -: 1069:  void set_rollback_cmd(std::shared_ptr<std::string> cmd)
+        -: 1070:  {
+        -: 1071:    m_rollback_cmd = cmd;
+        -: 1072:  }
+        -: 1073:
+        -: 1074:  /// Execute query on connection directly.
+        -: 1075:  result direct_exec(std::string_view, std::string_view desc = ""sv);
+        -: 1076:  result
+        -: 1077:  direct_exec(std::shared_ptr<std::string>, std::string_view desc = ""sv);
+        -: 1078:
+        -: 1079:private:
+        -: 1080:  enum class status
+        -: 1081:  {
+        -: 1082:    active,
+        -: 1083:    aborted,
+        -: 1084:    committed,
+        -: 1085:    in_doubt
+        -: 1086:  };
+        -: 1087:
+        -: 1088:  PQXX_PRIVATE void check_pending_error();
+        -: 1089:
+        -: 1090:  result
+        -: 1091:  internal_exec_prepared(zview statement, internal::c_params const &args);
+        -: 1092:
+        -: 1093:  result internal_exec_params(zview query, internal::c_params const &args);
+        -: 1094:
+        -: 1095:  /// Throw unexpected_rows if prepared statement returned wrong no. of rows.
+        -: 1096:  void check_rowcount_prepared(
+        -: 1097:    zview statement, result::size_type expected_rows,
+        -: 1098:    result::size_type actual_rows);
+        -: 1099:
+        -: 1100:  /// Throw unexpected_rows if wrong row count from parameterised statement.
+        -: 1101:  void
+        -: 1102:  check_rowcount_params(std::size_t expected_rows, std::size_t actual_rows);
+        -: 1103:
+        -: 1104:  /// Describe this transaction to humans, e.g. "transaction 'foo'".
+        -: 1105:  [[nodiscard]] std::string description() const;
+        -: 1106:
+        -: 1107:  friend class pqxx::internal::gate::transaction_transaction_focus;
+        -: 1108:  PQXX_PRIVATE void register_focus(transaction_focus *);
+        -: 1109:  PQXX_PRIVATE void unregister_focus(transaction_focus *) noexcept;
+        -: 1110:  PQXX_PRIVATE void register_pending_error(zview) noexcept;
+        -: 1111:  PQXX_PRIVATE void register_pending_error(std::string &&) noexcept;
+        -: 1112:
+        -: 1113:  /// Like @ref stream(), but takes a tuple rather than a parameter pack.
+        -: 1114:  template<typename... ARGS>
+        -: 1115:  auto stream_like(std::string_view query, std::tuple<ARGS...> const *)
+        -: 1116:  {
+        -: 1117:    return stream<ARGS...>(query);
+        -: 1118:  }
+        -: 1119:
+        -: 1120:  connection &m_conn;
+        -: 1121:
+        -: 1122:  /// Current "focus": a pipeline, a nested transaction, a stream...
+        -: 1123:  /** This pointer is used for only one purpose: sanity checks against mistakes
+        -: 1124:   * such as opening one while another is still active.
+        -: 1125:   */
+       20: 1126:  transaction_focus const *m_focus = nullptr;
+        -: 1127:
+       20: 1128:  status m_status = status::active;
+       20: 1129:  bool m_registered = false;
+        -: 1130:  std::string m_name;
+        -: 1131:  std::string m_pending_error;
+        -: 1132:
+        -: 1133:  /// SQL command for aborting this type of transaction.
+        -: 1134:  std::shared_ptr<std::string> m_rollback_cmd;
+        -: 1135:
+        -: 1136:  static constexpr std::string_view s_type_name{"transaction"sv};
+        -: 1137:};
+        -: 1138:
+        -: 1139:
+        -: 1140:// C++20: Can borrowed_range help?
+        -: 1141:/// Forbidden specialisation: underlying buffer immediately goes out of scope.
+        -: 1142:template<>
+        -: 1143:std::string_view transaction_base::query_value<std::string_view>(
+        -: 1144:  zview query, std::string_view desc) = delete;
+        -: 1145:/// Forbidden specialisation: underlying buffer immediately goes out of scope.
+        -: 1146:template<>
+        -: 1147:zview transaction_base::query_value<zview>(
+        -: 1148:  zview query, std::string_view desc) = delete;
+        -: 1149:
+        -: 1150:} // namespace pqxx
+        -: 1151:
+        -: 1152:
+        -: 1153:namespace pqxx::internal
+        -: 1154:{
+        -: 1155:/// The SQL command for starting a given type of transaction.
+        -: 1156:template<pqxx::isolation_level isolation, pqxx::write_policy rw>
+        -: 1157:extern const zview begin_cmd;
+        -: 1158:
+        -: 1159:// These are not static members, so "constexpr" does not imply "inline".
+        -: 1160:template<>
+        -: 1161:inline constexpr zview begin_cmd<read_committed, write_policy::read_write>{
+        -: 1162:  "BEGIN"_zv};
+        -: 1163:template<>
+        -: 1164:inline constexpr zview begin_cmd<read_committed, write_policy::read_only>{
+        -: 1165:  "BEGIN READ ONLY"_zv};
+        -: 1166:template<>
+        -: 1167:inline constexpr zview begin_cmd<repeatable_read, write_policy::read_write>{
+        -: 1168:  "BEGIN ISOLATION LEVEL REPEATABLE READ"_zv};
+        -: 1169:template<>
+        -: 1170:inline constexpr zview begin_cmd<repeatable_read, write_policy::read_only>{
+        -: 1171:  "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY"_zv};
+        -: 1172:template<>
+        -: 1173:inline constexpr zview begin_cmd<serializable, write_policy::read_write>{
+        -: 1174:  "BEGIN ISOLATION LEVEL SERIALIZABLE"_zv};
+        -: 1175:template<>
+        -: 1176:inline constexpr zview begin_cmd<serializable, write_policy::read_only>{
+        -: 1177:  "BEGIN ISOLATION LEVEL SERIALIZABLE READ ONLY"_zv};
+        -: 1178:} // namespace pqxx::internal
+        -: 1179:
+        -: 1180:#include "pqxx/internal/stream_query_impl.hxx"
+        -: 1181:#endif

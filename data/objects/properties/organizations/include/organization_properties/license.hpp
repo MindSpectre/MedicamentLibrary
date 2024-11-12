@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "organizations/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::organizations
@@ -7,6 +9,21 @@ namespace drug_lib::data::objects::organizations
     class License final : public DataProperty
     {
     public:
+        License() = default;
+
+        explicit License(const Json::Value& properties)
+        {
+            this->set_info(properties);
+        }
+
+        License(std::string license_name, std::string license_key)
+            : license_name_(std::move(license_name)),
+              license_key_(std::move(license_key))
+        {
+        }
+
+        ~License() override = default;
+
         [[nodiscard]] Json::Value get_info() const override
         {
             Json::Value license_params;
@@ -26,10 +43,6 @@ namespace drug_lib::data::objects::organizations
             return properties::license;
         }
 
-        explicit License(const Json::Value& properties)
-        {
-            this->set_info(properties);
-        }
 
         [[nodiscard]] const std::string& get_license_name() const
         {
@@ -51,13 +64,20 @@ namespace drug_lib::data::objects::organizations
             license_key_ = license_key;
         }
 
-    private:
         struct names_of_json_fields
         {
             static constexpr auto license_name = "license_name";
             static constexpr auto license_key = "license_key";
         };
 
+        friend std::ostream& operator<<(std::ostream& os, const License& obj)
+        {
+            return os
+                << "license_name_: " << obj.license_name_
+                << " license_key_: " << obj.license_key_;
+        }
+
+    private:
         std::string license_name_;
         std::string license_key_;
     };

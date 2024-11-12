@@ -1,0 +1,2240 @@
+        -:    0:Source:/usr/include/c++/12/variant
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:// <variant> -*- C++ -*-
+        -:    2:
+        -:    3:// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+        -:    4://
+        -:    5:// This file is part of the GNU ISO C++ Library.  This library is free
+        -:    6:// software; you can redistribute it and/or modify it under the
+        -:    7:// terms of the GNU General Public License as published by the
+        -:    8:// Free Software Foundation; either version 3, or (at your option)
+        -:    9:// any later version.
+        -:   10:
+        -:   11:// This library is distributed in the hope that it will be useful,
+        -:   12:// but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13:// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        -:   14:// GNU General Public License for more details.
+        -:   15:
+        -:   16:// Under Section 7 of GPL version 3, you are granted additional
+        -:   17:// permissions described in the GCC Runtime Library Exception, version
+        -:   18:// 3.1, as published by the Free Software Foundation.
+        -:   19:
+        -:   20:// You should have received a copy of the GNU General Public License and
+        -:   21:// a copy of the GCC Runtime Library Exception along with this program;
+        -:   22:// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+        -:   23:// <http://www.gnu.org/licenses/>.
+        -:   24:
+        -:   25:/** @file variant
+        -:   26: *  This is the `<variant>` C++ Library header.
+        -:   27: */
+        -:   28:
+        -:   29:#ifndef _GLIBCXX_VARIANT
+        -:   30:#define _GLIBCXX_VARIANT 1
+        -:   31:
+        -:   32:#pragma GCC system_header
+        -:   33:
+        -:   34:#if __cplusplus >= 201703L
+        -:   35:
+        -:   36:#include <initializer_list>
+        -:   37:#include <type_traits>
+        -:   38:#include <bits/enable_special_members.h>
+        -:   39:#include <bits/exception_defines.h>
+        -:   40:#include <bits/functional_hash.h>
+        -:   41:#include <bits/invoke.h>
+        -:   42:#include <bits/parse_numbers.h>
+        -:   43:#include <bits/stl_iterator_base_types.h>
+        -:   44:#include <bits/stl_iterator_base_funcs.h>
+        -:   45:#include <bits/stl_construct.h>
+        -:   46:#include <bits/utility.h> // in_place_index_t
+        -:   47:#if __cplusplus >= 202002L
+        -:   48:# include <compare>
+        -:   49:#endif
+        -:   50:
+        -:   51:#if __cpp_concepts >= 202002L && __cpp_constexpr >= 201811L
+        -:   52:// P2231R1 constexpr needs constexpr unions and constrained destructors.
+        -:   53:# define __cpp_lib_variant 202106L
+        -:   54:#else
+        -:   55:# include <ext/aligned_buffer.h> // Use __aligned_membuf instead of union.
+        -:   56:# define __cpp_lib_variant 202102L
+        -:   57:#endif
+        -:   58:
+        -:   59:namespace std _GLIBCXX_VISIBILITY(default)
+        -:   60:{
+        -:   61:_GLIBCXX_BEGIN_NAMESPACE_VERSION
+        -:   62:
+        -:   63:  template<typename... _Types> class tuple;
+        -:   64:  template<typename... _Types> class variant;
+        -:   65:  template <typename> struct hash;
+        -:   66:
+        -:   67:  template<typename _Variant>
+        -:   68:    struct variant_size;
+        -:   69:
+        -:   70:  template<typename _Variant>
+        -:   71:    struct variant_size<const _Variant> : variant_size<_Variant> {};
+        -:   72:
+        -:   73:  template<typename _Variant>
+        -:   74:    struct variant_size<volatile _Variant> : variant_size<_Variant> {};
+        -:   75:
+        -:   76:  template<typename _Variant>
+        -:   77:    struct variant_size<const volatile _Variant> : variant_size<_Variant> {};
+        -:   78:
+        -:   79:  template<typename... _Types>
+        -:   80:    struct variant_size<variant<_Types...>>
+        -:   81:    : std::integral_constant<size_t, sizeof...(_Types)> {};
+        -:   82:
+        -:   83:  template<typename _Variant>
+        -:   84:    inline constexpr size_t variant_size_v = variant_size<_Variant>::value;
+        -:   85:
+        -:   86:  template<typename... _Types>
+        -:   87:    inline constexpr size_t
+        -:   88:    variant_size_v<variant<_Types...>> = sizeof...(_Types);
+        -:   89:
+        -:   90:  template<typename... _Types>
+        -:   91:    inline constexpr size_t
+        -:   92:    variant_size_v<const variant<_Types...>> = sizeof...(_Types);
+        -:   93:
+        -:   94:  template<size_t _Np, typename _Variant>
+        -:   95:    struct variant_alternative;
+        -:   96:
+        -:   97:  template<size_t _Np, typename... _Types>
+        -:   98:    struct variant_alternative<_Np, variant<_Types...>>
+        -:   99:    {
+        -:  100:      static_assert(_Np < sizeof...(_Types));
+        -:  101:
+        -:  102:      using type = typename _Nth_type<_Np, _Types...>::type;
+        -:  103:    };
+        -:  104:
+        -:  105:  template<size_t _Np, typename _Variant>
+        -:  106:    using variant_alternative_t =
+        -:  107:      typename variant_alternative<_Np, _Variant>::type;
+        -:  108:
+        -:  109:  template<size_t _Np, typename _Variant>
+        -:  110:    struct variant_alternative<_Np, const _Variant>
+        -:  111:    { using type = add_const_t<variant_alternative_t<_Np, _Variant>>; };
+        -:  112:
+        -:  113:  template<size_t _Np, typename _Variant>
+        -:  114:    struct variant_alternative<_Np, volatile _Variant>
+        -:  115:    { using type = add_volatile_t<variant_alternative_t<_Np, _Variant>>; };
+        -:  116:
+        -:  117:  template<size_t _Np, typename _Variant>
+        -:  118:    struct variant_alternative<_Np, const volatile _Variant>
+        -:  119:    { using type = add_cv_t<variant_alternative_t<_Np, _Variant>>; };
+        -:  120:
+        -:  121:  inline constexpr size_t variant_npos = -1;
+        -:  122:
+        -:  123:  template<size_t _Np, typename... _Types>
+        -:  124:    constexpr variant_alternative_t<_Np, variant<_Types...>>&
+        -:  125:    get(variant<_Types...>&);
+        -:  126:
+        -:  127:  template<size_t _Np, typename... _Types>
+        -:  128:    constexpr variant_alternative_t<_Np, variant<_Types...>>&&
+        -:  129:    get(variant<_Types...>&&);
+        -:  130:
+        -:  131:  template<size_t _Np, typename... _Types>
+        -:  132:    constexpr variant_alternative_t<_Np, variant<_Types...>> const&
+        -:  133:    get(const variant<_Types...>&);
+        -:  134:
+        -:  135:  template<size_t _Np, typename... _Types>
+        -:  136:    constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
+        -:  137:    get(const variant<_Types...>&&);
+        -:  138:
+        -:  139:  template<typename _Result_type, typename _Visitor, typename... _Variants>
+        -:  140:    constexpr decltype(auto)
+        -:  141:    __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
+        -:  142:
+        -:  143:  template <typename... _Types, typename _Tp>
+        -:  144:    _GLIBCXX20_CONSTEXPR
+        -:  145:    decltype(auto)
+function _ZSt14__variant_castIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEERNSt8__detail9__variant16_Variant_storageILb0EJDnS1_S7_SB_SD_EEEEDcOT0_ called 11258676 returned 100% blocks executed 100%
+function _ZSt14__variant_castIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEERKNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnS1_S7_SB_SD_EEEEDcOT0_ called 5276268 returned 100% blocks executed 100%
+ 16534944:  146:    __variant_cast(_Tp&& __rhs)
+        -:  147:    {
+        -:  148:      if constexpr (is_lvalue_reference_v<_Tp>)
+        -:  149:	{
+        -:  150:	  if constexpr (is_const_v<remove_reference_t<_Tp>>)
+  5276268:  151:	    return static_cast<const variant<_Types...>&>(__rhs);
+  5276268:  151-block  0
+        -:  152:	  else
+ 11258676:  153:	    return static_cast<variant<_Types...>&>(__rhs);
+ 11258676:  153-block  0
+        -:  154:	}
+        -:  155:      else
+        -:  156:        return static_cast<variant<_Types...>&&>(__rhs);
+        -:  157:    }
+        -:  158:
+        -:  159:namespace __detail
+        -:  160:{
+        -:  161:namespace __variant
+        -:  162:{
+        -:  163:  // used for raw visitation
+        -:  164:  struct __variant_cookie {};
+        -:  165:  // used for raw visitation with indices passed in
+        -:  166:  struct __variant_idx_cookie { using type = __variant_idx_cookie; };
+        -:  167:  // Used to enable deduction (and same-type checking) for std::visit:
+        -:  168:  template<typename _Tp> struct __deduce_visit_result { using type = _Tp; };
+        -:  169:
+        -:  170:  // Visit variants that might be valueless.
+        -:  171:  template<typename _Visitor, typename... _Variants>
+        -:  172:    constexpr void
+        -:  173:    __raw_visit(_Visitor&& __visitor, _Variants&&... __variants)
+        -:  174:    {
+        -:  175:      std::__do_visit<__variant_cookie>(std::forward<_Visitor>(__visitor),
+        -:  176:				        std::forward<_Variants>(__variants)...);
+        -:  177:    }
+        -:  178:
+        -:  179:  // Visit variants that might be valueless, passing indices to the visitor.
+        -:  180:  template<typename _Visitor, typename... _Variants>
+        -:  181:    constexpr void
+function _ZNSt8__detail9__variant15__raw_idx_visitIZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEC1ERKSH_EUlOT_T0_E_JRKSt7variantIJDnS4_SA_SE_SG_EEEEEvSL_DpOT0_ called 5260074 returned 100% blocks executed 100%
+  5260074:  182:    __raw_idx_visit(_Visitor&& __visitor, _Variants&&... __variants)
+        -:  183:    {
+ 10520148:  184:      std::__do_visit<__variant_idx_cookie>(std::forward<_Visitor>(__visitor),
+  5260074:  185:	  std::forward<_Variants>(__variants)...);
+  5260074:  186:    }
+  5260074:  186-block  0
+        -:  187:
+        -:  188:  // The __as function templates implement the exposition-only "as-variant"
+        -:  189:
+        -:  190:  template<typename... _Types>
+        -:  191:    constexpr std::variant<_Types...>&
+        -:  192:    __as(std::variant<_Types...>& __v) noexcept
+        -:  193:    { return __v; }
+        -:  194:
+        -:  195:  template<typename... _Types>
+        -:  196:    constexpr const std::variant<_Types...>&
+        -:  197:    __as(const std::variant<_Types...>& __v) noexcept
+        -:  198:    { return __v; }
+        -:  199:
+        -:  200:  template<typename... _Types>
+        -:  201:    constexpr std::variant<_Types...>&&
+        -:  202:    __as(std::variant<_Types...>&& __v) noexcept
+        -:  203:    { return std::move(__v); }
+        -:  204:
+        -:  205:  template<typename... _Types>
+        -:  206:    constexpr const std::variant<_Types...>&&
+        -:  207:    __as(const std::variant<_Types...>&& __v) noexcept
+        -:  208:    { return std::move(__v); }
+        -:  209:
+        -:  210:  // For C++17:
+        -:  211:  // _Uninitialized<T> is guaranteed to be a trivially destructible type,
+        -:  212:  // even if T is not.
+        -:  213:  // For C++20:
+        -:  214:  // _Uninitialized<T> is trivially destructible iff T is, so _Variant_union
+        -:  215:  // needs a constrained non-trivial destructor.
+        -:  216:  template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
+        -:  217:    struct _Uninitialized;
+        -:  218:
+        -:  219:  template<typename _Type>
+        -:  220:    struct _Uninitialized<_Type, true>
+        -:  221:    {
+        -:  222:      template<typename... _Args>
+        -:  223:	constexpr
+function _ZNSt8__detail9__variant14_UninitializedIDnLb1EEC2IJRKDnEEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant14_UninitializedIN4pqxx5zviewELb1EEC2IJRKS3_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant14_UninitializedISt17basic_string_viewISt4byteSt11char_traitsIS3_EELb1EEC2IJRKS6_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+    #####:  224:	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+    #####:  225:	: _M_storage(std::forward<_Args>(__args)...)
+    #####:  226:	{ }
+    $$$$$:  226-block  0
+    $$$$$:  226-block  1
+    $$$$$:  226-block  2
+        -:  227:
+function _ZNKRSt8__detail9__variant14_UninitializedIDnLb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+function _ZNKRSt8__detail9__variant14_UninitializedIN4pqxx5zviewELb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+function _ZNKRSt8__detail9__variant14_UninitializedISt17basic_string_viewISt4byteSt11char_traitsIS3_EELb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+    #####:  228:      constexpr const _Type& _M_get() const & noexcept
+    #####:  229:      { return _M_storage; }
+    $$$$$:  229-block  0
+    $$$$$:  229-block  1
+    $$$$$:  229-block  2
+        -:  230:
+function _ZNRSt8__detail9__variant14_UninitializedIDnLb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+function _ZNRSt8__detail9__variant14_UninitializedIN4pqxx5zviewELb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+function _ZNRSt8__detail9__variant14_UninitializedISt17basic_string_viewISt4byteSt11char_traitsIS3_EELb1EE6_M_getEv called 0 returned 0% blocks executed 0%
+    #####:  231:      constexpr _Type& _M_get() & noexcept
+    #####:  232:      { return _M_storage; }
+    $$$$$:  232-block  0
+    $$$$$:  232-block  1
+    $$$$$:  232-block  2
+        -:  233:
+        -:  234:      constexpr const _Type&& _M_get() const && noexcept
+        -:  235:      { return std::move(_M_storage); }
+        -:  236:
+        -:  237:      constexpr _Type&& _M_get() && noexcept
+        -:  238:      { return std::move(_M_storage); }
+        -:  239:
+        -:  240:      _Type _M_storage;
+        -:  241:    };
+        -:  242:
+        -:  243:  template<typename _Type>
+        -:  244:    struct _Uninitialized<_Type, false>
+        -:  245:    {
+        -:  246:#if __cpp_lib_variant >= 202106L
+        -:  247:      template<typename... _Args>
+        -:  248:	constexpr
+function _ZNSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEELb0EEC2IJRKS7_EEESt16in_place_index_tILm0EEDpOT_ called 5202610 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringISt4byteSt11char_traitsIS4_ESaIS4_EEELb0EEC2IJRKS8_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+  5202610:  249:	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+  5202610:  250:	: _M_storage(std::forward<_Args>(__args)...)
+  5202610:  251:	{ }
+  5202610:  251-block  0
+    $$$$$:  251-block  1
+        -:  252:
+        -:  253:      constexpr ~_Uninitialized() { }
+        -:  254:
+        -:  255:      _Uninitialized(const _Uninitialized&) = default;
+        -:  256:      _Uninitialized(_Uninitialized&&) = default;
+        -:  257:      _Uninitialized& operator=(const _Uninitialized&) = default;
+        -:  258:      _Uninitialized& operator=(_Uninitialized&&) = default;
+        -:  259:
+function _ZNKRSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEELb0EE6_M_getEv called 7873145 returned 100% blocks executed 100%
+function _ZNKRSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringISt4byteSt11char_traitsIS4_ESaIS4_EEELb0EE6_M_getEv called 0 returned 0% blocks executed 0%
+  7873145:  260:      constexpr const _Type& _M_get() const & noexcept
+  7873145:  261:      { return _M_storage; }
+  7873145:  261-block  0
+    $$$$$:  261-block  1
+        -:  262:
+function _ZNRSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEELb0EE6_M_getEv called 11247679 returned 100% blocks executed 100%
+function _ZNRSt8__detail9__variant14_UninitializedINSt7__cxx1112basic_stringISt4byteSt11char_traitsIS4_ESaIS4_EEELb0EE6_M_getEv called 0 returned 0% blocks executed 0%
+ 11247679:  263:      constexpr _Type& _M_get() & noexcept
+ 11247679:  264:      { return _M_storage; }
+ 11247679:  264-block  0
+    $$$$$:  264-block  1
+        -:  265:
+        -:  266:      constexpr const _Type&& _M_get() const && noexcept
+        -:  267:      { return std::move(_M_storage); }
+        -:  268:
+        -:  269:      constexpr _Type&& _M_get() && noexcept
+        -:  270:      { return std::move(_M_storage); }
+        -:  271:
+        -:  272:      struct _Empty_byte { };
+        -:  273:
+        -:  274:      union {
+        -:  275:	_Empty_byte _M_empty;
+        -:  276:	_Type _M_storage;
+        -:  277:      };
+        -:  278:#else
+        -:  279:      template<typename... _Args>
+        -:  280:	constexpr
+        -:  281:	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+        -:  282:	{
+        -:  283:	  ::new ((void*)std::addressof(_M_storage))
+        -:  284:	    _Type(std::forward<_Args>(__args)...);
+        -:  285:	}
+        -:  286:
+        -:  287:      const _Type& _M_get() const & noexcept
+        -:  288:      { return *_M_storage._M_ptr(); }
+        -:  289:
+        -:  290:      _Type& _M_get() & noexcept
+        -:  291:      { return *_M_storage._M_ptr(); }
+        -:  292:
+        -:  293:      const _Type&& _M_get() const && noexcept
+        -:  294:      { return std::move(*_M_storage._M_ptr()); }
+        -:  295:
+        -:  296:      _Type&& _M_get() && noexcept
+        -:  297:      { return std::move(*_M_storage._M_ptr()); }
+        -:  298:
+        -:  299:      __gnu_cxx::__aligned_membuf<_Type> _M_storage;
+        -:  300:#endif
+        -:  301:    };
+        -:  302:
+        -:  303:  template<size_t _Np, typename _Union>
+        -:  304:    constexpr decltype(auto)
+function _ZNSt8__detail9__variant7__get_nILm0ERNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm1ERNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm2ERNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 11244339 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant7__get_nILm3ERNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm0ERNS0_15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS4_EENSt7__cxx1112basic_stringIS4_S6_SaIS4_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm4ERNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm1ERNS0_15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS4_EENSt7__cxx1112basic_stringIS4_S6_SaIS4_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm0ERKNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm1ERKNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm2ERKNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 7871566 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant7__get_nILm3ERKNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm0ERKNS0_15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS4_EENSt7__cxx1112basic_stringIS4_S6_SaIS4_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm4ERKNS0_15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant7__get_nILm1ERKNS0_15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS4_EENSt7__cxx1112basic_stringIS4_S6_SaIS4_EEEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+ 19115905:  305:    __get_n(_Union&& __u) noexcept
+        -:  306:    {
+        -:  307:      if constexpr (_Np == 0)
+    #####:  308:	return std::forward<_Union>(__u)._M_first._M_get();
+    $$$$$:  308-block  0
+    $$$$$:  308-block  1
+    $$$$$:  308-block  2
+    $$$$$:  308-block  3
+        -:  309:      else if constexpr (_Np == 1)
+    #####:  310:	return std::forward<_Union>(__u)._M_rest._M_first._M_get();
+    $$$$$:  310-block  0
+    $$$$$:  310-block  1
+    $$$$$:  310-block  2
+    $$$$$:  310-block  3
+        -:  311:      else if constexpr (_Np == 2)
+ 19115905:  312:	return std::forward<_Union>(__u)._M_rest._M_rest._M_first._M_get();
+ 11244339:  312-block  0
+  7871566:  312-block  1
+        -:  313:      else
+    #####:  314:	return __variant::__get_n<_Np - 3>(
+    $$$$$:  314-block  0
+    $$$$$:  314-block  1
+    $$$$$:  314-block  2
+    $$$$$:  314-block  3
+    #####:  315:		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
+        -:  316:    }
+        -:  317:
+        -:  318:  // Returns the typed storage for __v.
+        -:  319:  template<size_t _Np, typename _Variant>
+        -:  320:    constexpr decltype(auto)
+function _ZNSt8__detail9__variant5__getILm0ERSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm1ERSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm2ERSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 11241889 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant5__getILm3ERSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm4ERSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm0ERKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm1ERKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm2ERKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 7869757 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant5__getILm3ERKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant5__getILm4ERKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEEEEDcOT0_ called 0 returned 0% blocks executed 0%
+ 19111646:  321:    __get(_Variant&& __v) noexcept
+ 19111646:  322:    { return __variant::__get_n<_Np>(std::forward<_Variant>(__v)._M_u); }
+    $$$$$:  322-block  0
+    $$$$$:  322-block  1
+ 11241889:  322-block  2
+    $$$$$:  322-block  3
+    $$$$$:  322-block  4
+    $$$$$:  322-block  5
+    $$$$$:  322-block  6
+  7869757:  322-block  7
+    $$$$$:  322-block  8
+    $$$$$:  322-block  9
+        -:  323:
+        -:  324:  template<typename... _Types>
+        -:  325:    struct _Traits
+        -:  326:    {
+        -:  327:      static constexpr bool _S_default_ctor =
+        -:  328:	  is_default_constructible_v<typename _Nth_type<0, _Types...>::type>;
+        -:  329:      static constexpr bool _S_copy_ctor =
+        -:  330:	  (is_copy_constructible_v<_Types> && ...);
+        -:  331:      static constexpr bool _S_move_ctor =
+        -:  332:	  (is_move_constructible_v<_Types> && ...);
+        -:  333:      static constexpr bool _S_copy_assign =
+        -:  334:	  _S_copy_ctor
+        -:  335:	  && (is_copy_assignable_v<_Types> && ...);
+        -:  336:      static constexpr bool _S_move_assign =
+        -:  337:	  _S_move_ctor
+        -:  338:	  && (is_move_assignable_v<_Types> && ...);
+        -:  339:
+        -:  340:      static constexpr bool _S_trivial_dtor =
+        -:  341:	  (is_trivially_destructible_v<_Types> && ...);
+        -:  342:      static constexpr bool _S_trivial_copy_ctor =
+        -:  343:	  (is_trivially_copy_constructible_v<_Types> && ...);
+        -:  344:      static constexpr bool _S_trivial_move_ctor =
+        -:  345:	  (is_trivially_move_constructible_v<_Types> && ...);
+        -:  346:      static constexpr bool _S_trivial_copy_assign =
+        -:  347:	  _S_trivial_dtor && _S_trivial_copy_ctor
+        -:  348:	  && (is_trivially_copy_assignable_v<_Types> && ...);
+        -:  349:      static constexpr bool _S_trivial_move_assign =
+        -:  350:	  _S_trivial_dtor && _S_trivial_move_ctor
+        -:  351:	  && (is_trivially_move_assignable_v<_Types> && ...);
+        -:  352:
+        -:  353:      // The following nothrow traits are for non-trivial SMFs. Trivial SMFs
+        -:  354:      // are always nothrow.
+        -:  355:      static constexpr bool _S_nothrow_default_ctor =
+        -:  356:	  is_nothrow_default_constructible_v<
+        -:  357:	      typename _Nth_type<0, _Types...>::type>;
+        -:  358:      static constexpr bool _S_nothrow_copy_ctor = false;
+        -:  359:      static constexpr bool _S_nothrow_move_ctor =
+        -:  360:	  (is_nothrow_move_constructible_v<_Types> && ...);
+        -:  361:      static constexpr bool _S_nothrow_copy_assign = false;
+        -:  362:      static constexpr bool _S_nothrow_move_assign =
+        -:  363:	  _S_nothrow_move_ctor
+        -:  364:	  && (is_nothrow_move_assignable_v<_Types> && ...);
+        -:  365:    };
+        -:  366:
+        -:  367:  // Defines members and ctors.
+        -:  368:  template<typename... _Types>
+        -:  369:    union _Variadic_union
+        -:  370:    {
+        -:  371:      _Variadic_union() = default;
+        -:  372:
+        -:  373:      template<size_t _Np, typename... _Args>
+        -:  374:	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
+        -:  375:    };
+        -:  376:
+        -:  377:  template<typename _First, typename... _Rest>
+        -:  378:    union _Variadic_union<_First, _Rest...>
+        -:  379:    {
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2Ev called 8658459 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2Ev called 8656628 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEEC2Ev called 8658859 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS3_EENSt7__cxx1112basic_stringIS3_S5_SaIS3_EEEEEC2Ev called 8676596 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringISt4byteSt11char_traitsIS4_ESaIS4_EEEEEC2Ev called 8678791 returned 100% blocks executed 100%
+ 43329333:  380:      constexpr _Variadic_union() : _M_rest() { }
+  8658459:  380-block  0
+  8656628:  380-block  1
+  8658859:  380-block  2
+  8676596:  380-block  3
+  8678791:  380-block  4
+        -:  381:
+        -:  382:      template<typename... _Args>
+        -:  383:	constexpr
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2IJRKDnEEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2IJRKS3_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEEC2IJRKS7_EEESt16in_place_index_tILm0EEDpOT_ called 5201062 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS3_EENSt7__cxx1112basic_stringIS3_S5_SaIS3_EEEEEC2IJRKS6_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringISt4byteSt11char_traitsIS4_ESaIS4_EEEEEC2IJRKS8_EEESt16in_place_index_tILm0EEDpOT_ called 0 returned 0% blocks executed 0%
+  5201062:  384:	_Variadic_union(in_place_index_t<0>, _Args&&... __args)
+  5201062:  385:	: _M_first(in_place_index<0>, std::forward<_Args>(__args)...)
+  5201062:  386:	{ }
+    $$$$$:  386-block  0
+    $$$$$:  386-block  1
+  5201062:  386-block  2
+    $$$$$:  386-block  3
+    $$$$$:  386-block  4
+        -:  387:
+        -:  388:      template<size_t _Np, typename... _Args>
+        -:  389:	constexpr
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm1EJRKS3_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm2EJRKS9_EEESt16in_place_index_tIXT_EEDpOT0_ called 5221364 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm1EJRKS9_EEESt16in_place_index_tIXT_EEDpOT0_ called 5221352 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm3EJRKSD_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm2EJRKSD_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEEC2ILm1EJRKSB_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm4EJRKSF_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ILm3EJRKSF_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEEC2ILm2EJRKSD_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant15_Variadic_unionIJSt17basic_string_viewISt4byteSt11char_traitsIS3_EENSt7__cxx1112basic_stringIS3_S5_SaIS3_EEEEEC2ILm1EJRKSA_EEESt16in_place_index_tIXT_EEDpOT0_ called 0 returned 0% blocks executed 0%
+ 10442716:  390:	_Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
+ 10442716:  391:	: _M_rest(in_place_index<_Np-1>, std::forward<_Args>(__args)...)
+ 10442716:  392:	{ }
+    $$$$$:  392-block  0
+  5221364:  392-block  1
+  5221352:  392-block  2
+    $$$$$:  392-block  3
+    $$$$$:  392-block  4
+    $$$$$:  392-block  5
+    $$$$$:  392-block  6
+    $$$$$:  392-block  7
+    $$$$$:  392-block  8
+    $$$$$:  392-block  9
+        -:  393:
+        -:  394:#if __cpp_lib_variant >= 202106L
+        -:  395:      _Variadic_union(const _Variadic_union&) = default;
+        -:  396:      _Variadic_union(_Variadic_union&&) = default;
+        -:  397:      _Variadic_union& operator=(const _Variadic_union&) = default;
+        -:  398:      _Variadic_union& operator=(_Variadic_union&&) = default;
+        -:  399:
+        -:  400:      ~_Variadic_union() = default;
+        -:  401:
+function _ZNSt8__detail9__variant15_Variadic_unionIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2EvQoontu24__has_trivial_destructorT_Entu24__has_trivial_destructorNS1_IJDpT0_EEEE called 11168281 returned 100% blocks executed 100%
+ 11168281:  402:      constexpr ~_Variadic_union()
+        -:  403:	requires (!__has_trivial_destructor(_First))
+        -:  404:	      || (!__has_trivial_destructor(_Variadic_union<_Rest...>))
+ 11168281:  405:      { }
+ 11168281:  405-block  0
+        -:  406:#endif
+        -:  407:
+        -:  408:      _Uninitialized<_First> _M_first;
+        -:  409:      _Variadic_union<_Rest...> _M_rest;
+        -:  410:    };
+        -:  411:
+        -:  412:  // _Never_valueless_alt is true for variant alternatives that can
+        -:  413:  // always be placed in a variant without it becoming valueless.
+        -:  414:
+        -:  415:  // For suitably-small, trivially copyable types we can create temporaries
+        -:  416:  // on the stack and then memcpy them into place.
+        -:  417:  template<typename _Tp>
+        -:  418:    struct _Never_valueless_alt
+        -:  419:    : __and_<bool_constant<sizeof(_Tp) <= 256>, is_trivially_copyable<_Tp>>
+        -:  420:    { };
+        -:  421:
+        -:  422:  // Specialize _Never_valueless_alt for other types which have a
+        -:  423:  // non-throwing and cheap move construction and move assignment operator,
+        -:  424:  // so that emplacing the type will provide the strong exception-safety
+        -:  425:  // guarantee, by creating and moving a temporary.
+        -:  426:  // Whether _Never_valueless_alt<T> is true or not affects the ABI of a
+        -:  427:  // variant using that alternative, so we can't change the value later!
+        -:  428:
+        -:  429:  // True if every alternative in _Types... can be emplaced in a variant
+        -:  430:  // without it becoming valueless. If this is true, variant<_Types...>
+        -:  431:  // can never be valueless, which enables some minor optimizations.
+        -:  432:  template <typename... _Types>
+        -:  433:    constexpr bool __never_valueless()
+        -:  434:    {
+        -:  435:      return _Traits<_Types...>::_S_move_assign
+        -:  436:	&& (_Never_valueless_alt<_Types>::value && ...);
+        -:  437:    }
+        -:  438:
+        -:  439:  // Defines index and the dtor, possibly trivial.
+        -:  440:  template<bool __trivially_destructible, typename... _Types>
+        -:  441:    struct _Variant_storage;
+        -:  442:
+        -:  443:  template <typename... _Types>
+        -:  444:    using __select_index =
+        -:  445:      typename __select_int::_Select_int_base<sizeof...(_Types),
+        -:  446:					      unsigned char,
+        -:  447:					      unsigned short>::type::value_type;
+        -:  448:
+        -:  449:  template<typename... _Types>
+        -:  450:    struct _Variant_storage<false, _Types...>
+        -:  451:    {
+        -:  452:      constexpr
+function _ZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2Ev called 8673201 returned 100% blocks executed 100%
+  8673201:  453:      _Variant_storage()
+  8673201:  454:      : _M_index(static_cast<__index_type>(variant_npos))
+  8673201:  455:      { }
+  8673201:  455-block  0
+        -:  456:
+        -:  457:      template<size_t _Np, typename... _Args>
+        -:  458:	constexpr
+        -:  459:	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
+        -:  460:	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
+        -:  461:	_M_index{_Np}
+        -:  462:	{ }
+        -:  463:
+        -:  464:      constexpr void
+function _ZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEv called 11267882 returned 100% blocks executed 75%
+ 11267882:  465:      _M_reset()
+        -:  466:      {
+ 11267882:  467:	if (!_M_valid()) [[unlikely]]
+ 11267882:  467-block  0
+branch  0 taken 0
+branch  1 taken 11267882
+    #####:  468:	  return;
+    $$$$$:  468-block  0
+        -:  469:
+function _ZZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEvENUlOT_E_clIRDnEEDaSI_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEvENUlOT_E_clIRS3_EEDaSI_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEvENUlOT_E_clIRS9_EEDaSI_ called 11214164 returned 100% blocks executed 100%
+function _ZZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEvENUlOT_E_clIRSD_EEDaSI_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_resetEvENUlOT_E_clIRSF_EEDaSI_ called 0 returned 0% blocks executed 0%
+ 22482046:  470:	std::__do_visit<void>([](auto&& __this_mem) mutable
+        -:  471:	  {
+ 11214164:  472:	    std::_Destroy(std::__addressof(__this_mem));
+ 22482046:  473:	  }, __variant_cast<_Types...>(*this));
+    $$$$$:  473-block  0
+    $$$$$:  473-block  1
+ 11214164:  473-block  2
+    $$$$$:  473-block  3
+    $$$$$:  473-block  4
+        -:  474:
+ 11267882:  475:	_M_index = static_cast<__index_type>(variant_npos);
+ 11267882:  476:      }
+ 11267882:  476-block  0
+ 11267882:  476-block  1
+        -:  477:
+        -:  478:      _GLIBCXX20_CONSTEXPR
+function _ZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11298662 returned 100% blocks executed 66%
+ 11298662:  479:      ~_Variant_storage()
+ 11298662:  480:      { _M_reset(); }
+ 11298662:  480-block  0
+branch  0 taken 11298662
+branch  1 taken 0
+ 11298662:  480-block  1
+    $$$$$:  480-block  2
+        -:  481:
+        -:  482:      constexpr bool
+function _ZNKSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEE8_M_validEv called 13904339 returned 100% blocks executed 100%
+ 13904339:  483:      _M_valid() const noexcept
+        -:  484:      {
+        -:  485:	if constexpr (__variant::__never_valueless<_Types...>())
+ 13904339:  486:	  return true;
+ 13904339:  486-block  0
+        -:  487:	return this->_M_index != __index_type(variant_npos);
+        -:  488:      }
+        -:  489:
+        -:  490:      _Variadic_union<_Types...> _M_u;
+        -:  491:      using __index_type = __select_index<_Types...>;
+        -:  492:      __index_type _M_index;
+        -:  493:    };
+        -:  494:
+        -:  495:  template<typename... _Types>
+        -:  496:    struct _Variant_storage<true, _Types...>
+        -:  497:    {
+        -:  498:      constexpr
+        -:  499:      _Variant_storage()
+        -:  500:      : _M_index(static_cast<__index_type>(variant_npos))
+        -:  501:      { }
+        -:  502:
+        -:  503:      template<size_t _Np, typename... _Args>
+        -:  504:	constexpr
+        -:  505:	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
+        -:  506:	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
+        -:  507:	_M_index{_Np}
+        -:  508:	{ }
+        -:  509:
+        -:  510:      constexpr void
+        -:  511:      _M_reset() noexcept
+        -:  512:      { _M_index = static_cast<__index_type>(variant_npos); }
+        -:  513:
+        -:  514:      constexpr bool
+        -:  515:      _M_valid() const noexcept
+        -:  516:      {
+        -:  517:	if constexpr (__variant::__never_valueless<_Types...>())
+        -:  518:	  return true;
+        -:  519:	// It would be nice if we could just return true for -fno-exceptions.
+        -:  520:	// It's possible (but inadvisable) that a std::variant could become
+        -:  521:	// valueless in a translation unit compiled with -fexceptions and then
+        -:  522:	// be passed to functions compiled with -fno-exceptions. We would need
+        -:  523:	// some #ifdef _GLIBCXX_NO_EXCEPTIONS_GLOBALLY property to elide all
+        -:  524:	// checks for valueless_by_exception().
+        -:  525:	return this->_M_index != static_cast<__index_type>(variant_npos);
+        -:  526:      }
+        -:  527:
+        -:  528:      _Variadic_union<_Types...> _M_u;
+        -:  529:      using __index_type = __select_index<_Types...>;
+        -:  530:      __index_type _M_index;
+        -:  531:    };
+        -:  532:
+        -:  533:  // Implementation of v.emplace<N>(args...).
+        -:  534:  template<size_t _Np, bool _Triv, typename... _Types, typename... _Args>
+        -:  535:    _GLIBCXX20_CONSTEXPR
+        -:  536:    inline void
+        -:  537:    __emplace(_Variant_storage<_Triv, _Types...>& __v, _Args&&... __args)
+        -:  538:    {
+        -:  539:      __v._M_reset();
+        -:  540:      auto* __addr = std::__addressof(__variant::__get_n<_Np>(__v._M_u));
+        -:  541:      std::_Construct(__addr, std::forward<_Args>(__args)...);
+        -:  542:      // Construction didn't throw, so can set the new index now:
+        -:  543:      __v._M_index = _Np;
+        -:  544:    }
+        -:  545:
+        -:  546:  template<typename... _Types>
+        -:  547:    using _Variant_storage_alias =
+        -:  548:	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
+        -:  549:
+        -:  550:  // The following are (Copy|Move) (ctor|assign) layers for forwarding
+        -:  551:  // triviality and handling non-trivial SMF behaviors.
+        -:  552:
+        -:  553:  template<bool, typename... _Types>
+function _ZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11296696 returned 100% blocks executed 100%
+        -:  554:    struct _Copy_ctor_base : _Variant_storage_alias<_Types...>
+        -:  555:    {
+        -:  556:      using _Base = _Variant_storage_alias<_Types...>;
+        -:  557:      using _Base::_Base;
+        -:  558:
+        -:  559:      _GLIBCXX20_CONSTEXPR
+function _ZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ERKSG_ called 5270055 returned 99% blocks executed 60%
+  5270055:  560:      _Copy_ctor_base(const _Copy_ctor_base& __rhs)
+        -:  561:	  noexcept(_Traits<_Types...>::_S_nothrow_copy_ctor)
+        -:  562:      {
+  5261750:  563:	__variant::__raw_idx_visit(
+  5261750:  563-block  0
+branch  0 taken 5253445
+branch  1 taken 8305
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clIRKDnSt17integral_constantImLm0EEEEDaSK_SL_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clIRKS3_St17integral_constantImLm1EEEEDaSK_SL_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clIRKS9_St17integral_constantImLm2EEEEDaSK_SL_ called 5219666 returned 100% blocks executed 100%
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clIRKSD_St17integral_constantImLm3EEEEDaSK_SL_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clIRKSF_St17integral_constantImLm4EEEEDaSK_SL_ called 0 returned 0% blocks executed 0%
+function _ZZNSt8__detail9__variant15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC1ERKSG_ENUlOT_T0_E_clINS0_16__variant_cookieESt17integral_constantImLm18446744073709551615EEEEDaSK_SL_ called 0 returned 0% blocks executed 0%
+ 10489721:  564:	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+        -:  565:	  {
+  5219666:  566:	    constexpr size_t __j = __rhs_index;
+        -:  567:	    if constexpr (__j != variant_npos)
+ 10439332:  568:	      std::_Construct(std::__addressof(this->_M_u),
+  5219666:  569:			      in_place_index<__j>, __rhs_mem);
+ 10489721:  570:	  }, __variant_cast<_Types...>(__rhs));
+  5270055:  570-block  0
+branch  0 taken 5261750
+branch  1 taken 8305
+    $$$$$:  570-block  1
+    $$$$$:  570-block  2
+  5219666:  570-block  3
+    $$$$$:  570-block  4
+    $$$$$:  570-block  5
+    $$$$$:  570-block  6
+  5253445:  571:	this->_M_index = __rhs._M_index;
+  5270055:  572:      }
+  5253445:  572-block  0
+    $$$$$:  572-block  1
+    $$$$$:  572-block  2
+        -:  573:
+        -:  574:      _Copy_ctor_base(_Copy_ctor_base&&) = default;
+        -:  575:      _Copy_ctor_base& operator=(const _Copy_ctor_base&) = default;
+        -:  576:      _Copy_ctor_base& operator=(_Copy_ctor_base&&) = default;
+        -:  577:    };
+        -:  578:
+        -:  579:  template<typename... _Types>
+        -:  580:    struct _Copy_ctor_base<true, _Types...> : _Variant_storage_alias<_Types...>
+        -:  581:    {
+        -:  582:      using _Base = _Variant_storage_alias<_Types...>;
+        -:  583:      using _Base::_Base;
+        -:  584:    };
+        -:  585:
+        -:  586:  template<typename... _Types>
+        -:  587:    using _Copy_ctor_alias =
+        -:  588:	_Copy_ctor_base<_Traits<_Types...>::_S_trivial_copy_ctor, _Types...>;
+        -:  589:
+        -:  590:  template<bool, typename... _Types>
+function _ZNSt8__detail9__variant15_Move_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11294198 returned 100% blocks executed 100%
+        -:  591:    struct _Move_ctor_base : _Copy_ctor_alias<_Types...>
+        -:  592:    {
+        -:  593:      using _Base = _Copy_ctor_alias<_Types...>;
+        -:  594:      using _Base::_Base;
+        -:  595:
+        -:  596:      _GLIBCXX20_CONSTEXPR
+        -:  597:      _Move_ctor_base(_Move_ctor_base&& __rhs)
+        -:  598:	  noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
+        -:  599:      {
+        -:  600:	__variant::__raw_idx_visit(
+        -:  601:	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+        -:  602:	  {
+        -:  603:	    constexpr size_t __j = __rhs_index;
+        -:  604:	    if constexpr (__j != variant_npos)
+        -:  605:	      std::_Construct(std::__addressof(this->_M_u),
+        -:  606:			      in_place_index<__j>,
+        -:  607:			      std::forward<decltype(__rhs_mem)>(__rhs_mem));
+        -:  608:	  }, __variant_cast<_Types...>(std::move(__rhs)));
+        -:  609:	this->_M_index = __rhs._M_index;
+        -:  610:      }
+        -:  611:
+function _ZNSt8__detail9__variant15_Move_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ERKSG_ called 5257401 returned 100% blocks executed 100%
+  5257401:  612:      _Move_ctor_base(const _Move_ctor_base&) = default;
+  5257401:  612-block  0
+        -:  613:      _Move_ctor_base& operator=(const _Move_ctor_base&) = default;
+        -:  614:      _Move_ctor_base& operator=(_Move_ctor_base&&) = default;
+        -:  615:    };
+        -:  616:
+        -:  617:  template<typename... _Types>
+        -:  618:    struct _Move_ctor_base<true, _Types...> : _Copy_ctor_alias<_Types...>
+        -:  619:    {
+        -:  620:      using _Base = _Copy_ctor_alias<_Types...>;
+        -:  621:      using _Base::_Base;
+        -:  622:    };
+        -:  623:
+        -:  624:  template<typename... _Types>
+        -:  625:    using _Move_ctor_alias =
+        -:  626:	_Move_ctor_base<_Traits<_Types...>::_S_trivial_move_ctor, _Types...>;
+        -:  627:
+        -:  628:  template<bool, typename... _Types>
+function _ZNSt8__detail9__variant17_Copy_assign_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11292321 returned 100% blocks executed 100%
+        -:  629:    struct _Copy_assign_base : _Move_ctor_alias<_Types...>
+        -:  630:    {
+        -:  631:      using _Base = _Move_ctor_alias<_Types...>;
+        -:  632:      using _Base::_Base;
+        -:  633:
+        -:  634:      _GLIBCXX20_CONSTEXPR
+        -:  635:      _Copy_assign_base&
+        -:  636:      operator=(const _Copy_assign_base& __rhs)
+        -:  637:	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
+        -:  638:      {
+        -:  639:	__variant::__raw_idx_visit(
+        -:  640:	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+        -:  641:	  {
+        -:  642:	    constexpr size_t __j = __rhs_index;
+        -:  643:	    if constexpr (__j == variant_npos)
+        -:  644:	      this->_M_reset(); // Make *this valueless.
+        -:  645:	    else if (this->_M_index == __j)
+        -:  646:	      __variant::__get<__j>(*this) = __rhs_mem;
+        -:  647:	    else
+        -:  648:	      {
+        -:  649:		using _Tj = typename _Nth_type<__j, _Types...>::type;
+        -:  650:		if constexpr (is_nothrow_copy_constructible_v<_Tj>
+        -:  651:			      || !is_nothrow_move_constructible_v<_Tj>)
+        -:  652:		  __variant::__emplace<__j>(*this, __rhs_mem);
+        -:  653:		else
+        -:  654:		  {
+        -:  655:		    using _Variant = variant<_Types...>;
+        -:  656:		    _Variant& __self = __variant_cast<_Types...>(*this);
+        -:  657:		    __self = _Variant(in_place_index<__j>, __rhs_mem);
+        -:  658:		  }
+        -:  659:	      }
+        -:  660:	  }, __variant_cast<_Types...>(__rhs));
+        -:  661:	return *this;
+        -:  662:      }
+        -:  663:
+function _ZNSt8__detail9__variant17_Copy_assign_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ERKSG_ called 5255999 returned 100% blocks executed 100%
+  5255999:  664:      _Copy_assign_base(const _Copy_assign_base&) = default;
+  5255999:  664-block  0
+        -:  665:      _Copy_assign_base(_Copy_assign_base&&) = default;
+        -:  666:      _Copy_assign_base& operator=(_Copy_assign_base&&) = default;
+        -:  667:    };
+        -:  668:
+        -:  669:  template<typename... _Types>
+        -:  670:    struct _Copy_assign_base<true, _Types...> : _Move_ctor_alias<_Types...>
+        -:  671:    {
+        -:  672:      using _Base = _Move_ctor_alias<_Types...>;
+        -:  673:      using _Base::_Base;
+        -:  674:    };
+        -:  675:
+        -:  676:  template<typename... _Types>
+        -:  677:    using _Copy_assign_alias =
+        -:  678:      _Copy_assign_base<_Traits<_Types...>::_S_trivial_copy_assign, _Types...>;
+        -:  679:
+        -:  680:  template<bool, typename... _Types>
+function _ZNSt8__detail9__variant17_Move_assign_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11292059 returned 100% blocks executed 100%
+        -:  681:    struct _Move_assign_base : _Copy_assign_alias<_Types...>
+        -:  682:    {
+        -:  683:      using _Base = _Copy_assign_alias<_Types...>;
+        -:  684:      using _Base::_Base;
+        -:  685:
+        -:  686:      _GLIBCXX20_CONSTEXPR
+        -:  687:      _Move_assign_base&
+        -:  688:      operator=(_Move_assign_base&& __rhs)
+        -:  689:	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
+        -:  690:      {
+        -:  691:	__variant::__raw_idx_visit(
+        -:  692:	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+        -:  693:	  {
+        -:  694:	    constexpr size_t __j = __rhs_index;
+        -:  695:	    if constexpr (__j != variant_npos)
+        -:  696:	      {
+        -:  697:		if (this->_M_index == __j)
+        -:  698:		  __variant::__get<__j>(*this) = std::move(__rhs_mem);
+        -:  699:		else
+        -:  700:		  {
+        -:  701:		    using _Tj = typename _Nth_type<__j, _Types...>::type;
+        -:  702:		    if constexpr (is_nothrow_move_constructible_v<_Tj>)
+        -:  703:		      __variant::__emplace<__j>(*this, std::move(__rhs_mem));
+        -:  704:		    else
+        -:  705:		      {
+        -:  706:			using _Variant = variant<_Types...>;
+        -:  707:			_Variant& __self = __variant_cast<_Types...>(*this);
+        -:  708:			__self.template emplace<__j>(std::move(__rhs_mem));
+        -:  709:		      }
+        -:  710:		  }
+        -:  711:	      }
+        -:  712:	    else
+        -:  713:	      this->_M_reset();
+        -:  714:	  }, __variant_cast<_Types...>(__rhs));
+        -:  715:	return *this;
+        -:  716:      }
+        -:  717:
+function _ZNSt8__detail9__variant17_Move_assign_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ERKSG_ called 5255850 returned 100% blocks executed 100%
+  5255850:  718:      _Move_assign_base(const _Move_assign_base&) = default;
+  5255850:  718-block  0
+        -:  719:      _Move_assign_base(_Move_assign_base&&) = default;
+        -:  720:      _Move_assign_base& operator=(const _Move_assign_base&) = default;
+        -:  721:    };
+        -:  722:
+        -:  723:  template<typename... _Types>
+        -:  724:    struct _Move_assign_base<true, _Types...> : _Copy_assign_alias<_Types...>
+        -:  725:    {
+        -:  726:      using _Base = _Copy_assign_alias<_Types...>;
+        -:  727:      using _Base::_Base;
+        -:  728:    };
+        -:  729:
+        -:  730:  template<typename... _Types>
+        -:  731:    using _Move_assign_alias =
+        -:  732:      _Move_assign_base<_Traits<_Types...>::_S_trivial_move_assign, _Types...>;
+        -:  733:
+        -:  734:  template<typename... _Types>
+function _ZNSt8__detail9__variant13_Variant_baseIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEED2Ev called 11306122 returned 100% blocks executed 100%
+        -:  735:    struct _Variant_base : _Move_assign_alias<_Types...>
+        -:  736:    {
+        -:  737:      using _Base = _Move_assign_alias<_Types...>;
+        -:  738:
+        -:  739:      constexpr
+        -:  740:      _Variant_base() noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
+        -:  741:      : _Variant_base(in_place_index<0>) { }
+        -:  742:
+        -:  743:      template<size_t _Np, typename... _Args>
+        -:  744:	constexpr explicit
+        -:  745:	_Variant_base(in_place_index_t<_Np> __i, _Args&&... __args)
+        -:  746:	: _Base(__i, std::forward<_Args>(__args)...)
+        -:  747:	{ }
+        -:  748:
+function _ZNSt8__detail9__variant13_Variant_baseIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS6_ISB_EENS5_ISB_SC_SaISB_EEEEEC2ERKSG_ called 5255794 returned 100% blocks executed 100%
+  5255794:  749:      _Variant_base(const _Variant_base&) = default;
+  5255794:  749-block  0
+        -:  750:      _Variant_base(_Variant_base&&) = default;
+        -:  751:      _Variant_base& operator=(const _Variant_base&) = default;
+        -:  752:      _Variant_base& operator=(_Variant_base&&) = default;
+        -:  753:    };
+        -:  754:
+        -:  755:  template<typename _Tp, typename... _Types>
+        -:  756:    inline constexpr bool __exactly_once
+        -:  757:      = std::__find_uniq_type_in_pack<_Tp, _Types...>() < sizeof...(_Types);
+        -:  758:
+        -:  759:  // Helper used to check for valid conversions that don't involve narrowing.
+        -:  760:  template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
+        -:  761:
+        -:  762:  // "Build an imaginary function FUN(Ti) for each alternative type Ti"
+        -:  763:  template<size_t _Ind, typename _Tp, typename _Ti, typename = void>
+        -:  764:    struct _Build_FUN
+        -:  765:    {
+        -:  766:      // This function means 'using _Build_FUN<I, T, Ti>::_S_fun;' is valid,
+        -:  767:      // but only static functions will be considered in the call below.
+        -:  768:      void _S_fun();
+        -:  769:    };
+        -:  770:
+        -:  771:  // "... for which Ti x[] = {std::forward<T>(t)}; is well-formed."
+        -:  772:  template<size_t _Ind, typename _Tp, typename _Ti>
+        -:  773:    struct _Build_FUN<_Ind, _Tp, _Ti,
+        -:  774:		      void_t<decltype(_Arr<_Ti>{{std::declval<_Tp>()}})>>
+        -:  775:    {
+        -:  776:      // This is the FUN function for type _Ti, with index _Ind
+        -:  777:      static integral_constant<size_t, _Ind> _S_fun(_Ti);
+        -:  778:    };
+        -:  779:
+        -:  780:  template<typename _Tp, typename _Variant,
+        -:  781:	   typename = make_index_sequence<variant_size_v<_Variant>>>
+        -:  782:    struct _Build_FUNs;
+        -:  783:
+        -:  784:  template<typename _Tp, typename... _Ti, size_t... _Ind>
+        -:  785:    struct _Build_FUNs<_Tp, variant<_Ti...>, index_sequence<_Ind...>>
+        -:  786:    : _Build_FUN<_Ind, _Tp, _Ti>...
+        -:  787:    {
+        -:  788:      using _Build_FUN<_Ind, _Tp, _Ti>::_S_fun...;
+        -:  789:    };
+        -:  790:
+        -:  791:  // The index j of the overload FUN(Tj) selected by overload resolution
+        -:  792:  // for FUN(std::forward<_Tp>(t))
+        -:  793:  template<typename _Tp, typename _Variant>
+        -:  794:    using _FUN_type
+        -:  795:      = decltype(_Build_FUNs<_Tp, _Variant>::_S_fun(std::declval<_Tp>()));
+        -:  796:
+        -:  797:  // The index selected for FUN(std::forward<T>(t)), or variant_npos if none.
+        -:  798:  template<typename _Tp, typename _Variant, typename = void>
+        -:  799:    struct __accepted_index
+        -:  800:    : integral_constant<size_t, variant_npos>
+        -:  801:    { };
+        -:  802:
+        -:  803:  template<typename _Tp, typename _Variant>
+        -:  804:    struct __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
+        -:  805:    : _FUN_type<_Tp, _Variant>
+        -:  806:    { };
+        -:  807:
+        -:  808:  template <typename _Maybe_variant_cookie, typename _Variant>
+        -:  809:    struct _Extra_visit_slot_needed
+        -:  810:    {
+        -:  811:      template <typename> struct _Variant_never_valueless;
+        -:  812:
+        -:  813:      template <typename... _Types>
+        -:  814:	struct _Variant_never_valueless<variant<_Types...>>
+        -:  815:	: bool_constant<__variant::__never_valueless<_Types...>()> {};
+        -:  816:
+        -:  817:      static constexpr bool value =
+        -:  818:	(is_same_v<_Maybe_variant_cookie, __variant_cookie>
+        -:  819:	 || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
+        -:  820:	&& !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
+        -:  821:    };
+        -:  822:
+        -:  823:  // Used for storing a multi-dimensional vtable.
+        -:  824:  template<typename _Tp, size_t... _Dimensions>
+        -:  825:    struct _Multi_array;
+        -:  826:
+        -:  827:  // Partial specialization with rank zero, stores a single _Tp element.
+        -:  828:  template<typename _Tp>
+        -:  829:    struct _Multi_array<_Tp>
+        -:  830:    {
+        -:  831:      template<typename>
+        -:  832:	struct __untag_result
+        -:  833:	: false_type
+        -:  834:	{ using element_type = _Tp; };
+        -:  835:
+        -:  836:      template <typename... _Args>
+        -:  837:	struct __untag_result<const void(*)(_Args...)>
+        -:  838:	: false_type
+        -:  839:	{ using element_type = void(*)(_Args...); };
+        -:  840:
+        -:  841:      template <typename... _Args>
+        -:  842:	struct __untag_result<__variant_cookie(*)(_Args...)>
+        -:  843:	: false_type
+        -:  844:	{ using element_type = void(*)(_Args...); };
+        -:  845:
+        -:  846:      template <typename... _Args>
+        -:  847:	struct __untag_result<__variant_idx_cookie(*)(_Args...)>
+        -:  848:	: false_type
+        -:  849:	{ using element_type = void(*)(_Args...); };
+        -:  850:
+        -:  851:      template <typename _Res, typename... _Args>
+        -:  852:	struct __untag_result<__deduce_visit_result<_Res>(*)(_Args...)>
+        -:  853:	: true_type
+        -:  854:	{ using element_type = _Res(*)(_Args...); };
+        -:  855:
+        -:  856:      using __result_is_deduced = __untag_result<_Tp>;
+        -:  857:
+        -:  858:      constexpr const typename __untag_result<_Tp>::element_type&
+        -:  859:      _M_access() const
+        -:  860:      { return _M_data; }
+        -:  861:
+        -:  862:      typename __untag_result<_Tp>::element_type _M_data;
+        -:  863:    };
+        -:  864:
+        -:  865:  // Partial specialization with rank >= 1.
+        -:  866:  template<typename _Ret,
+        -:  867:	   typename _Visitor,
+        -:  868:	   typename... _Variants,
+        -:  869:	   size_t __first, size_t... __rest>
+        -:  870:    struct _Multi_array<_Ret(*)(_Visitor, _Variants...), __first, __rest...>
+        -:  871:    {
+        -:  872:      static constexpr size_t __index =
+        -:  873:	sizeof...(_Variants) - sizeof...(__rest) - 1;
+        -:  874:
+        -:  875:      using _Variant = typename _Nth_type<__index, _Variants...>::type;
+        -:  876:
+        -:  877:      static constexpr int __do_cookie =
+        -:  878:	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
+        -:  879:
+        -:  880:      using _Tp = _Ret(*)(_Visitor, _Variants...);
+        -:  881:
+        -:  882:      template<typename... _Args>
+        -:  883:	constexpr decltype(auto)
+        -:  884:	_M_access(size_t __first_index, _Args... __rest_indices) const
+        -:  885:        {
+        -:  886:	  return _M_arr[__first_index + __do_cookie]
+        -:  887:	    ._M_access(__rest_indices...);
+        -:  888:	}
+        -:  889:
+        -:  890:      _Multi_array<_Tp, __rest...> _M_arr[__first + __do_cookie];
+        -:  891:    };
+        -:  892:
+        -:  893:  // Creates a multi-dimensional vtable recursively.
+        -:  894:  //
+        -:  895:  // For example,
+        -:  896:  // visit([](auto, auto){},
+        -:  897:  //       variant<int, char>(),  // typedef'ed as V1
+        -:  898:  //       variant<float, double, long double>())  // typedef'ed as V2
+        -:  899:  // will trigger instantiations of:
+        -:  900:  // __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 2, 3>,
+        -:  901:  //                   tuple<V1&&, V2&&>, std::index_sequence<>>
+        -:  902:  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+        -:  903:  //                     tuple<V1&&, V2&&>, std::index_sequence<0>>
+        -:  904:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  905:  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 0>>
+        -:  906:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  907:  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 1>>
+        -:  908:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  909:  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 2>>
+        -:  910:  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+        -:  911:  //                     tuple<V1&&, V2&&>, std::index_sequence<1>>
+        -:  912:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  913:  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 0>>
+        -:  914:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  915:  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 1>>
+        -:  916:  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+        -:  917:  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 2>>
+        -:  918:  // The returned multi-dimensional vtable can be fast accessed by the visitor
+        -:  919:  // using index calculation.
+        -:  920:  template<typename _Array_type, typename _Index_seq>
+        -:  921:    struct __gen_vtable_impl;
+        -:  922:
+        -:  923:  // Defines the _S_apply() member that returns a _Multi_array populated
+        -:  924:  // with function pointers that perform the visitation expressions e(m)
+        -:  925:  // for each valid pack of indexes into the variant types _Variants.
+        -:  926:  //
+        -:  927:  // This partial specialization builds up the index sequences by recursively
+        -:  928:  // calling _S_apply() on the next specialization of __gen_vtable_impl.
+        -:  929:  // The base case of the recursion defines the actual function pointers.
+        -:  930:  template<typename _Result_type, typename _Visitor, size_t... __dimensions,
+        -:  931:	   typename... _Variants, size_t... __indices>
+        -:  932:    struct __gen_vtable_impl<
+        -:  933:	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __dimensions...>,
+        -:  934:	std::index_sequence<__indices...>>
+        -:  935:    {
+        -:  936:      using _Next =
+        -:  937:	  remove_reference_t<typename _Nth_type<sizeof...(__indices),
+        -:  938:			     _Variants...>::type>;
+        -:  939:      using _Array_type =
+        -:  940:	  _Multi_array<_Result_type (*)(_Visitor, _Variants...),
+        -:  941:		       __dimensions...>;
+        -:  942:
+        -:  943:      static constexpr _Array_type
+        -:  944:      _S_apply()
+        -:  945:      {
+        -:  946:	_Array_type __vtable{};
+        -:  947:	_S_apply_all_alts(
+        -:  948:	  __vtable, make_index_sequence<variant_size_v<_Next>>());
+        -:  949:	return __vtable;
+        -:  950:      }
+        -:  951:
+        -:  952:      template<size_t... __var_indices>
+        -:  953:	static constexpr void
+        -:  954:	_S_apply_all_alts(_Array_type& __vtable,
+        -:  955:			  std::index_sequence<__var_indices...>)
+        -:  956:	{
+        -:  957:	  if constexpr (_Extra_visit_slot_needed<_Result_type, _Next>::value)
+        -:  958:	    (_S_apply_single_alt<true, __var_indices>(
+        -:  959:	      __vtable._M_arr[__var_indices + 1],
+        -:  960:	      &(__vtable._M_arr[0])), ...);
+        -:  961:	  else
+        -:  962:	    (_S_apply_single_alt<false, __var_indices>(
+        -:  963:	      __vtable._M_arr[__var_indices]), ...);
+        -:  964:	}
+        -:  965:
+        -:  966:      template<bool __do_cookie, size_t __index, typename _Tp>
+        -:  967:	static constexpr void
+        -:  968:	_S_apply_single_alt(_Tp& __element, _Tp* __cookie_element = nullptr)
+        -:  969:	{
+        -:  970:	  if constexpr (__do_cookie)
+        -:  971:	    {
+        -:  972:	      __element = __gen_vtable_impl<
+        -:  973:		_Tp,
+        -:  974:		std::index_sequence<__indices..., __index>>::_S_apply();
+        -:  975:	      *__cookie_element = __gen_vtable_impl<
+        -:  976:		_Tp,
+        -:  977:		std::index_sequence<__indices..., variant_npos>>::_S_apply();
+        -:  978:	    }
+        -:  979:	  else
+        -:  980:	    {
+        -:  981:	      auto __tmp_element = __gen_vtable_impl<
+        -:  982:		remove_reference_t<decltype(__element)>,
+        -:  983:		std::index_sequence<__indices..., __index>>::_S_apply();
+        -:  984:	      static_assert(is_same_v<_Tp, decltype(__tmp_element)>,
+        -:  985:			    "std::visit requires the visitor to have the same "
+        -:  986:			    "return type for all alternatives of a variant");
+        -:  987:	      __element = __tmp_element;
+        -:  988:	    }
+        -:  989:	}
+        -:  990:    };
+        -:  991:
+        -:  992:  // This partial specialization is the base case for the recursion.
+        -:  993:  // It populates a _Multi_array element with the address of a function
+        -:  994:  // that invokes the visitor with the alternatives specified by __indices.
+        -:  995:  template<typename _Result_type, typename _Visitor, typename... _Variants,
+        -:  996:	   size_t... __indices>
+        -:  997:    struct __gen_vtable_impl<
+        -:  998:      _Multi_array<_Result_type (*)(_Visitor, _Variants...)>,
+        -:  999:		   std::index_sequence<__indices...>>
+        -: 1000:    {
+        -: 1001:      using _Array_type =
+        -: 1002:	  _Multi_array<_Result_type (*)(_Visitor, _Variants...)>;
+        -: 1003:
+        -: 1004:      template<size_t __index, typename _Variant>
+        -: 1005:	static constexpr decltype(auto)
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm0EEEE28__element_by_index_or_cookieILm0ESU_EEDcOSO_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm1EEEE28__element_by_index_or_cookieILm1ESU_EEDcOSO_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm2EEEE28__element_by_index_or_cookieILm2ESU_EEDcOSO_ called 5226526 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm3EEEE28__element_by_index_or_cookieILm3ESU_EEDcOSO_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm4EEEE28__element_by_index_or_cookieILm4ESU_EEDcOSO_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm18446744073709551615EEEE28__element_by_index_or_cookieILm18446744073709551615ESU_EEDcOSO_ called 0 returned 0% blocks executed 0%
+  5226526: 1006:	__element_by_index_or_cookie(_Variant&& __var) noexcept
+        -: 1007:        {
+        -: 1008:	  if constexpr (__index != variant_npos)
+  5226526: 1009:	    return __variant::__get<__index>(std::forward<_Variant>(__var));
+    $$$$$: 1009-block  0
+    $$$$$: 1009-block  1
+  5226526: 1009-block  2
+    $$$$$: 1009-block  3
+    $$$$$: 1009-block  4
+        -: 1010:	  else
+    #####: 1011:	    return __variant_cookie{};
+    $$$$$: 1011-block  0
+        -: 1012:	}
+        -: 1013:
+        -: 1014:      static constexpr decltype(auto)
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFvOZNS0_16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEE8_M_resetEvEUlOT_E_RSt7variantIJDnS5_SB_SF_SH_EEEJEEESt16integer_sequenceImJLm0EEEE14__visit_invokeESM_SP_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFvOZNS0_16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEE8_M_resetEvEUlOT_E_RSt7variantIJDnS5_SB_SF_SH_EEEJEEESt16integer_sequenceImJLm1EEEE14__visit_invokeESM_SP_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFvOZNS0_16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEE8_M_resetEvEUlOT_E_RSt7variantIJDnS5_SB_SF_SH_EEEJEEESt16integer_sequenceImJLm2EEEE14__visit_invokeESM_SP_ called 11259147 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFvOZNS0_16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEE8_M_resetEvEUlOT_E_RSt7variantIJDnS5_SB_SF_SH_EEEJEEESt16integer_sequenceImJLm3EEEE14__visit_invokeESM_SP_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFvOZNS0_16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEE8_M_resetEvEUlOT_E_RSt7variantIJDnS5_SB_SF_SH_EEEJEEESt16integer_sequenceImJLm4EEEE14__visit_invokeESM_SP_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm0EEEE14__visit_invokeESQ_SU_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm1EEEE14__visit_invokeESQ_SU_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm2EEEE14__visit_invokeESQ_SU_ called 5235400 returned 100% blocks executed 100%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm3EEEE14__visit_invokeESQ_SU_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm4EEEE14__visit_invokeESQ_SU_ called 0 returned 0% blocks executed 0%
+function _ZNSt8__detail9__variant17__gen_vtable_implINS0_12_Multi_arrayIPFNS0_20__variant_idx_cookieEOZNS0_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS9_ISE_EENS8_ISE_SF_SaISE_EEEEEC1ERKSJ_EUlOT_T0_E_RKSt7variantIJDnS6_SC_SG_SI_EEEJEEESt16integer_sequenceImJLm18446744073709551615EEEE14__visit_invokeESQ_SU_ called 0 returned 0% blocks executed 0%
+ 16494547: 1015:      __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
+        -: 1016:      {
+        -: 1017:	if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
+        -: 1018:	  // For raw visitation using indices, pass the indices to the visitor
+        -: 1019:	  // and discard the return value:
+ 10470800: 1020:	  std::__invoke(std::forward<_Visitor>(__visitor),
+  5235400: 1021:	      __element_by_index_or_cookie<__indices>(
+  5235400: 1022:		std::forward<_Variants>(__vars))...,
+        -: 1023:	      integral_constant<size_t, __indices>()...);
+        -: 1024:	else if constexpr (is_same_v<_Result_type, __variant_cookie>)
+        -: 1025:	  // For raw visitation without indices, and discard the return value:
+        -: 1026:	  std::__invoke(std::forward<_Visitor>(__visitor),
+        -: 1027:	      __element_by_index_or_cookie<__indices>(
+        -: 1028:		std::forward<_Variants>(__vars))...);
+        -: 1029:	else if constexpr (_Array_type::__result_is_deduced::value)
+        -: 1030:	  // For the usual std::visit case deduce the return value:
+        -: 1031:	  return std::__invoke(std::forward<_Visitor>(__visitor),
+        -: 1032:	      __element_by_index_or_cookie<__indices>(
+        -: 1033:		std::forward<_Variants>(__vars))...);
+        -: 1034:	else // for std::visit<R> use INVOKE<R>
+ 11259147: 1035:	  return std::__invoke_r<_Result_type>(
+    $$$$$: 1035-block  0
+    $$$$$: 1035-block  1
+ 11259147: 1035-block  2
+    $$$$$: 1035-block  3
+    $$$$$: 1035-block  4
+ 11259147: 1036:	      std::forward<_Visitor>(__visitor),
+ 11259147: 1037:	      __variant::__get<__indices>(std::forward<_Variants>(__vars))...);
+  5235400: 1038:      }
+    $$$$$: 1038-block  0
+    $$$$$: 1038-block  1
+  5235400: 1038-block  2
+    $$$$$: 1038-block  3
+    $$$$$: 1038-block  4
+    $$$$$: 1038-block  5
+        -: 1039:
+        -: 1040:      static constexpr auto
+        -: 1041:      _S_apply()
+        -: 1042:      {
+        -: 1043:	if constexpr (_Array_type::__result_is_deduced::value)
+        -: 1044:	  {
+        -: 1045:	    constexpr bool __visit_ret_type_mismatch =
+        -: 1046:	      !is_same_v<typename _Result_type::type,
+        -: 1047:			 decltype(__visit_invoke(std::declval<_Visitor>(),
+        -: 1048:				    std::declval<_Variants>()...))>;
+        -: 1049:	    if constexpr (__visit_ret_type_mismatch)
+        -: 1050:	      {
+        -: 1051:		struct __cannot_match {};
+        -: 1052:		return __cannot_match{};
+        -: 1053:	      }
+        -: 1054:	    else
+        -: 1055:	      return _Array_type{&__visit_invoke};
+        -: 1056:	  }
+        -: 1057:	else
+        -: 1058:	  return _Array_type{&__visit_invoke};
+        -: 1059:      }
+        -: 1060:    };
+        -: 1061:
+        -: 1062:  template<typename _Result_type, typename _Visitor, typename... _Variants>
+        -: 1063:    struct __gen_vtable
+        -: 1064:    {
+        -: 1065:      using _Array_type =
+        -: 1066:	  _Multi_array<_Result_type (*)(_Visitor, _Variants...),
+        -: 1067:		       variant_size_v<remove_reference_t<_Variants>>...>;
+        -: 1068:
+        -: 1069:      static constexpr _Array_type _S_vtable
+        -: 1070:	= __gen_vtable_impl<_Array_type, std::index_sequence<>>::_S_apply();
+        -: 1071:    };
+        -: 1072:
+        -: 1073:  template<size_t _Np, typename _Tp>
+        -: 1074:    struct _Base_dedup : public _Tp { };
+        -: 1075:
+        -: 1076:  template<typename _Variant, typename __indices>
+        -: 1077:    struct _Variant_hash_base;
+        -: 1078:
+        -: 1079:  template<typename... _Types, size_t... __indices>
+        -: 1080:    struct _Variant_hash_base<variant<_Types...>,
+        -: 1081:			      std::index_sequence<__indices...>>
+        -: 1082:    : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
+        -: 1083:
+        -: 1084:  // Equivalent to decltype(get<_Np>(as-variant(declval<_Variant>())))
+        -: 1085:  template<size_t _Np, typename _Variant,
+        -: 1086:      typename _AsV = decltype(__variant::__as(std::declval<_Variant>())),
+        -: 1087:      typename _Tp = variant_alternative_t<_Np, remove_reference_t<_AsV>>>
+        -: 1088:    using __get_t
+        -: 1089:      = __conditional_t<is_lvalue_reference_v<_Variant>, _Tp&, _Tp&&>;
+        -: 1090:
+        -: 1091:  // Return type of std::visit.
+        -: 1092:  template<typename _Visitor, typename... _Variants>
+        -: 1093:    using __visit_result_t
+        -: 1094:      = invoke_result_t<_Visitor, __get_t<0, _Variants>...>;
+        -: 1095:
+        -: 1096:  template<typename _Tp, typename... _Types>
+        -: 1097:    constexpr inline bool __same_types = (is_same_v<_Tp, _Types> && ...);
+        -: 1098:
+        -: 1099:  template <typename _Visitor, typename _Variant, size_t... _Idxs>
+        -: 1100:    constexpr bool __check_visitor_results(std::index_sequence<_Idxs...>)
+        -: 1101:    {
+        -: 1102:      return __same_types<
+        -: 1103:	invoke_result_t<_Visitor, __get_t<_Idxs, _Variant>>...
+        -: 1104:	>;
+        -: 1105:    }
+        -: 1106:
+        -: 1107:} // namespace __variant
+        -: 1108:} // namespace __detail
+        -: 1109:
+        -: 1110:  template<typename _Tp, typename... _Types>
+        -: 1111:    constexpr bool
+        -: 1112:    holds_alternative(const variant<_Types...>& __v) noexcept
+        -: 1113:    {
+        -: 1114:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1115:		    "T must occur exactly once in alternatives");
+        -: 1116:      return __v.index() == std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1117:    }
+        -: 1118:
+        -: 1119:  template<typename _Tp, typename... _Types>
+        -: 1120:    constexpr _Tp&
+        -: 1121:    get(variant<_Types...>& __v)
+        -: 1122:    {
+        -: 1123:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1124:		    "T must occur exactly once in alternatives");
+        -: 1125:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1126:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1127:      return std::get<__n>(__v);
+        -: 1128:    }
+        -: 1129:
+        -: 1130:  template<typename _Tp, typename... _Types>
+        -: 1131:    constexpr _Tp&&
+        -: 1132:    get(variant<_Types...>&& __v)
+        -: 1133:    {
+        -: 1134:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1135:		    "T must occur exactly once in alternatives");
+        -: 1136:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1137:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1138:      return std::get<__n>(std::move(__v));
+        -: 1139:    }
+        -: 1140:
+        -: 1141:  template<typename _Tp, typename... _Types>
+        -: 1142:    constexpr const _Tp&
+        -: 1143:    get(const variant<_Types...>& __v)
+        -: 1144:    {
+        -: 1145:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1146:		    "T must occur exactly once in alternatives");
+        -: 1147:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1148:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1149:      return std::get<__n>(__v);
+        -: 1150:    }
+        -: 1151:
+        -: 1152:  template<typename _Tp, typename... _Types>
+        -: 1153:    constexpr const _Tp&&
+        -: 1154:    get(const variant<_Types...>&& __v)
+        -: 1155:    {
+        -: 1156:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1157:		    "T must occur exactly once in alternatives");
+        -: 1158:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1159:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1160:      return std::get<__n>(std::move(__v));
+        -: 1161:    }
+        -: 1162:
+        -: 1163:  template<size_t _Np, typename... _Types>
+        -: 1164:    constexpr add_pointer_t<variant_alternative_t<_Np, variant<_Types...>>>
+        -: 1165:    get_if(variant<_Types...>* __ptr) noexcept
+        -: 1166:    {
+        -: 1167:      using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
+        -: 1168:      static_assert(_Np < sizeof...(_Types),
+        -: 1169:		    "The index must be in [0, number of alternatives)");
+        -: 1170:      static_assert(!is_void_v<_Alternative_type>, "_Tp must not be void");
+        -: 1171:      if (__ptr && __ptr->index() == _Np)
+        -: 1172:	return std::addressof(__detail::__variant::__get<_Np>(*__ptr));
+        -: 1173:      return nullptr;
+        -: 1174:    }
+        -: 1175:
+        -: 1176:  template<size_t _Np, typename... _Types>
+        -: 1177:    constexpr
+        -: 1178:    add_pointer_t<const variant_alternative_t<_Np, variant<_Types...>>>
+        -: 1179:    get_if(const variant<_Types...>* __ptr) noexcept
+        -: 1180:    {
+        -: 1181:      using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
+        -: 1182:      static_assert(_Np < sizeof...(_Types),
+        -: 1183:		    "The index must be in [0, number of alternatives)");
+        -: 1184:      static_assert(!is_void_v<_Alternative_type>, "_Tp must not be void");
+        -: 1185:      if (__ptr && __ptr->index() == _Np)
+        -: 1186:	return std::addressof(__detail::__variant::__get<_Np>(*__ptr));
+        -: 1187:      return nullptr;
+        -: 1188:    }
+        -: 1189:
+        -: 1190:  template<typename _Tp, typename... _Types>
+        -: 1191:    constexpr add_pointer_t<_Tp>
+        -: 1192:    get_if(variant<_Types...>* __ptr) noexcept
+        -: 1193:    {
+        -: 1194:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1195:		    "T must occur exactly once in alternatives");
+        -: 1196:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1197:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1198:      return std::get_if<__n>(__ptr);
+        -: 1199:    }
+        -: 1200:
+        -: 1201:  template<typename _Tp, typename... _Types>
+        -: 1202:    constexpr add_pointer_t<const _Tp>
+        -: 1203:    get_if(const variant<_Types...>* __ptr) noexcept
+        -: 1204:    {
+        -: 1205:      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+        -: 1206:		    "T must occur exactly once in alternatives");
+        -: 1207:      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
+        -: 1208:      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1209:      return std::get_if<__n>(__ptr);
+        -: 1210:    }
+        -: 1211:
+        -: 1212:  struct monostate { };
+        -: 1213:
+        -: 1214:#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+        -: 1215:  template<typename... _Types> \
+        -: 1216:    constexpr bool operator __OP(const variant<_Types...>& __lhs, \
+        -: 1217:				 const variant<_Types...>& __rhs) \
+        -: 1218:    { \
+        -: 1219:      bool __ret = true; \
+        -: 1220:      __detail::__variant::__raw_idx_visit( \
+        -: 1221:        [&__ret, &__lhs] (auto&& __rhs_mem, auto __rhs_index) mutable \
+        -: 1222:        { \
+        -: 1223:	  if constexpr (__rhs_index != variant_npos) \
+        -: 1224:	    { \
+        -: 1225:	      if (__lhs.index() == __rhs_index) \
+        -: 1226:	        { \
+        -: 1227:		  auto& __this_mem = std::get<__rhs_index>(__lhs);	\
+        -: 1228:                  __ret = __this_mem __OP __rhs_mem; \
+        -: 1229:                } \
+        -: 1230:	      else \
+        -: 1231:		__ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
+        -: 1232:            } \
+        -: 1233:          else \
+        -: 1234:            __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
+        -: 1235:	}, __rhs); \
+        -: 1236:      return __ret; \
+        -: 1237:    }
+        -: 1238:
+        -: 1239:  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+        -: 1240:  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+        -: 1241:  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+        -: 1242:  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+        -: 1243:  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+        -: 1244:  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
+        -: 1245:
+        -: 1246:#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+        -: 1247:
+        -: 1248:  constexpr bool operator==(monostate, monostate) noexcept { return true; }
+        -: 1249:
+        -: 1250:#ifdef __cpp_lib_three_way_comparison
+        -: 1251:  template<typename... _Types>
+        -: 1252:    requires (three_way_comparable<_Types> && ...)
+        -: 1253:    constexpr
+        -: 1254:    common_comparison_category_t<compare_three_way_result_t<_Types>...>
+        -: 1255:    operator<=>(const variant<_Types...>& __v, const variant<_Types...>& __w)
+        -: 1256:    {
+        -: 1257:      common_comparison_category_t<compare_three_way_result_t<_Types>...> __ret
+        -: 1258:	= strong_ordering::equal;
+        -: 1259:
+        -: 1260:      __detail::__variant::__raw_idx_visit(
+        -: 1261:	[&__ret, &__v] (auto&& __w_mem, auto __w_index) mutable
+        -: 1262:	{
+        -: 1263:	  if constexpr (__w_index != variant_npos)
+        -: 1264:	    {
+        -: 1265:	      if (__v.index() == __w_index)
+        -: 1266:		{
+        -: 1267:		  auto& __this_mem = std::get<__w_index>(__v);
+        -: 1268:		  __ret = __this_mem <=> __w_mem;
+        -: 1269:		  return;
+        -: 1270:		}
+        -: 1271:	    }
+        -: 1272:	  __ret = (__v.index() + 1) <=> (__w_index + 1);
+        -: 1273:	}, __w);
+        -: 1274:      return __ret;
+        -: 1275:    }
+        -: 1276:
+        -: 1277:  constexpr strong_ordering
+        -: 1278:  operator<=>(monostate, monostate) noexcept { return strong_ordering::equal; }
+        -: 1279:#else
+        -: 1280:  constexpr bool operator!=(monostate, monostate) noexcept { return false; }
+        -: 1281:  constexpr bool operator<(monostate, monostate) noexcept { return false; }
+        -: 1282:  constexpr bool operator>(monostate, monostate) noexcept { return false; }
+        -: 1283:  constexpr bool operator<=(monostate, monostate) noexcept { return true; }
+        -: 1284:  constexpr bool operator>=(monostate, monostate) noexcept { return true; }
+        -: 1285:#endif
+        -: 1286:
+        -: 1287:  template<typename _Visitor, typename... _Variants>
+        -: 1288:    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
+        -: 1289:    visit(_Visitor&&, _Variants&&...);
+        -: 1290:
+        -: 1291:  template<typename... _Types>
+        -: 1292:    _GLIBCXX20_CONSTEXPR
+        -: 1293:    inline enable_if_t<(is_move_constructible_v<_Types> && ...)
+        -: 1294:			&& (is_swappable_v<_Types> && ...)>
+        -: 1295:    swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
+        -: 1296:    noexcept(noexcept(__lhs.swap(__rhs)))
+        -: 1297:    { __lhs.swap(__rhs); }
+        -: 1298:
+        -: 1299:  template<typename... _Types>
+        -: 1300:    enable_if_t<!((is_move_constructible_v<_Types> && ...)
+        -: 1301:		   && (is_swappable_v<_Types> && ...))>
+        -: 1302:    swap(variant<_Types...>&, variant<_Types...>&) = delete;
+        -: 1303:
+        -: 1304:  class bad_variant_access : public exception
+        -: 1305:  {
+        -: 1306:  public:
+        -: 1307:    bad_variant_access() noexcept { }
+        -: 1308:
+        -: 1309:    const char* what() const noexcept override
+        -: 1310:    { return _M_reason; }
+        -: 1311:
+        -: 1312:  private:
+        -: 1313:    bad_variant_access(const char* __reason) noexcept : _M_reason(__reason) { }
+        -: 1314:
+        -: 1315:    // Must point to a string with static storage duration:
+        -: 1316:    const char* _M_reason = "bad variant access";
+        -: 1317:
+        -: 1318:    friend void __throw_bad_variant_access(const char* __what);
+        -: 1319:  };
+        -: 1320:
+        -: 1321:  // Must only be called with a string literal
+        -: 1322:  inline void
+        -: 1323:  __throw_bad_variant_access(const char* __what)
+        -: 1324:  { _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__what)); }
+        -: 1325:
+        -: 1326:  inline void
+        -: 1327:  __throw_bad_variant_access(bool __valueless)
+        -: 1328:  {
+        -: 1329:    if (__valueless) [[__unlikely__]]
+        -: 1330:      __throw_bad_variant_access("std::get: variant is valueless");
+        -: 1331:    else
+        -: 1332:      __throw_bad_variant_access("std::get: wrong index for variant");
+        -: 1333:  }
+        -: 1334:
+        -: 1335:  template<typename... _Types>
+        -: 1336:    class variant
+        -: 1337:    : private __detail::__variant::_Variant_base<_Types...>,
+        -: 1338:      private _Enable_default_constructor<
+        -: 1339:	__detail::__variant::_Traits<_Types...>::_S_default_ctor,
+        -: 1340:	  variant<_Types...>>,
+        -: 1341:      private _Enable_copy_move<
+        -: 1342:	__detail::__variant::_Traits<_Types...>::_S_copy_ctor,
+        -: 1343:	__detail::__variant::_Traits<_Types...>::_S_copy_assign,
+        -: 1344:	__detail::__variant::_Traits<_Types...>::_S_move_ctor,
+        -: 1345:	__detail::__variant::_Traits<_Types...>::_S_move_assign,
+        -: 1346:	variant<_Types...>>
+        -: 1347:    {
+        -: 1348:    private:
+        -: 1349:      template <typename... _UTypes, typename _Tp>
+        -: 1350:	friend _GLIBCXX20_CONSTEXPR decltype(auto)
+        -: 1351:	__variant_cast(_Tp&&);
+        -: 1352:
+        -: 1353:      static_assert(sizeof...(_Types) > 0,
+        -: 1354:		    "variant must have at least one alternative");
+        -: 1355:      static_assert(!(std::is_reference_v<_Types> || ...),
+        -: 1356:		    "variant must have no reference alternative");
+        -: 1357:      static_assert(!(std::is_void_v<_Types> || ...),
+        -: 1358:		    "variant must have no void alternative");
+        -: 1359:
+        -: 1360:      using _Base = __detail::__variant::_Variant_base<_Types...>;
+        -: 1361:      using _Default_ctor_enabler =
+        -: 1362:	_Enable_default_constructor<
+        -: 1363:	  __detail::__variant::_Traits<_Types...>::_S_default_ctor,
+        -: 1364:	    variant<_Types...>>;
+        -: 1365:
+        -: 1366:      template<typename _Tp>
+        -: 1367:	static constexpr bool __not_self
+        -: 1368:	  = !is_same_v<__remove_cvref_t<_Tp>, variant>;
+        -: 1369:
+        -: 1370:      template<typename _Tp>
+        -: 1371:	static constexpr bool
+        -: 1372:	__exactly_once = __detail::__variant::__exactly_once<_Tp, _Types...>;
+        -: 1373:
+        -: 1374:      template<typename _Tp>
+        -: 1375:	static constexpr size_t __accepted_index
+        -: 1376:	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
+        -: 1377:
+        -: 1378:      template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
+        -: 1379:	using __to_type = typename _Nth_type<_Np, _Types...>::type;
+        -: 1380:
+        -: 1381:      template<typename _Tp, typename = enable_if_t<__not_self<_Tp>>>
+        -: 1382:	using __accepted_type = __to_type<__accepted_index<_Tp>>;
+        -: 1383:
+        -: 1384:      template<typename _Tp>
+        -: 1385:	static constexpr size_t __index_of
+        -: 1386:	  = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+        -: 1387:
+        -: 1388:      using _Traits = __detail::__variant::_Traits<_Types...>;
+        -: 1389:
+        -: 1390:      template<typename _Tp>
+        -: 1391:	struct __is_in_place_tag : false_type { };
+        -: 1392:      template<typename _Tp>
+        -: 1393:	struct __is_in_place_tag<in_place_type_t<_Tp>> : true_type { };
+        -: 1394:      template<size_t _Np>
+        -: 1395:	struct __is_in_place_tag<in_place_index_t<_Np>> : true_type { };
+        -: 1396:
+        -: 1397:      template<typename _Tp>
+        -: 1398:	static constexpr bool __not_in_place_tag
+        -: 1399:	  = !__is_in_place_tag<__remove_cvref_t<_Tp>>::value;
+        -: 1400:
+        -: 1401:    public:
+        -: 1402:      variant() = default;
+function _ZNSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEEC2ERKSE_ called 2660900 returned 100% blocks executed 100%
+  2660900: 1403:      variant(const variant& __rhs) = default;
+  2660900: 1403-block  0
+        -: 1404:      variant(variant&&) = default;
+        -: 1405:      variant& operator=(const variant&) = default;
+        -: 1406:      variant& operator=(variant&&) = default;
+function _ZNSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEED2Ev called 7858831 returned 100% blocks executed 100%
+  7858831: 1407:      _GLIBCXX20_CONSTEXPR ~variant() = default;
+  7858831: 1407-block  0
+        -: 1408:
+        -: 1409:      template<typename _Tp,
+        -: 1410:	       typename = enable_if_t<sizeof...(_Types) != 0>,
+        -: 1411:	       typename = enable_if_t<__not_in_place_tag<_Tp>>,
+        -: 1412:	       typename _Tj = __accepted_type<_Tp&&>,
+        -: 1413:	       typename = enable_if_t<__exactly_once<_Tj>
+        -: 1414:				      && is_constructible_v<_Tj, _Tp>>>
+        -: 1415:	constexpr
+        -: 1416:	variant(_Tp&& __t)
+        -: 1417:	noexcept(is_nothrow_constructible_v<_Tj, _Tp>)
+        -: 1418:	: variant(in_place_index<__accepted_index<_Tp>>,
+        -: 1419:		  std::forward<_Tp>(__t))
+        -: 1420:	{ }
+        -: 1421:
+        -: 1422:      template<typename _Tp, typename... _Args,
+        -: 1423:	       typename = enable_if_t<__exactly_once<_Tp>
+        -: 1424:				      && is_constructible_v<_Tp, _Args...>>>
+        -: 1425:	constexpr explicit
+        -: 1426:	variant(in_place_type_t<_Tp>, _Args&&... __args)
+        -: 1427:	: variant(in_place_index<__index_of<_Tp>>,
+        -: 1428:		  std::forward<_Args>(__args)...)
+        -: 1429:	{ }
+        -: 1430:
+        -: 1431:      template<typename _Tp, typename _Up, typename... _Args,
+        -: 1432:	       typename = enable_if_t<__exactly_once<_Tp>
+        -: 1433:				      && is_constructible_v<_Tp,
+        -: 1434:					   initializer_list<_Up>&, _Args...>>>
+        -: 1435:	constexpr explicit
+        -: 1436:	variant(in_place_type_t<_Tp>, initializer_list<_Up> __il,
+        -: 1437:		_Args&&... __args)
+        -: 1438:	: variant(in_place_index<__index_of<_Tp>>, __il,
+        -: 1439:		  std::forward<_Args>(__args)...)
+        -: 1440:	{ }
+        -: 1441:
+        -: 1442:      template<size_t _Np, typename... _Args,
+        -: 1443:	       typename _Tp = __to_type<_Np>,
+        -: 1444:	       typename = enable_if_t<is_constructible_v<_Tp, _Args...>>>
+        -: 1445:	constexpr explicit
+        -: 1446:	variant(in_place_index_t<_Np>, _Args&&... __args)
+        -: 1447:	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...),
+        -: 1448:	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+        -: 1449:	{ }
+        -: 1450:
+        -: 1451:      template<size_t _Np, typename _Up, typename... _Args,
+        -: 1452:	       typename _Tp = __to_type<_Np>,
+        -: 1453:	       typename = enable_if_t<is_constructible_v<_Tp,
+        -: 1454:							 initializer_list<_Up>&,
+        -: 1455:							 _Args...>>>
+        -: 1456:	constexpr explicit
+        -: 1457:	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
+        -: 1458:		_Args&&... __args)
+        -: 1459:	: _Base(in_place_index<_Np>, __il, std::forward<_Args>(__args)...),
+        -: 1460:	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+        -: 1461:	{ }
+        -: 1462:
+        -: 1463:      template<typename _Tp>
+        -: 1464:	_GLIBCXX20_CONSTEXPR
+        -: 1465:	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
+        -: 1466:		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp>
+        -: 1467:		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp>,
+        -: 1468:		    variant&>
+        -: 1469:	operator=(_Tp&& __rhs)
+        -: 1470:	noexcept(is_nothrow_assignable_v<__accepted_type<_Tp&&>&, _Tp>
+        -: 1471:		 && is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp>)
+        -: 1472:	{
+        -: 1473:	  constexpr auto __index = __accepted_index<_Tp>;
+        -: 1474:	  if (index() == __index)
+        -: 1475:	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
+        -: 1476:	  else
+        -: 1477:	    {
+        -: 1478:	      using _Tj = __accepted_type<_Tp&&>;
+        -: 1479:	      if constexpr (is_nothrow_constructible_v<_Tj, _Tp>
+        -: 1480:			    || !is_nothrow_move_constructible_v<_Tj>)
+        -: 1481:		this->emplace<__index>(std::forward<_Tp>(__rhs));
+        -: 1482:	      else
+        -: 1483:		// _GLIBCXX_RESOLVE_LIB_DEFECTS
+        -: 1484:		// 3585. converting assignment with immovable alternative
+        -: 1485:		this->emplace<__index>(_Tj(std::forward<_Tp>(__rhs)));
+        -: 1486:	    }
+        -: 1487:	  return *this;
+        -: 1488:	}
+        -: 1489:
+        -: 1490:      template<typename _Tp, typename... _Args>
+        -: 1491:	_GLIBCXX20_CONSTEXPR
+        -: 1492:	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>,
+        -: 1493:		    _Tp&>
+        -: 1494:	emplace(_Args&&... __args)
+        -: 1495:	{
+        -: 1496:	  constexpr size_t __index = __index_of<_Tp>;
+        -: 1497:	  return this->emplace<__index>(std::forward<_Args>(__args)...);
+        -: 1498:	}
+        -: 1499:
+        -: 1500:      template<typename _Tp, typename _Up, typename... _Args>
+        -: 1501:	_GLIBCXX20_CONSTEXPR
+        -: 1502:	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
+        -: 1503:		    && __exactly_once<_Tp>,
+        -: 1504:		    _Tp&>
+        -: 1505:	emplace(initializer_list<_Up> __il, _Args&&... __args)
+        -: 1506:	{
+        -: 1507:	  constexpr size_t __index = __index_of<_Tp>;
+        -: 1508:	  return this->emplace<__index>(__il, std::forward<_Args>(__args)...);
+        -: 1509:	}
+        -: 1510:
+        -: 1511:      template<size_t _Np, typename... _Args>
+        -: 1512:	_GLIBCXX20_CONSTEXPR
+        -: 1513:	enable_if_t<is_constructible_v<__to_type<_Np>, _Args...>,
+        -: 1514:		    __to_type<_Np>&>
+        -: 1515:	emplace(_Args&&... __args)
+        -: 1516:	{
+        -: 1517:	  namespace __variant = std::__detail::__variant;
+        -: 1518:	  using type = typename _Nth_type<_Np, _Types...>::type;
+        -: 1519:	  // Provide the strong exception-safety guarantee when possible,
+        -: 1520:	  // to avoid becoming valueless.
+        -: 1521:	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
+        -: 1522:	    {
+        -: 1523:	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
+        -: 1524:	    }
+        -: 1525:	  else if constexpr (is_scalar_v<type>)
+        -: 1526:	    {
+        -: 1527:	      // This might invoke a potentially-throwing conversion operator:
+        -: 1528:	      const type __tmp(std::forward<_Args>(__args)...);
+        -: 1529:	      // But this won't throw:
+        -: 1530:	      __variant::__emplace<_Np>(*this, __tmp);
+        -: 1531:	    }
+        -: 1532:	  else if constexpr (__variant::_Never_valueless_alt<type>()
+        -: 1533:	      && _Traits::_S_move_assign)
+        -: 1534:	    {
+        -: 1535:	      // This construction might throw:
+        -: 1536:	      variant __tmp(in_place_index<_Np>,
+        -: 1537:			    std::forward<_Args>(__args)...);
+        -: 1538:	      // But _Never_valueless_alt<type> means this won't:
+        -: 1539:	      *this = std::move(__tmp);
+        -: 1540:	    }
+        -: 1541:	  else
+        -: 1542:	    {
+        -: 1543:	      // This case only provides the basic exception-safety guarantee,
+        -: 1544:	      // i.e. the variant can become valueless.
+        -: 1545:	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
+        -: 1546:	    }
+        -: 1547:	  return std::get<_Np>(*this);
+        -: 1548:	}
+        -: 1549:
+        -: 1550:      template<size_t _Np, typename _Up, typename... _Args>
+        -: 1551:	_GLIBCXX20_CONSTEXPR
+        -: 1552:	enable_if_t<is_constructible_v<__to_type<_Np>,
+        -: 1553:				       initializer_list<_Up>&, _Args...>,
+        -: 1554:		    __to_type<_Np>&>
+        -: 1555:	emplace(initializer_list<_Up> __il, _Args&&... __args)
+        -: 1556:	{
+        -: 1557:	  namespace __variant = std::__detail::__variant;
+        -: 1558:	  using type = typename _Nth_type<_Np, _Types...>::type;
+        -: 1559:	  // Provide the strong exception-safety guarantee when possible,
+        -: 1560:	  // to avoid becoming valueless.
+        -: 1561:	  if constexpr (is_nothrow_constructible_v<type,
+        -: 1562:						   initializer_list<_Up>&,
+        -: 1563:						   _Args...>)
+        -: 1564:	    {
+        -: 1565:	      __variant::__emplace<_Np>(*this, __il,
+        -: 1566:					std::forward<_Args>(__args)...);
+        -: 1567:	    }
+        -: 1568:	  else if constexpr (__variant::_Never_valueless_alt<type>()
+        -: 1569:	      && _Traits::_S_move_assign)
+        -: 1570:	    {
+        -: 1571:	      // This construction might throw:
+        -: 1572:	      variant __tmp(in_place_index<_Np>, __il,
+        -: 1573:			    std::forward<_Args>(__args)...);
+        -: 1574:	      // But _Never_valueless_alt<type> means this won't:
+        -: 1575:	      *this = std::move(__tmp);
+        -: 1576:	    }
+        -: 1577:	  else
+        -: 1578:	    {
+        -: 1579:	      // This case only provides the basic exception-safety guarantee,
+        -: 1580:	      // i.e. the variant can become valueless.
+        -: 1581:	      __variant::__emplace<_Np>(*this, __il,
+        -: 1582:					std::forward<_Args>(__args)...);
+        -: 1583:	    }
+        -: 1584:	  return std::get<_Np>(*this);
+        -: 1585:	}
+        -: 1586:
+        -: 1587:      template<size_t _Np, typename... _Args>
+        -: 1588:	enable_if_t<!(_Np < sizeof...(_Types))> emplace(_Args&&...) = delete;
+        -: 1589:
+        -: 1590:      template<typename _Tp, typename... _Args>
+        -: 1591:	enable_if_t<!__exactly_once<_Tp>> emplace(_Args&&...) = delete;
+        -: 1592:
+        -: 1593:      constexpr bool valueless_by_exception() const noexcept
+        -: 1594:      { return !this->_M_valid(); }
+        -: 1595:
+function _ZNKSt7variantIJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS4_IS9_EENS3_IS9_SA_SaIS9_EEEEE5indexEv called 22443594 returned 100% blocks executed 100%
+ 22443594: 1596:      constexpr size_t index() const noexcept
+        -: 1597:      {
+        -: 1598:	using __index_type = typename _Base::__index_type;
+        -: 1599:	if constexpr (__detail::__variant::__never_valueless<_Types...>())
+ 22443594: 1600:	  return this->_M_index;
+ 22443594: 1600-block  0
+        -: 1601:	else if constexpr (sizeof...(_Types) <= __index_type(-1) / 2)
+        -: 1602:	  return make_signed_t<__index_type>(this->_M_index);
+        -: 1603:	else
+        -: 1604:	  return size_t(__index_type(this->_M_index + 1)) - 1;
+        -: 1605:      }
+        -: 1606:
+        -: 1607:      _GLIBCXX20_CONSTEXPR
+        -: 1608:      void
+        -: 1609:      swap(variant& __rhs)
+        -: 1610:      noexcept((__is_nothrow_swappable<_Types>::value && ...)
+        -: 1611:	       && is_nothrow_move_constructible_v<variant>)
+        -: 1612:      {
+        -: 1613:	static_assert((is_move_constructible_v<_Types> && ...));
+        -: 1614:
+        -: 1615:	// Handle this here to simplify the visitation.
+        -: 1616:	if (__rhs.valueless_by_exception()) [[__unlikely__]]
+        -: 1617:	  {
+        -: 1618:	    if (!this->valueless_by_exception()) [[__likely__]]
+        -: 1619:	      __rhs.swap(*this);
+        -: 1620:	    return;
+        -: 1621:	  }
+        -: 1622:
+        -: 1623:	namespace __variant = __detail::__variant;
+        -: 1624:
+        -: 1625:	__variant::__raw_idx_visit(
+        -: 1626:	  [this, &__rhs](auto&& __rhs_mem, auto __rhs_index) mutable
+        -: 1627:	  {
+        -: 1628:	    constexpr size_t __j = __rhs_index;
+        -: 1629:	    if constexpr (__j != variant_npos)
+        -: 1630:	      {
+        -: 1631:		if (this->index() == __j)
+        -: 1632:		  {
+        -: 1633:		    using std::swap;
+        -: 1634:		    swap(std::get<__j>(*this), __rhs_mem);
+        -: 1635:		  }
+        -: 1636:		else
+        -: 1637:		  {
+        -: 1638:		    auto __tmp(std::move(__rhs_mem));
+        -: 1639:
+        -: 1640:		    if constexpr (_Traits::_S_trivial_move_assign)
+        -: 1641:		      __rhs = std::move(*this);
+        -: 1642:		    else
+        -: 1643:		      __variant::__raw_idx_visit(
+        -: 1644:			[&__rhs](auto&& __this_mem, auto __this_index) mutable
+        -: 1645:			{
+        -: 1646:			  constexpr size_t __k = __this_index;
+        -: 1647:			  if constexpr (__k != variant_npos)
+        -: 1648:			    __variant::__emplace<__k>(__rhs,
+        -: 1649:						      std::move(__this_mem));
+        -: 1650:			}, *this);
+        -: 1651:
+        -: 1652:		    __variant::__emplace<__j>(*this, std::move(__tmp));
+        -: 1653:		  }
+        -: 1654:	      }
+        -: 1655:	  }, __rhs);
+        -: 1656:      }
+        -: 1657:
+        -: 1658:#if defined(__clang__) && __clang_major__ <= 7
+        -: 1659:    public:
+        -: 1660:      using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
+        -: 1661:#endif
+        -: 1662:
+        -: 1663:    private:
+        -: 1664:      template<size_t _Np, typename _Vp>
+        -: 1665:	friend constexpr decltype(auto)
+        -: 1666:	__detail::__variant::__get(_Vp&& __v) noexcept;
+        -: 1667:
+        -: 1668:#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
+        -: 1669:      template<typename... _Tp> \
+        -: 1670:	friend constexpr bool \
+        -: 1671:	operator __OP(const variant<_Tp...>& __lhs, \
+        -: 1672:		      const variant<_Tp...>& __rhs);
+        -: 1673:
+        -: 1674:      _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
+        -: 1675:      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
+        -: 1676:      _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
+        -: 1677:      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
+        -: 1678:      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
+        -: 1679:      _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
+        -: 1680:
+        -: 1681:#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+        -: 1682:    };
+        -: 1683:
+        -: 1684:  template<size_t _Np, typename... _Types>
+        -: 1685:    constexpr variant_alternative_t<_Np, variant<_Types...>>&
+        -: 1686:    get(variant<_Types...>& __v)
+        -: 1687:    {
+        -: 1688:      static_assert(_Np < sizeof...(_Types),
+        -: 1689:		    "The index must be in [0, number of alternatives)");
+        -: 1690:      if (__v.index() != _Np)
+        -: 1691:	__throw_bad_variant_access(__v.valueless_by_exception());
+        -: 1692:      return __detail::__variant::__get<_Np>(__v);
+        -: 1693:    }
+        -: 1694:
+        -: 1695:  template<size_t _Np, typename... _Types>
+        -: 1696:    constexpr variant_alternative_t<_Np, variant<_Types...>>&&
+        -: 1697:    get(variant<_Types...>&& __v)
+        -: 1698:    {
+        -: 1699:      static_assert(_Np < sizeof...(_Types),
+        -: 1700:		    "The index must be in [0, number of alternatives)");
+        -: 1701:      if (__v.index() != _Np)
+        -: 1702:	__throw_bad_variant_access(__v.valueless_by_exception());
+        -: 1703:      return __detail::__variant::__get<_Np>(std::move(__v));
+        -: 1704:    }
+        -: 1705:
+        -: 1706:  template<size_t _Np, typename... _Types>
+        -: 1707:    constexpr const variant_alternative_t<_Np, variant<_Types...>>&
+        -: 1708:    get(const variant<_Types...>& __v)
+        -: 1709:    {
+        -: 1710:      static_assert(_Np < sizeof...(_Types),
+        -: 1711:		    "The index must be in [0, number of alternatives)");
+        -: 1712:      if (__v.index() != _Np)
+        -: 1713:	__throw_bad_variant_access(__v.valueless_by_exception());
+        -: 1714:      return __detail::__variant::__get<_Np>(__v);
+        -: 1715:    }
+        -: 1716:
+        -: 1717:  template<size_t _Np, typename... _Types>
+        -: 1718:    constexpr const variant_alternative_t<_Np, variant<_Types...>>&&
+        -: 1719:    get(const variant<_Types...>&& __v)
+        -: 1720:    {
+        -: 1721:      static_assert(_Np < sizeof...(_Types),
+        -: 1722:		    "The index must be in [0, number of alternatives)");
+        -: 1723:      if (__v.index() != _Np)
+        -: 1724:	__throw_bad_variant_access(__v.valueless_by_exception());
+        -: 1725:      return __detail::__variant::__get<_Np>(std::move(__v));
+        -: 1726:    }
+        -: 1727:
+        -: 1728:  /// @cond undocumented
+        -: 1729:  template<typename _Result_type, typename _Visitor, typename... _Variants>
+        -: 1730:    constexpr decltype(auto)
+function _ZSt10__do_visitIvZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEE8_M_resetEvEUlOT_E_JRSt7variantIJDnS4_SA_SE_SG_EEEEDcOT0_DpOT1_ called 11261467 returned 100% blocks executed 20%
+function _ZSt10__do_visitINSt8__detail9__variant20__variant_idx_cookieEZNS1_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEEC1ERKSI_EUlOT_T0_E_JRKSt7variantIJDnS5_SB_SF_SH_EEEEDcOSN_DpOT1_ called 5241632 returned 100% blocks executed 20%
+ 16503099: 1731:    __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
+        -: 1732:    {
+        -: 1733:      // Get the silly case of visiting no variants out of the way first.
+        -: 1734:      if constexpr (sizeof...(_Variants) == 0)
+        -: 1735:	{
+        -: 1736:	  if constexpr (is_void_v<_Result_type>)
+        -: 1737:	    return (void) std::forward<_Visitor>(__visitor)();
+        -: 1738:	  else
+        -: 1739:	    return std::forward<_Visitor>(__visitor)();
+        -: 1740:	}
+        -: 1741:      else
+        -: 1742:	{
+ 16503099: 1743:	  constexpr size_t __max = 11; // "These go to eleven."
+        -: 1744:
+        -: 1745:	  // The type of the first variant in the pack.
+        -: 1746:	  using _V0 = typename _Nth_type<0, _Variants...>::type;
+        -: 1747:	  // The number of alternatives in that first variant.
+ 16503099: 1748:	  constexpr auto __n = variant_size_v<remove_reference_t<_V0>>;
+        -: 1749:
+        -: 1750:	  if constexpr (sizeof...(_Variants) > 1 || __n > __max)
+        -: 1751:	    {
+        -: 1752:	      // Use a jump table for the general case.
+        -: 1753:	      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
+        -: 1754:		_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+        -: 1755:
+        -: 1756:	      auto __func_ptr = __vtable._M_access(__variants.index()...);
+        -: 1757:	      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
+        -: 1758:				   std::forward<_Variants>(__variants)...);
+        -: 1759:	    }
+        -: 1760:	  else // We have a single variant with a small number of alternatives.
+        -: 1761:	    {
+        -: 1762:	      // A name for the first variant in the pack.
+ 16503099: 1763:	      _V0& __v0
+function _ZZSt10__do_visitIvZNSt8__detail9__variant16_Variant_storageILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS7_ISC_EENS6_ISC_SD_SaISC_EEEEE8_M_resetEvEUlOT_E_JRSt7variantIJDnS4_SA_SE_SG_EEEEDcOT0_DpOT1_ENKUlSN_zE_clB5cxx11ESN_z called 11252716 returned 100% blocks executed 100%
+function _ZZSt10__do_visitINSt8__detail9__variant20__variant_idx_cookieEZNS1_15_Copy_ctor_baseILb0EJDnN4pqxx5zviewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt17basic_string_viewISt4byteS8_ISD_EENS7_ISD_SE_SaISD_EEEEEC1ERKSI_EUlOT_T0_E_JRKSt7variantIJDnS5_SB_SF_SH_EEEEDcOSN_DpOT1_ENKUlSS_zE_clB5cxx11ESS_z called 5244405 returned 100% blocks executed 100%
+ 33000220: 1764:		= [](_V0& __v, ...) -> _V0& { return __v; }(__variants...);
+ 11252716: 1764-block  0
+  5244405: 1764-block  1
+        -: 1765:
+        -: 1766:	      using __detail::__variant::_Multi_array;
+        -: 1767:	      using __detail::__variant::__gen_vtable_impl;
+        -: 1768:	      using _Ma = _Multi_array<_Result_type (*)(_Visitor&&, _V0&&)>;
+        -: 1769:
+        -: 1770:#ifdef _GLIBCXX_DEBUG
+        -: 1771:# define _GLIBCXX_VISIT_UNREACHABLE __builtin_trap
+        -: 1772:#else
+        -: 1773:# define _GLIBCXX_VISIT_UNREACHABLE __builtin_unreachable
+        -: 1774:#endif
+        -: 1775:
+        -: 1776:#define _GLIBCXX_VISIT_CASE(N)						\
+        -: 1777:  case N:								\
+        -: 1778:  {									\
+        -: 1779:    if constexpr (N < __n)						\
+        -: 1780:      {									\
+        -: 1781:	return __gen_vtable_impl<_Ma, index_sequence<N>>::		\
+        -: 1782:	  __visit_invoke(std::forward<_Visitor>(__visitor),		\
+        -: 1783:			 std::forward<_V0>(__v0));		\
+        -: 1784:      }									\
+        -: 1785:    else _GLIBCXX_VISIT_UNREACHABLE();					\
+        -: 1786:  }
+        -: 1787:
+ 16503099: 1788:	      switch (__v0.index())
+ 11261467: 1788-block  0
+branch  0 taken 0
+branch  1 taken 0
+branch  2 taken 0
+branch  3 taken 0
+branch  4 taken 0
+branch  5 taken 0
+branch  6 taken 0
+branch  7 taken 0
+branch  8 taken 0
+branch  9 taken 0
+branch 10 taken 11261467
+branch 11 taken 0
+branch 12 taken 0
+  5241632: 1788-block  1
+branch 13 taken 0
+branch 14 taken 0
+branch 15 taken 0
+branch 16 taken 0
+branch 17 taken 0
+branch 18 taken 0
+branch 19 taken 0
+branch 20 taken 0
+branch 21 taken 0
+branch 22 taken 5241632
+branch 23 taken 0
+branch 24 taken 0
+branch 25 taken 0
+        -: 1789:		{
+    #####: 1790:		  _GLIBCXX_VISIT_CASE(0)
+    $$$$$: 1790-block  0
+    $$$$$: 1790-block  1
+    #####: 1791:		  _GLIBCXX_VISIT_CASE(1)
+    $$$$$: 1791-block  0
+    $$$$$: 1791-block  1
+ 16503099: 1792:		  _GLIBCXX_VISIT_CASE(2)
+ 11261467: 1792-block  0
+  5241632: 1792-block  1
+    #####: 1793:		  _GLIBCXX_VISIT_CASE(3)
+    $$$$$: 1793-block  0
+    $$$$$: 1793-block  1
+    #####: 1794:		  _GLIBCXX_VISIT_CASE(4)
+    $$$$$: 1794-block  0
+    $$$$$: 1794-block  1
+    #####: 1795:		  _GLIBCXX_VISIT_CASE(5)
+    $$$$$: 1795-block  0
+    $$$$$: 1795-block  1
+    #####: 1796:		  _GLIBCXX_VISIT_CASE(6)
+    $$$$$: 1796-block  0
+    $$$$$: 1796-block  1
+    #####: 1797:		  _GLIBCXX_VISIT_CASE(7)
+    $$$$$: 1797-block  0
+    $$$$$: 1797-block  1
+    #####: 1798:		  _GLIBCXX_VISIT_CASE(8)
+    $$$$$: 1798-block  0
+    $$$$$: 1798-block  1
+    #####: 1799:		  _GLIBCXX_VISIT_CASE(9)
+    $$$$$: 1799-block  0
+    $$$$$: 1799-block  1
+    #####: 1800:		  _GLIBCXX_VISIT_CASE(10)
+    $$$$$: 1800-block  0
+    $$$$$: 1800-block  1
+        -: 1801:		case variant_npos:
+        -: 1802:		  using __detail::__variant::__variant_idx_cookie;
+        -: 1803:		  using __detail::__variant::__variant_cookie;
+        -: 1804:		  if constexpr (is_same_v<_Result_type, __variant_idx_cookie>
+        -: 1805:				|| is_same_v<_Result_type, __variant_cookie>)
+        -: 1806:		    {
+        -: 1807:		      using _Npos = index_sequence<variant_npos>;
+    #####: 1808:		      return __gen_vtable_impl<_Ma, _Npos>::
+    $$$$$: 1808-block  0
+    #####: 1809:			__visit_invoke(std::forward<_Visitor>(__visitor),
+    #####: 1810:				       std::forward<_V0>(__v0));
+        -: 1811:		    }
+        -: 1812:		  else
+    #####: 1813:		    _GLIBCXX_VISIT_UNREACHABLE();
+    $$$$$: 1813-block  0
+        -: 1814:		default:
+    #####: 1815:		  _GLIBCXX_VISIT_UNREACHABLE();
+    $$$$$: 1815-block  0
+    $$$$$: 1815-block  1
+        -: 1816:		}
+        -: 1817:#undef _GLIBCXX_VISIT_CASE
+        -: 1818:#undef _GLIBCXX_VISIT_UNREACHABLE
+        -: 1819:	    }
+        -: 1820:	}
+ 16503099: 1821:    }
+ 11261467: 1821-block  0
+  5241632: 1821-block  1
+        -: 1822:  /// @endcond
+        -: 1823:
+        -: 1824:  template<typename _Visitor, typename... _Variants>
+        -: 1825:    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
+        -: 1826:    visit(_Visitor&& __visitor, _Variants&&... __variants)
+        -: 1827:    {
+        -: 1828:      namespace __variant = std::__detail::__variant;
+        -: 1829:
+        -: 1830:      if ((__variant::__as(__variants).valueless_by_exception() || ...))
+        -: 1831:	__throw_bad_variant_access("std::visit: variant is valueless");
+        -: 1832:
+        -: 1833:      using _Result_type
+        -: 1834:	= __detail::__variant::__visit_result_t<_Visitor, _Variants...>;
+        -: 1835:
+        -: 1836:      using _Tag = __detail::__variant::__deduce_visit_result<_Result_type>;
+        -: 1837:
+        -: 1838:      if constexpr (sizeof...(_Variants) == 1)
+        -: 1839:	{
+        -: 1840:	  using _Vp = decltype(__variant::__as(std::declval<_Variants>()...));
+        -: 1841:
+        -: 1842:	  constexpr bool __visit_rettypes_match = __detail::__variant::
+        -: 1843:	    __check_visitor_results<_Visitor, _Vp>(
+        -: 1844:	      make_index_sequence<variant_size_v<remove_reference_t<_Vp>>>());
+        -: 1845:	  if constexpr (!__visit_rettypes_match)
+        -: 1846:	    {
+        -: 1847:	      static_assert(__visit_rettypes_match,
+        -: 1848:			  "std::visit requires the visitor to have the same "
+        -: 1849:			  "return type for all alternatives of a variant");
+        -: 1850:	      return;
+        -: 1851:	    }
+        -: 1852:	  else
+        -: 1853:	    return std::__do_visit<_Tag>(
+        -: 1854:	      std::forward<_Visitor>(__visitor),
+        -: 1855:	      static_cast<_Vp>(__variants)...);
+        -: 1856:	}
+        -: 1857:      else
+        -: 1858:	return std::__do_visit<_Tag>(
+        -: 1859:	  std::forward<_Visitor>(__visitor),
+        -: 1860:	  __variant::__as(std::forward<_Variants>(__variants))...);
+        -: 1861:    }
+        -: 1862:
+        -: 1863:#if __cplusplus > 201703L
+        -: 1864:  template<typename _Res, typename _Visitor, typename... _Variants>
+        -: 1865:    constexpr _Res
+        -: 1866:    visit(_Visitor&& __visitor, _Variants&&... __variants)
+        -: 1867:    {
+        -: 1868:      namespace __variant = std::__detail::__variant;
+        -: 1869:
+        -: 1870:      if ((__variant::__as(__variants).valueless_by_exception() || ...))
+        -: 1871:	__throw_bad_variant_access("std::visit<R>: variant is valueless");
+        -: 1872:
+        -: 1873:      return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
+        -: 1874:	  __variant::__as(std::forward<_Variants>(__variants))...);
+        -: 1875:    }
+        -: 1876:#endif
+        -: 1877:
+        -: 1878:  /// @cond undocumented
+        -: 1879:  template<bool, typename... _Types>
+        -: 1880:    struct __variant_hash_call_base_impl
+        -: 1881:    {
+        -: 1882:      size_t
+        -: 1883:      operator()(const variant<_Types...>& __t) const
+        -: 1884:      noexcept((is_nothrow_invocable_v<hash<decay_t<_Types>>, _Types> && ...))
+        -: 1885:      {
+        -: 1886:	size_t __ret;
+        -: 1887:	__detail::__variant::__raw_visit(
+        -: 1888:	  [&__t, &__ret](auto&& __t_mem) mutable
+        -: 1889:	  {
+        -: 1890:	    using _Type = __remove_cvref_t<decltype(__t_mem)>;
+        -: 1891:	    if constexpr (!is_same_v<_Type,
+        -: 1892:			             __detail::__variant::__variant_cookie>)
+        -: 1893:	      __ret = std::hash<size_t>{}(__t.index())
+        -: 1894:		      + std::hash<_Type>{}(__t_mem);
+        -: 1895:	    else
+        -: 1896:	      __ret = std::hash<size_t>{}(__t.index());
+        -: 1897:	  }, __t);
+        -: 1898:	return __ret;
+        -: 1899:      }
+        -: 1900:    };
+        -: 1901:
+        -: 1902:  template<typename... _Types>
+        -: 1903:    struct __variant_hash_call_base_impl<false, _Types...> {};
+        -: 1904:
+        -: 1905:  template<typename... _Types>
+        -: 1906:    using __variant_hash_call_base =
+        -: 1907:    __variant_hash_call_base_impl<(__poison_hash<remove_const_t<_Types>>::
+        -: 1908:				   __enable_hash_call &&...), _Types...>;
+        -: 1909:  /// @endcond
+        -: 1910:
+        -: 1911:  template<typename... _Types>
+        -: 1912:    struct hash<variant<_Types...>>
+        -: 1913:    : private __detail::__variant::_Variant_hash_base<
+        -: 1914:	variant<_Types...>, std::index_sequence_for<_Types...>>,
+        -: 1915:      public __variant_hash_call_base<_Types...>
+        -: 1916:    {
+        -: 1917:      using result_type [[__deprecated__]] = size_t;
+        -: 1918:      using argument_type [[__deprecated__]] = variant<_Types...>;
+        -: 1919:    };
+        -: 1920:
+        -: 1921:  template<>
+        -: 1922:    struct hash<monostate>
+        -: 1923:    {
+        -: 1924:      using result_type [[__deprecated__]] = size_t;
+        -: 1925:      using argument_type [[__deprecated__]] = monostate;
+        -: 1926:
+        -: 1927:      size_t
+        -: 1928:      operator()(const monostate&) const noexcept
+        -: 1929:      {
+        -: 1930:	constexpr size_t __magic_monostate_hash = -7777;
+        -: 1931:	return __magic_monostate_hash;
+        -: 1932:      }
+        -: 1933:    };
+        -: 1934:
+        -: 1935:  template<typename... _Types>
+        -: 1936:    struct __is_fast_hash<hash<variant<_Types...>>>
+        -: 1937:    : bool_constant<(__is_fast_hash<_Types>::value && ...)>
+        -: 1938:    { };
+        -: 1939:
+        -: 1940:_GLIBCXX_END_NAMESPACE_VERSION
+        -: 1941:} // namespace std
+        -: 1942:
+        -: 1943:#endif // C++17
+        -: 1944:
+        -: 1945:#endif // _GLIBCXX_VARIANT

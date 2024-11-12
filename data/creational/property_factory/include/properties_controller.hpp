@@ -18,6 +18,12 @@ namespace drug_lib::data
             return std::make_shared<T>(property_value);
         }
 
+        template <typename T, typename... Args>
+        static std::shared_ptr<DataProperty> create(Args&&... args)
+        {
+            return std::make_shared<T>(std::forward<Args>(args)...);
+        }
+
         static std::shared_ptr<DataProperty> create(const std::string& property_name,
                                                     const Json::Value& property_value)
         {
@@ -32,6 +38,10 @@ namespace drug_lib::data
             if (property_name == objects::organizations::properties::license)
             {
                 return std::make_shared<objects::organizations::License>(property_value);
+            }
+            if (property_name == objects::patients::properties::current_diseases)
+            {
+                return std::make_shared<objects::patients::CurrentDiseases>(property_value);
             }
             throw std::invalid_argument("Property '" + property_name + "' not found");
         }

@@ -1,0 +1,56 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/boost/container/detail/min_max.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Disease_Base.dir/disease/test_disease_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Disease_Base.dir/disease/test_disease_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1://////////////////////////////////////////////////////////////////////////////
+        -:    2://
+        -:    3:// (C) Copyright Ion Gaztanaga 2005-2013. Distributed under the Boost
+        -:    4:// Software License, Version 1.0. (See accompanying file
+        -:    5:// LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+        -:    6://
+        -:    7:// See http://www.boost.org/libs/container for documentation.
+        -:    8://
+        -:    9://////////////////////////////////////////////////////////////////////////////
+        -:   10:#ifndef BOOST_CONTAINER_DETAIL_MIN_MAX_HPP
+        -:   11:#define BOOST_CONTAINER_DETAIL_MIN_MAX_HPP
+        -:   12:
+        -:   13:#ifndef BOOST_CONFIG_HPP
+        -:   14:#  include <boost/config.hpp>
+        -:   15:#endif
+        -:   16:
+        -:   17:#if defined(BOOST_HAS_PRAGMA_ONCE)
+        -:   18:#  pragma once
+        -:   19:#endif
+        -:   20:
+        -:   21:namespace boost {
+        -:   22:namespace container {
+        -:   23:namespace dtl {
+        -:   24:
+        -:   25:template<class T>
+function _ZN5boost9container3dtl9max_valueImEERKT_S5_S5_ called 0 returned 0% blocks executed 0%
+    #####:   26:const T &max_value(const T &a, const T &b)
+    #####:   27:{  return a > b ? a : b;   }
+    $$$$$:   27-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   27-block  1
+    $$$$$:   27-block  2
+    $$$$$:   27-block  3
+        -:   28:
+        -:   29:template<class T>
+function _ZN5boost9container3dtl9min_valueImEERKT_S5_S5_ called 0 returned 0% blocks executed 0%
+    #####:   30:const T &min_value(const T &a, const T &b)
+    #####:   31:{  return a < b ? a : b;   }
+    $$$$$:   31-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   31-block  1
+    $$$$$:   31-block  2
+    $$$$$:   31-block  3
+        -:   32:
+        -:   33:}  //namespace dtl {
+        -:   34:}  //namespace container {
+        -:   35:}  //namespace boost {
+        -:   36:
+        -:   37:#endif   //#ifndef BOOST_CONTAINER_DETAIL_MIN_MAX_HPP

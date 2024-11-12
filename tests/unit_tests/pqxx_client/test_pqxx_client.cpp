@@ -1,5 +1,6 @@
 // pqxx_client_test.cpp
 
+#include <barrier>
 #include <chrono>
 #include <db_interface_factory.hpp>
 #include <functional>
@@ -438,15 +439,20 @@ TEST_F(PqxxClientTest, TransactionConquerenteTest)
 TEST_F(PqxxClientTest, TransactionMultithreadTest)
 {
     std::mutex mtx;
-    std::atomic inserting(true); // Tracks if the poster thread is still inserting data
-    constexpr std::size_t expected_record_count = 1e4; // Expected number of rows to insert
+    std::atomic inserting1(true), inserting2(true); // Tracks if the poster thread is still inserting data
+    constexpr std::size_t expected_record_count = 1e5; // Expected number of rows to insert
     std::condition_variable cv;
-    bool ready_to_listen = false;
+    std::barrier barrier(2), syncer(2);
+    std::atomic transaction_committed{false};
+    std::atomic<bool> ready_to_listen = false;
     // First thread - poster: inserts records within a transaction
-    auto poster_worker = [&]{
-        std::unique_lock lock(mtx);
+    auto poster_worker = [&]
+    {
         EXPECT_NO_THROW(db_client->start_transaction());
-        ready_to_listen = true;
+        {
+            std::unique_lock lock(mtx);
+            ready_to_listen = true;
+        }
         cv.notify_all();
         for (std::size_t i = 1; i <= expected_record_count; ++i)
         {
@@ -458,18 +464,23 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
             EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
         }
 
-        EXPECT_NO_THROW(db_client->commit_transaction());
 
         // Signal that inserting is done
-        inserting.store(false);
+        inserting1.store(false);
+        inserting2.store(false);
+        barrier.arrive_and_wait();
+        EXPECT_NO_THROW(db_client->commit_transaction());
+        transaction_committed.store(true); // Set the flag to indicate commit is done
     };
 
     // Second thread - listener 1: retrieves data without a transaction
     auto non_transaction_worker = [&]
     {
-        std::unique_lock lock(mtx);
-        cv.wait(lock, [&] { return ready_to_listen; });
-        while (inserting.load())
+        {
+            std::unique_lock lock(mtx);
+            cv.wait(lock, [&] { return ready_to_listen.load(); });
+        }
+        while (inserting1.load())
         {
             bool emp = true;
             // This thread should always successfully retrieve data, even if incomplete
@@ -486,15 +497,24 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     // Third thread - listener 2: tries to retrieve data inside a transaction
     auto transactional_listener_worker = [&]
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&]{return ready_to_listen; });
-        while (inserting.load())
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [&] { return ready_to_listen.load(); });
+        }
+        while (inserting2.load())
         {
             EXPECT_THROW(db_client->start_transaction(),
                          drug_lib::common::database::exceptions::TransactionException);
         }
+        barrier.arrive_and_wait(); // Wait for all threads to reach the barrier
 
-        // Once inserting is done, the transactional listener should now succeed
+        // Ensure that the transaction is committed by Thread 1 before proceeding
+        while (!transaction_committed.load())
+        {
+            std::this_thread::yield(); // Yield to avoid busy waiting
+        }
+
+        // Now proceed with the transaction check
         EXPECT_NO_THROW(db_client->start_transaction());
 
         // Fetch all rows inserted by the poster thread

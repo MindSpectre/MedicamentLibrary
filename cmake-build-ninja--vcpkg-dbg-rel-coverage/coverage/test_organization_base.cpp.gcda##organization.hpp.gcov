@@ -1,0 +1,404 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/objects/base/include/organization.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Organization_Base.dir/organization/test_organization_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include "common_object.hpp"
+        -:    4:#include "properties_controller.hpp"
+        -:    5:
+        -:    6:namespace drug_lib::data::objects
+        -:    7:{
+        -:    8:    class Organization final : public ObjectBase, public PropertiesHolder
+        -:    9:    {
+        -:   10:    public:
+        -:   11:        struct field_name : _common_fields_names
+        -:   12:        {
+        -:   13:            static constexpr auto type = "type";
+        -:   14:            static constexpr auto country = "country";
+        -:   15:            static constexpr auto contact_details = "contact_details";
+        -:   16:        };
+        -:   17:
+function _ZNK8drug_lib4data7objects12Organization9to_recordEv called 1 returned 100% blocks executed 56%
+        1:   18:        [[nodiscard]] common::database::Record to_record() const override
+        -:   19:        {
+        1:   20:            common::database::Record record;
+        1:   21:            record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+        1:   21-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   21-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   21-block  2
+        1:   22:            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
+        1:   22-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   22-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   22-block  2
+        1:   23:            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
+        1:   23-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   23-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   23-block  2
+        1:   24:            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::country, country_));
+        1:   24-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   24-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   24-block  2
+        1:   25:            record.push_back(
+        1:   25-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   25-block  1
+        1:   26:                std::make_unique<common::database::Field<std::string>>(field_name::contact_details, contact_details_));
+        1:   26-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   27:            record.push_back(collection_.make_properties_field());
+        1:   27-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   27-block  1
+        1:   28:            return record;
+        1:   29:        }
+        1:   29-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   29-block  1
+    $$$$$:   29-block  2
+        1:   29-block  3
+    $$$$$:   29-block  4
+    $$$$$:   29-block  5
+        -:   30:
+function _ZN8drug_lib4data7objects12Organization11from_recordERKNS_6common8database6RecordE called 1 returned 100% blocks executed 59%
+        1:   31:        void from_record(const common::database::Record& record) override
+        -:   32:        {
+        6:   33:            for (const auto& field : record.fields())
+        1:   33-block  0
+        6:   33-block  1
+branch  0 taken 5
+branch  1 taken 1
+        5:   33-block  2
+        5:   33-block  3
+        -:   34:            {
+       10:   35:                if (const auto& field_name = field->get_name();
+        5:   35-block  0
+branch  0 taken 1
+branch  1 taken 4
+        5:   35-block  1
+branch  2 taken 1
+branch  3 taken 4
+        5:   36:                    field_name == field_name::id)
+        -:   37:                {
+        1:   38:                    id_ = field->as<int32_t>();
+        1:   39:                }
+        1:   39-block  0
+        4:   40:                else if (field_name == field_name::name)
+        4:   40-block  0
+branch  0 taken 1
+branch  1 taken 3
+        -:   41:                {
+        1:   42:                    name_ = field->as<std::string>();
+        1:   43:                }
+        1:   43-block  0
+        3:   44:                else if (field_name == field_name::type)
+        3:   44-block  0
+branch  0 taken 1
+branch  1 taken 2
+        -:   45:                {
+        1:   46:                    type_ = field->as<std::string>();
+        1:   47:                }
+        1:   47-block  0
+        2:   48:                else if (field_name == field_name::country)
+        2:   48-block  0
+branch  0 taken 1
+branch  1 taken 1
+        -:   49:                {
+        1:   50:                    country_ = field->as<std::string>();
+        1:   51:                }
+        1:   51-block  0
+        1:   52:                else if (field_name == field_name::contact_details)
+        1:   52-block  0
+branch  0 taken 1
+branch  1 taken 0
+        -:   53:                {
+        1:   54:                    contact_details_ = field->as<std::string>();
+        1:   55:                }
+        1:   55-block  0
+    #####:   56:                else if (field_name == field_name::properties)
+    $$$$$:   56-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   57:                {
+    #####:   58:                    create_collection(field);
+    #####:   59:                }
+    $$$$$:   59-block  0
+        -:   60:                else
+        -:   61:                {
+    #####:   62:                    throw std::invalid_argument("Unknown field name: " + field_name);
+    $$$$$:   62-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   62-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   62-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   62-block  3
+    $$$$$:   62-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   62-block  5
+    $$$$$:   62-block  6
+    $$$$$:   62-block  7
+        -:   63:                }
+        -:   64:            }
+        1:   65:        }
+    $$$$$:   65-block  0
+        1:   65-block  1
+        -:   66:
+function _ZN8drug_lib4data7objects12Organization11from_recordERKSt10unique_ptrINS_6common8database10ViewRecordESt14default_deleteIS6_EE called 0 returned 0% blocks executed 0%
+    #####:   67:        void from_record(const std::unique_ptr<common::database::ViewRecord>& viewed) override
+        -:   68:        {
+    #####:   69:            for (std::size_t i = 0; i < viewed->size(); i++)
+    $$$$$:   69-block  0
+    $$$$$:   69-block  1
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   69-block  2
+        -:   70:            {
+    #####:   71:                if (const auto& field_name = viewed->name(i);
+    $$$$$:   71-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   72:                    field_name == field_name::id)
+    $$$$$:   72-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   72-block  1
+    $$$$$:   72-block  2
+        -:   73:                {
+    #####:   74:                    id_ = std::stoi(viewed->extract(i));
+    $$$$$:   74-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   74-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   74-block  2
+    #####:   75:                }
+    $$$$$:   75-block  0
+    #####:   76:                else if (field_name == field_name::name)
+    $$$$$:   76-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   76-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   77:                {
+    #####:   78:                    name_ = viewed->extract(i);
+    $$$$$:   78-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   79:                }
+    $$$$$:   79-block  0
+    #####:   80:                else if (field_name == field_name::type)
+    $$$$$:   80-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   80-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   81:                {
+    #####:   82:                    type_ = viewed->extract(i);
+    $$$$$:   82-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   83:                }
+    $$$$$:   83-block  0
+    #####:   84:                else if (field_name == field_name::country)
+    $$$$$:   84-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   84-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   85:                {
+    #####:   86:                    country_ = viewed->extract(i);
+    $$$$$:   86-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   87:                }
+    $$$$$:   87-block  0
+    #####:   88:                else if (field_name == field_name::contact_details)
+    $$$$$:   88-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   88-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   89:                {
+    #####:   90:                    contact_details_ = viewed->extract(i);
+    $$$$$:   90-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   91:                }
+    $$$$$:   91-block  0
+    #####:   92:                else if (field_name == field_name::properties)
+    $$$$$:   92-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   92-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   93:                {
+    #####:   94:                    create_collection(viewed->extract(i));
+    $$$$$:   94-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   94-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   94-block  2
+    #####:   95:                }
+    $$$$$:   95-block  0
+        -:   96:                else
+        -:   97:                {
+    #####:   98:                    throw std::invalid_argument("Unknown field name: " + field_name);
+    $$$$$:   98-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   98-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   98-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   98-block  3
+    $$$$$:   98-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   98-block  5
+    $$$$$:   98-block  6
+        -:   99:                }
+    #####:  100:            }
+    $$$$$:  100-block  0
+    #####:  101:        }
+    $$$$$:  101-block  0
+    $$$$$:  101-block  1
+    $$$$$:  101-block  2
+        -:  102:
+function _ZN8drug_lib4data7objects12OrganizationC2Ev called 3 returned 100% blocks executed 100%
+        6:  103:        Organization() = default;
+        3:  103-block  0
+        3:  103-block  1
+        -:  104:
+        -:  105:        // Конструктор с параметрами
+function _ZN8drug_lib4data7objects12OrganizationC2EiNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_ called 2 returned 100% blocks executed 100%
+        4:  106:        Organization(const int32_t id, std::string name, std::string type, std::string country,
+        -:  107:                     std::string contact_details)
+        2:  108:            : id_(id),
+        2:  109:              name_(std::move(name)),
+        2:  110:              type_(std::move(type)),
+        2:  111:              country_(std::move(country)),
+        2:  112:              contact_details_(std::move(contact_details))
+        4:  113:        {
+        2:  114:        }
+        2:  114-block  0
+        -:  115:
+function _ZNK8drug_lib4data7objects12Organization6get_idEv called 4 returned 100% blocks executed 100%
+        4:  116:        [[nodiscard]] int32_t get_id() const
+        -:  117:        {
+        4:  118:            return id_;
+        4:  118-block  0
+        -:  119:        }
+        -:  120:
+function _ZN8drug_lib4data7objects12Organization6set_idEi called 1 returned 100% blocks executed 100%
+        1:  121:        void set_id(const int32_t id)
+        -:  122:        {
+        1:  123:            id_ = id;
+        1:  124:        }
+        1:  124-block  0
+        -:  125:
+function _ZNK8drug_lib4data7objects12Organization8get_nameB5cxx11Ev called 4 returned 100% blocks executed 100%
+        4:  126:        [[nodiscard]] const std::string& get_name() const
+        -:  127:        {
+        4:  128:            return name_;
+        4:  128-block  0
+        -:  129:        }
+        -:  130:
+function _ZN8drug_lib4data7objects12Organization8set_nameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 100%
+        1:  131:        void set_name(const std::string& name)
+        -:  132:        {
+        1:  133:            name_ = name;
+        1:  134:        }
+        1:  134-block  0
+        -:  135:
+function _ZNK8drug_lib4data7objects12Organization8get_typeB5cxx11Ev called 4 returned 100% blocks executed 100%
+        4:  136:        [[nodiscard]] const std::string& get_type() const
+        -:  137:        {
+        4:  138:            return type_;
+        4:  138-block  0
+        -:  139:        }
+        -:  140:
+function _ZN8drug_lib4data7objects12Organization8set_typeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 100%
+        1:  141:        void set_type(const std::string& type)
+        -:  142:        {
+        1:  143:            type_ = type;
+        1:  144:        }
+        1:  144-block  0
+        -:  145:
+function _ZNK8drug_lib4data7objects12Organization11get_countryB5cxx11Ev called 4 returned 100% blocks executed 100%
+        4:  146:        [[nodiscard]] const std::string& get_country() const
+        -:  147:        {
+        4:  148:            return country_;
+        4:  148-block  0
+        -:  149:        }
+        -:  150:
+function _ZN8drug_lib4data7objects12Organization11set_countryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 100%
+        1:  151:        void set_country(const std::string& country)
+        -:  152:        {
+        1:  153:            country_ = country;
+        1:  154:        }
+        1:  154-block  0
+        -:  155:
+function _ZNK8drug_lib4data7objects12Organization19get_contact_detailsB5cxx11Ev called 4 returned 100% blocks executed 100%
+        4:  156:        [[nodiscard]] const std::string& get_contact_details() const
+        -:  157:        {
+        4:  158:            return contact_details_;
+        4:  158-block  0
+        -:  159:        }
+        -:  160:
+function _ZN8drug_lib4data7objects12Organization19set_contact_detailsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 100%
+        1:  161:        void set_contact_details(const std::string& contact_details)
+        -:  162:        {
+        1:  163:            contact_details_ = contact_details;
+        1:  164:        }
+        1:  164-block  0
+        -:  165:
+function _ZN8drug_lib4data7objects12OrganizationD2Ev called 5 returned 100% blocks executed 100%
+function _ZN8drug_lib4data7objects12OrganizationD0Ev called 0 returned 0% blocks executed 0%
+        5:  166:        ~Organization() override = default;
+        5:  166-block  0
+    $$$$$:  166-block  1
+        -:  167:
+        -:  168:    private:
+        3:  169:        int32_t id_ = -1;
+        -:  170:        std::string name_;
+        -:  171:        std::string type_;
+        -:  172:        std::string country_;
+        -:  173:        std::string contact_details_;
+        -:  174:    };
+        -:  175:}

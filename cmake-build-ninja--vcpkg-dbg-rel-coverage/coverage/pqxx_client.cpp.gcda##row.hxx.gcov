@@ -1,0 +1,601 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/pqxx/row.hxx
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Definitions for the pqxx::result class and support classes.
+        -:    2: *
+        -:    3: * pqxx::result represents the set of result rows from a database query.
+        -:    4: *
+        -:    5: * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/result instead.
+        -:    6: *
+        -:    7: * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+        -:    8: *
+        -:    9: * See COPYING for copyright license.  If you did not receive a file called
+        -:   10: * COPYING with this source code, please notify the distributor of this
+        -:   11: * mistake, or contact the author.
+        -:   12: */
+        -:   13:#ifndef PQXX_H_ROW
+        -:   14:#define PQXX_H_ROW
+        -:   15:
+        -:   16:#if !defined(PQXX_HEADER_PRE)
+        -:   17:#  error "Include libpqxx headers as <pqxx/header>, not <pqxx/header.hxx>."
+        -:   18:#endif
+        -:   19:
+        -:   20:#include "pqxx/except.hxx"
+        -:   21:#include "pqxx/field.hxx"
+        -:   22:#include "pqxx/result.hxx"
+        -:   23:
+        -:   24:#include "pqxx/internal/concat.hxx"
+        -:   25:
+        -:   26:namespace pqxx::internal
+        -:   27:{
+        -:   28:template<typename... T> class result_iter;
+        -:   29:} // namespace pqxx::internal
+        -:   30:
+        -:   31:
+        -:   32:namespace pqxx
+        -:   33:{
+        -:   34:/// Reference to one row in a result.
+        -:   35:/** A row represents one row (also called a row) in a query result set.
+        -:   36: * It also acts as a container mapping column numbers or names to field
+        -:   37: * values (see below):
+        -:   38: *
+        -:   39: * ```cxx
+        -:   40: *    cout << row["date"].c_str() << ": " << row["name"].c_str() << endl;
+        -:   41: * ```
+        -:   42: *
+        -:   43: * The row itself acts like a (non-modifyable) container, complete with its
+        -:   44: * own const_iterator and const_reverse_iterator.
+        -:   45: */
+function _ZN4pqxx3rowD2Ev called 78915505 returned 100% blocks executed 100%
+        -:   46:class PQXX_LIBEXPORT row
+        -:   47:{
+        -:   48:public:
+        -:   49:  // TODO: Some of these types conflict: class is both iterator and container.
+        -:   50:  // TODO: Set iterator nested types using std::iterator_traits.
+        -:   51:  using size_type = row_size_type;
+        -:   52:  using difference_type = row_difference_type;
+        -:   53:  using const_iterator = const_row_iterator;
+        -:   54:  using iterator = const_iterator;
+        -:   55:  using reference = field;
+        -:   56:  using pointer = const_row_iterator;
+        -:   57:  using const_reverse_iterator = const_reverse_row_iterator;
+        -:   58:  using reverse_iterator = const_reverse_iterator;
+        -:   59:
+function _ZN4pqxx3rowC2Ev called 39301708 returned 100% blocks executed 100%
+ 78603416:   60:  row() noexcept = default;
+ 39301708:   60-block  0
+ 39301708:   60-block  1
+        -:   61:  row(row &&) noexcept = default;
+function _ZN4pqxx3rowC2ERKS0_ called 39608806 returned 100% blocks executed 100%
+ 39608806:   62:  row(row const &) noexcept = default;
+ 39608806:   62-block  0
+        -:   63:  row &operator=(row const &) noexcept = default;
+function _ZN4pqxx3rowaSEOS0_ called 39301708 returned 100% blocks executed 100%
+ 39301708:   64:  row &operator=(row &&) noexcept = default;
+ 39301708:   64-block  0
+        -:   65:
+        -:   66:  /**
+        -:   67:   * @name Comparison
+        -:   68:   */
+        -:   69:  //@{
+        -:   70:  [[nodiscard]] PQXX_PURE bool operator==(row const &) const noexcept;
+        -:   71:  [[nodiscard]] bool operator!=(row const &rhs) const noexcept
+        -:   72:  {
+        -:   73:    return not operator==(rhs);
+        -:   74:  }
+        -:   75:  //@}
+        -:   76:
+        -:   77:  [[nodiscard]] const_iterator begin() const noexcept;
+        -:   78:  [[nodiscard]] const_iterator cbegin() const noexcept;
+        -:   79:  [[nodiscard]] const_iterator end() const noexcept;
+        -:   80:  [[nodiscard]] const_iterator cend() const noexcept;
+        -:   81:
+        -:   82:  /**
+        -:   83:   * @name Field access
+        -:   84:   */
+        -:   85:  //@{
+        -:   86:  [[nodiscard]] reference front() const noexcept;
+        -:   87:  [[nodiscard]] reference back() const noexcept;
+        -:   88:
+        -:   89:  [[nodiscard]] const_reverse_row_iterator rbegin() const noexcept;
+        -:   90:  [[nodiscard]] const_reverse_row_iterator crbegin() const noexcept;
+        -:   91:  [[nodiscard]] const_reverse_row_iterator rend() const noexcept;
+        -:   92:  [[nodiscard]] const_reverse_row_iterator crend() const noexcept;
+        -:   93:
+        -:   94:  [[nodiscard]] reference operator[](size_type) const noexcept;
+        -:   95:  /** Address field by name.
+        -:   96:   * @warning This is much slower than indexing by number, or iterating.
+        -:   97:   */
+        -:   98:  [[nodiscard]] reference operator[](zview col_name) const;
+        -:   99:
+        -:  100:  reference at(size_type) const;
+        -:  101:  /** Address field by name.
+        -:  102:   * @warning This is much slower than indexing by number, or iterating.
+        -:  103:   */
+        -:  104:  reference at(zview col_name) const;
+        -:  105:
+function _ZNK4pqxx3row4sizeEv called 306878 returned 100% blocks executed 100%
+   306878:  106:  [[nodiscard]] constexpr size_type size() const noexcept
+        -:  107:  {
+   306878:  108:    return m_end - m_begin;
+   306878:  108-block  0
+        -:  109:  }
+        -:  110:
+        -:  111:  /// Row number, assuming this is a real row and not end()/rend().
+        -:  112:  [[nodiscard]] constexpr result::size_type rownumber() const noexcept
+        -:  113:  {
+        -:  114:    return m_index;
+        -:  115:  }
+        -:  116:
+        -:  117:  /**
+        -:  118:   * @name Column information
+        -:  119:   */
+        -:  120:  //@{
+        -:  121:  /// Number of given column (throws exception if it doesn't exist).
+        -:  122:  [[nodiscard]] size_type column_number(zview col_name) const;
+        -:  123:
+        -:  124:  /// Return a column's type.
+        -:  125:  [[nodiscard]] oid column_type(size_type) const;
+        -:  126:
+        -:  127:  /// Return a column's type.
+        -:  128:  [[nodiscard]] oid column_type(zview col_name) const
+        -:  129:  {
+        -:  130:    return column_type(column_number(col_name));
+        -:  131:  }
+        -:  132:
+        -:  133:  /// What table did this column come from?
+        -:  134:  [[nodiscard]] oid column_table(size_type col_num) const;
+        -:  135:
+        -:  136:  /// What table did this column come from?
+        -:  137:  [[nodiscard]] oid column_table(zview col_name) const
+        -:  138:  {
+        -:  139:    return column_table(column_number(col_name));
+        -:  140:  }
+        -:  141:
+        -:  142:  /// What column number in its table did this result column come from?
+        -:  143:  /** A meaningful answer can be given only if the column in question comes
+        -:  144:   * directly from a column in a table.  If the column is computed in any
+        -:  145:   * other way, a logic_error will be thrown.
+        -:  146:   *
+        -:  147:   * @param col_num a zero-based column number in this result set
+        -:  148:   * @return a zero-based column number in originating table
+        -:  149:   */
+        -:  150:  [[nodiscard]] size_type table_column(size_type) const;
+        -:  151:
+        -:  152:  /// What column number in its table did this result column come from?
+        -:  153:  [[nodiscard]] size_type table_column(zview col_name) const
+        -:  154:  {
+        -:  155:    return table_column(column_number(col_name));
+        -:  156:  }
+        -:  157:  //@}
+        -:  158:
+        -:  159:  [[nodiscard]] constexpr result::size_type num() const noexcept
+        -:  160:  {
+        -:  161:    return rownumber();
+        -:  162:  }
+        -:  163:
+        -:  164:  /// Extract entire row's values into a tuple.
+        -:  165:  /** Converts to the types of the tuple's respective fields.
+        -:  166:   *
+        -:  167:   * The types in the tuple must have conversions from PostgreSQL's text format
+        -:  168:   * defined; see @ref datatypes.
+        -:  169:   *
+        -:  170:   * @throw usage_error If the number of columns in the `row` does not match
+        -:  171:   * the number of fields in `t`.
+        -:  172:   */
+        -:  173:  template<typename Tuple> void to(Tuple &t) const
+        -:  174:  {
+        -:  175:    check_size(std::tuple_size_v<Tuple>);
+        -:  176:    convert(t);
+        -:  177:  }
+        -:  178:
+        -:  179:  /// Extract entire row's values into a tuple.
+        -:  180:  /** Converts to the types of the tuple's respective fields.
+        -:  181:   *
+        -:  182:   * The types must have conversions from PostgreSQL's text format defined;
+        -:  183:   * see @ref datatypes.
+        -:  184:   *
+        -:  185:   * @throw usage_error If the number of columns in the `row` does not match
+        -:  186:   * the number of fields in `t`.
+        -:  187:   */
+        -:  188:  template<typename... TYPE> std::tuple<TYPE...> as() const
+        -:  189:  {
+        -:  190:    check_size(sizeof...(TYPE));
+        -:  191:    using seq = std::make_index_sequence<sizeof...(TYPE)>;
+        -:  192:    return get_tuple<std::tuple<TYPE...>>(seq{});
+        -:  193:  }
+        -:  194:
+        -:  195:  [[deprecated("Swap iterators, not rows.")]] void swap(row &) noexcept;
+        -:  196:
+        -:  197:  /** Produce a slice of this row, containing the given range of columns.
+        -:  198:   *
+        -:  199:   * @deprecated I haven't heard of anyone caring about row slicing at all in
+        -:  200:   * at least the last 15 years.  Yet it adds complexity, so unless anyone
+        -:  201:   * files a bug explaining why they really need this feature, I'm going to
+        -:  202:   * remove it.  Even if they do, the feature may need an update.
+        -:  203:   *
+        -:  204:   * The slice runs from the range's starting column to the range's end
+        -:  205:   * column, exclusive.  It looks just like a normal result row, except
+        -:  206:   * slices can be empty.
+        -:  207:   */
+        -:  208:  [[deprecated("Row slicing is going away.  File a bug if you need it.")]] row
+        -:  209:  slice(size_type sbegin, size_type send) const;
+        -:  210:
+        -:  211:  /// Is this a row without fields?  Can only happen to a slice.
+        -:  212:  [[nodiscard, deprecated("Row slicing is going away.")]] PQXX_PURE bool
+        -:  213:  empty() const noexcept;
+        -:  214:
+        -:  215:protected:
+        -:  216:  friend class const_row_iterator;
+        -:  217:  friend class result;
+        -:  218:  row(result const &r, result_size_type index, size_type cols) noexcept;
+        -:  219:
+        -:  220:  /// Throw @ref usage_error if row size is not `expected`.
+        -:  221:  void check_size(size_type expected) const
+        -:  222:  {
+        -:  223:    if (size() != expected)
+        -:  224:      throw usage_error{internal::concat(
+        -:  225:        "Tried to extract ", expected, " field(s) from a row of ", size(),
+        -:  226:        ".")};
+        -:  227:  }
+        -:  228:
+        -:  229:  /// Convert to a given tuple of values, don't check sizes.
+        -:  230:  /** We need this for cases where we have a full tuple of field types, but
+        -:  231:   * not a parameter pack.
+        -:  232:   */
+        -:  233:  template<typename TUPLE> TUPLE as_tuple() const
+        -:  234:  {
+        -:  235:    using seq = std::make_index_sequence<std::tuple_size_v<TUPLE>>;
+        -:  236:    return get_tuple<TUPLE>(seq{});
+        -:  237:  }
+        -:  238:
+        -:  239:  template<typename... T> friend class pqxx::internal::result_iter;
+        -:  240:  /// Convert entire row to tuple fields, without checking row size.
+        -:  241:  template<typename Tuple> void convert(Tuple &t) const
+        -:  242:  {
+        -:  243:    extract_fields(t, std::make_index_sequence<std::tuple_size_v<Tuple>>{});
+        -:  244:  }
+        -:  245:
+        -:  246:  friend class field;
+        -:  247:
+        -:  248:  /// Result set of which this is one row.
+        -:  249:  result m_result;
+        -:  250:
+        -:  251:  /// Row number.
+        -:  252:  /**
+        -:  253:   * You'd expect this to be unsigned, but due to the way reverse iterators
+        -:  254:   * are related to regular iterators, it must be allowed to underflow to -1.
+        -:  255:   */
+ 39301708:  256:  result::size_type m_index = 0;
+        -:  257:
+        -:  258:  // TODO: Remove m_begin and (if possible) m_end when we remove slice().
+        -:  259:  /// First column in slice.  This row ignores lower-numbered columns.
+ 39301708:  260:  size_type m_begin = 0;
+        -:  261:  /// End column in slice.  This row only sees lower-numbered columns.
+ 39301708:  262:  size_type m_end = 0;
+        -:  263:
+        -:  264:private:
+        -:  265:  template<typename Tuple, std::size_t... indexes>
+        -:  266:  void extract_fields(Tuple &t, std::index_sequence<indexes...>) const
+        -:  267:  {
+        -:  268:    (extract_value<Tuple, indexes>(t), ...);
+        -:  269:  }
+        -:  270:
+        -:  271:  template<typename Tuple, std::size_t index>
+        -:  272:  void extract_value(Tuple &t) const;
+        -:  273:
+        -:  274:  /// Convert row's values as a new tuple.
+        -:  275:  template<typename TUPLE, std::size_t... indexes>
+        -:  276:  auto get_tuple(std::index_sequence<indexes...>) const
+        -:  277:  {
+        -:  278:    return std::make_tuple(get_field<TUPLE, indexes>()...);
+        -:  279:  }
+        -:  280:
+        -:  281:  /// Extract and convert a field.
+        -:  282:  template<typename TUPLE, std::size_t index> auto get_field() const
+        -:  283:  {
+        -:  284:    return (*this)[index].as<std::tuple_element_t<index, TUPLE>>();
+        -:  285:  }
+        -:  286:};
+        -:  287:
+        -:  288:
+        -:  289:/// Iterator for fields in a row.  Use as row::const_iterator.
+function _ZN4pqxx18const_row_iteratorD2Ev called 613756 returned 100% blocks executed 100%
+        -:  290:class PQXX_LIBEXPORT const_row_iterator : public field
+        -:  291:{
+        -:  292:public:
+        -:  293:  using iterator_category = std::random_access_iterator_tag;
+        -:  294:  using value_type = field const;
+        -:  295:  using pointer = field const *;
+        -:  296:  using size_type = row_size_type;
+        -:  297:  using difference_type = row_difference_type;
+        -:  298:  using reference = field;
+        -:  299:
+        -:  300:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  301:  const_row_iterator() noexcept = default;
+        -:  302:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  303:  const_row_iterator(row const &t, row_size_type c) noexcept :
+        -:  304:          field{t.m_result, t.m_index, c}
+        -:  305:  {}
+        -:  306:  const_row_iterator(field const &F) noexcept : field{F} {}
+        -:  307:  const_row_iterator(const_row_iterator const &) noexcept = default;
+        -:  308:  const_row_iterator(const_row_iterator &&) noexcept = default;
+        -:  309:
+        -:  310:  /**
+        -:  311:   * @name Dereferencing operators
+        -:  312:   */
+        -:  313:  //@{
+        -:  314:  [[nodiscard]] constexpr pointer operator->() const noexcept { return this; }
+function _ZNK4pqxx18const_row_iteratordeEv called 920634 returned 100% blocks executed 100%
+   920634:  315:  [[nodiscard]] reference operator*() const noexcept { return {*this}; }
+   920634:  315-block  0
+        -:  316:  //@}
+        -:  317:
+        -:  318:  /**
+        -:  319:   * @name Manipulations
+        -:  320:   */
+        -:  321:  //@{
+        -:  322:  const_row_iterator &operator=(const_row_iterator const &) noexcept = default;
+        -:  323:  const_row_iterator &operator=(const_row_iterator &&) noexcept = default;
+        -:  324:
+        -:  325:  const_row_iterator operator++(int) & noexcept;
+function _ZN4pqxx18const_row_iteratorppEv called 920634 returned 100% blocks executed 100%
+   920634:  326:  const_row_iterator &operator++() noexcept
+        -:  327:  {
+   920634:  328:    ++m_col;
+   920634:  329:    return *this;
+   920634:  329-block  0
+        -:  330:  }
+        -:  331:  const_row_iterator operator--(int) & noexcept;
+        -:  332:  const_row_iterator &operator--() noexcept
+        -:  333:  {
+        -:  334:    --m_col;
+        -:  335:    return *this;
+        -:  336:  }
+        -:  337:
+        -:  338:  const_row_iterator &operator+=(difference_type i) noexcept
+        -:  339:  {
+        -:  340:    m_col = size_type(difference_type(m_col) + i);
+        -:  341:    return *this;
+        -:  342:  }
+        -:  343:  const_row_iterator &operator-=(difference_type i) noexcept
+        -:  344:  {
+        -:  345:    m_col = size_type(difference_type(m_col) - i);
+        -:  346:    return *this;
+        -:  347:  }
+        -:  348:  //@}
+        -:  349:
+        -:  350:  /**
+        -:  351:   * @name Comparisons
+        -:  352:   */
+        -:  353:  //@{
+        -:  354:  [[nodiscard]] constexpr bool
+        -:  355:  operator==(const_row_iterator const &i) const noexcept
+        -:  356:  {
+        -:  357:    return col() == i.col();
+        -:  358:  }
+        -:  359:  [[nodiscard]] constexpr bool
+function _ZNK4pqxx18const_row_iteratorneERKS0_ called 1227512 returned 100% blocks executed 100%
+  1227512:  360:  operator!=(const_row_iterator const &i) const noexcept
+        -:  361:  {
+  1227512:  362:    return col() != i.col();
+  1227512:  362-block  0
+        -:  363:  }
+        -:  364:  [[nodiscard]] constexpr bool
+        -:  365:  operator<(const_row_iterator const &i) const noexcept
+        -:  366:  {
+        -:  367:    return col() < i.col();
+        -:  368:  }
+        -:  369:  [[nodiscard]] constexpr bool
+        -:  370:  operator<=(const_row_iterator const &i) const noexcept
+        -:  371:  {
+        -:  372:    return col() <= i.col();
+        -:  373:  }
+        -:  374:  [[nodiscard]] constexpr bool
+        -:  375:  operator>(const_row_iterator const &i) const noexcept
+        -:  376:  {
+        -:  377:    return col() > i.col();
+        -:  378:  }
+        -:  379:  [[nodiscard]] constexpr bool
+        -:  380:  operator>=(const_row_iterator const &i) const noexcept
+        -:  381:  {
+        -:  382:    return col() >= i.col();
+        -:  383:  }
+        -:  384:  //@}
+        -:  385:
+        -:  386:  /**
+        -:  387:   * @name Arithmetic operators
+        -:  388:   */
+        -:  389:  //@{
+        -:  390:  [[nodiscard]] inline const_row_iterator
+        -:  391:  operator+(difference_type) const noexcept;
+        -:  392:
+        -:  393:  friend const_row_iterator
+        -:  394:  operator+(difference_type, const_row_iterator const &) noexcept;
+        -:  395:
+        -:  396:  [[nodiscard]] inline const_row_iterator
+        -:  397:  operator-(difference_type) const noexcept;
+        -:  398:  [[nodiscard]] inline difference_type
+        -:  399:  operator-(const_row_iterator const &) const noexcept;
+        -:  400:
+        -:  401:  [[nodiscard]] inline field operator[](difference_type offset) const noexcept
+        -:  402:  {
+        -:  403:    return *(*this + offset);
+        -:  404:  }
+        -:  405:  //@}
+        -:  406:};
+        -:  407:
+        -:  408:
+        -:  409:/// Reverse iterator for a row.  Use as row::const_reverse_iterator.
+        -:  410:class PQXX_LIBEXPORT const_reverse_row_iterator : private const_row_iterator
+        -:  411:{
+        -:  412:public:
+        -:  413:  using super = const_row_iterator;
+        -:  414:  using iterator_type = const_row_iterator;
+        -:  415:  using iterator_type::difference_type;
+        -:  416:  using iterator_type::iterator_category;
+        -:  417:  using iterator_type::pointer;
+        -:  418:  using value_type = iterator_type::value_type;
+        -:  419:  using reference = iterator_type::reference;
+        -:  420:
+        -:  421:  const_reverse_row_iterator() noexcept = default;
+        -:  422:  const_reverse_row_iterator(const_reverse_row_iterator const &) noexcept =
+        -:  423:    default;
+        -:  424:  const_reverse_row_iterator(const_reverse_row_iterator &&) noexcept = default;
+        -:  425:
+        -:  426:  explicit const_reverse_row_iterator(super const &rhs) noexcept :
+        -:  427:          const_row_iterator{rhs}
+        -:  428:  {
+        -:  429:    super::operator--();
+        -:  430:  }
+        -:  431:
+        -:  432:  [[nodiscard]] PQXX_PURE iterator_type base() const noexcept;
+        -:  433:
+        -:  434:  /**
+        -:  435:   * @name Dereferencing operators
+        -:  436:   */
+        -:  437:  //@{
+        -:  438:  using iterator_type::operator->;
+        -:  439:  using iterator_type::operator*;
+        -:  440:  //@}
+        -:  441:
+        -:  442:  /**
+        -:  443:   * @name Manipulations
+        -:  444:   */
+        -:  445:  //@{
+        -:  446:  const_reverse_row_iterator &
+        -:  447:  operator=(const_reverse_row_iterator const &r) noexcept
+        -:  448:  {
+        -:  449:    iterator_type::operator=(r);
+        -:  450:    return *this;
+        -:  451:  }
+        -:  452:  const_reverse_row_iterator operator++() noexcept
+        -:  453:  {
+        -:  454:    iterator_type::operator--();
+        -:  455:    return *this;
+        -:  456:  }
+        -:  457:  const_reverse_row_iterator operator++(int) & noexcept;
+        -:  458:  const_reverse_row_iterator &operator--() noexcept
+        -:  459:  {
+        -:  460:    iterator_type::operator++();
+        -:  461:    return *this;
+        -:  462:  }
+        -:  463:  const_reverse_row_iterator operator--(int) &;
+        -:  464:  const_reverse_row_iterator &operator+=(difference_type i) noexcept
+        -:  465:  {
+        -:  466:    iterator_type::operator-=(i);
+        -:  467:    return *this;
+        -:  468:  }
+        -:  469:  const_reverse_row_iterator &operator-=(difference_type i) noexcept
+        -:  470:  {
+        -:  471:    iterator_type::operator+=(i);
+        -:  472:    return *this;
+        -:  473:  }
+        -:  474:  //@}
+        -:  475:
+        -:  476:  /**
+        -:  477:   * @name Arithmetic operators
+        -:  478:   */
+        -:  479:  //@{
+        -:  480:  [[nodiscard]] const_reverse_row_iterator
+        -:  481:  operator+(difference_type i) const noexcept
+        -:  482:  {
+        -:  483:    return const_reverse_row_iterator{base() - i};
+        -:  484:  }
+        -:  485:  [[nodiscard]] const_reverse_row_iterator
+        -:  486:  operator-(difference_type i) noexcept
+        -:  487:  {
+        -:  488:    return const_reverse_row_iterator{base() + i};
+        -:  489:  }
+        -:  490:  [[nodiscard]] difference_type
+        -:  491:  operator-(const_reverse_row_iterator const &rhs) const noexcept
+        -:  492:  {
+        -:  493:    return rhs.const_row_iterator::operator-(*this);
+        -:  494:  }
+        -:  495:  [[nodiscard]] inline field operator[](difference_type offset) const noexcept
+        -:  496:  {
+        -:  497:    return *(*this + offset);
+        -:  498:  }
+        -:  499:  //@}
+        -:  500:
+        -:  501:  /**
+        -:  502:   * @name Comparisons
+        -:  503:   */
+        -:  504:  //@{
+        -:  505:  [[nodiscard]] bool
+        -:  506:  operator==(const_reverse_row_iterator const &rhs) const noexcept
+        -:  507:  {
+        -:  508:    return iterator_type::operator==(rhs);
+        -:  509:  }
+        -:  510:  [[nodiscard]] bool
+        -:  511:  operator!=(const_reverse_row_iterator const &rhs) const noexcept
+        -:  512:  {
+        -:  513:    return !operator==(rhs);
+        -:  514:  }
+        -:  515:
+        -:  516:  [[nodiscard]] constexpr bool
+        -:  517:  operator<(const_reverse_row_iterator const &rhs) const noexcept
+        -:  518:  {
+        -:  519:    return iterator_type::operator>(rhs);
+        -:  520:  }
+        -:  521:  [[nodiscard]] constexpr bool
+        -:  522:  operator<=(const_reverse_row_iterator const &rhs) const noexcept
+        -:  523:  {
+        -:  524:    return iterator_type::operator>=(rhs);
+        -:  525:  }
+        -:  526:  [[nodiscard]] constexpr bool
+        -:  527:  operator>(const_reverse_row_iterator const &rhs) const noexcept
+        -:  528:  {
+        -:  529:    return iterator_type::operator<(rhs);
+        -:  530:  }
+        -:  531:  [[nodiscard]] constexpr bool
+        -:  532:  operator>=(const_reverse_row_iterator const &rhs) const noexcept
+        -:  533:  {
+        -:  534:    return iterator_type::operator<=(rhs);
+        -:  535:  }
+        -:  536:  //@}
+        -:  537:};
+        -:  538:
+        -:  539:
+        -:  540:const_row_iterator
+        -:  541:const_row_iterator::operator+(difference_type o) const noexcept
+        -:  542:{
+        -:  543:  // TODO:: More direct route to home().columns()?
+        -:  544:  return {
+        -:  545:    row{home(), idx(), home().columns()},
+        -:  546:    size_type(difference_type(col()) + o)};
+        -:  547:}
+        -:  548:
+        -:  549:inline const_row_iterator operator+(
+        -:  550:  const_row_iterator::difference_type o, const_row_iterator const &i) noexcept
+        -:  551:{
+        -:  552:  return i + o;
+        -:  553:}
+        -:  554:
+        -:  555:inline const_row_iterator
+        -:  556:const_row_iterator::operator-(difference_type o) const noexcept
+        -:  557:{
+        -:  558:  // TODO:: More direct route to home().columns()?
+        -:  559:  return {
+        -:  560:    row{home(), idx(), home().columns()},
+        -:  561:    size_type(difference_type(col()) - o)};
+        -:  562:}
+        -:  563:
+        -:  564:inline const_row_iterator::difference_type
+        -:  565:const_row_iterator::operator-(const_row_iterator const &i) const noexcept
+        -:  566:{
+        -:  567:  return difference_type(num() - i.num());
+        -:  568:}
+        -:  569:
+        -:  570:
+        -:  571:template<typename Tuple, std::size_t index>
+        -:  572:inline void row::extract_value(Tuple &t) const
+        -:  573:{
+        -:  574:  using field_type = strip_t<decltype(std::get<index>(t))>;
+        -:  575:  field const f{m_result, m_index, index};
+        -:  576:  std::get<index>(t) = from_string<field_type>(f);
+        -:  577:}
+        -:  578:} // namespace pqxx
+        -:  579:#endif

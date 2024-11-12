@@ -370,7 +370,7 @@ namespace drug_lib::common::database
 
         if (const std::optional<std::string> patterns_clause = process_patterns_clause(conditions.pattern_conditions()),
                                              fields_clause = process_fields_clause(conditions.fields_conditions());
-            patterns_clause.has_value() && fields_clause.has_value())
+            fields_clause.has_value() && patterns_clause.has_value())
         {
             query_stream << " WHERE ";
             query_stream << fields_clause.value() << " " << patterns_clause.value() << " ";

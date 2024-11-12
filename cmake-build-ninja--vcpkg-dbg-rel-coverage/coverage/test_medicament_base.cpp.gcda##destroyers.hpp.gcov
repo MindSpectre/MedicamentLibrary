@@ -1,0 +1,534 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/boost/container/detail/destroyers.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Medicament_Base.dir/medicament/test_medicament_base.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Medicament_Base.dir/medicament/test_medicament_base.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1://////////////////////////////////////////////////////////////////////////////
+        -:    2://
+        -:    3:// (C) Copyright Ion Gaztanaga 2005-2013.
+        -:    4://
+        -:    5:// Distributed under the Boost Software License, Version 1.0.
+        -:    6:// (See accompanying file LICENSE_1_0.txt or copy at
+        -:    7:// http://www.boost.org/LICENSE_1_0.txt)
+        -:    8://
+        -:    9:// See http://www.boost.org/libs/container for documentation.
+        -:   10://
+        -:   11://////////////////////////////////////////////////////////////////////////////
+        -:   12:
+        -:   13:#ifndef BOOST_CONTAINER_DESTROYERS_HPP
+        -:   14:#define BOOST_CONTAINER_DESTROYERS_HPP
+        -:   15:
+        -:   16:#ifndef BOOST_CONFIG_HPP
+        -:   17:#  include <boost/config.hpp>
+        -:   18:#endif
+        -:   19:
+        -:   20:#if defined(BOOST_HAS_PRAGMA_ONCE)
+        -:   21:#  pragma once
+        -:   22:#endif
+        -:   23:
+        -:   24:#include <boost/container/detail/config_begin.hpp>
+        -:   25:#include <boost/container/detail/workaround.hpp>
+        -:   26:
+        -:   27:#include <boost/container/allocator_traits.hpp>
+        -:   28:#include <boost/move/detail/to_raw_pointer.hpp>
+        -:   29:#include <boost/container/detail/version_type.hpp>
+        -:   30:#include <boost/move/detail/iterator_to_raw_pointer.hpp>
+        -:   31:
+        -:   32:namespace boost {
+        -:   33:namespace container {
+        -:   34:namespace dtl {
+        -:   35:
+        -:   36://!A deleter for scoped_ptr that deallocates the memory
+        -:   37://!allocated for an object using a STL allocator.
+        -:   38:template <class Allocator>
+        -:   39:struct scoped_deallocator
+        -:   40:{
+        -:   41:   typedef allocator_traits<Allocator> allocator_traits_type;
+        -:   42:   typedef typename allocator_traits_type::pointer pointer;
+        -:   43:   typedef dtl::integral_constant<unsigned,
+        -:   44:      boost::container::dtl::
+        -:   45:         version<Allocator>::value>                   alloc_version;
+        -:   46:
+        -:   47:   private:
+        -:   48:   void priv_deallocate(version_1)
+        -:   49:   {  m_alloc.deallocate(m_ptr, 1); }
+        -:   50:
+        -:   51:   void priv_deallocate(version_2)
+        -:   52:   {  m_alloc.deallocate_one(m_ptr); }
+        -:   53:
+        -:   54:   BOOST_MOVABLE_BUT_NOT_COPYABLE(scoped_deallocator)
+        -:   55:
+        -:   56:   public:
+        -:   57:
+        -:   58:   pointer     m_ptr;
+        -:   59:   Allocator&  m_alloc;
+        -:   60:
+        -:   61:   scoped_deallocator(pointer p, Allocator& a)
+        -:   62:      : m_ptr(p), m_alloc(a)
+        -:   63:   {}
+        -:   64:
+        -:   65:   ~scoped_deallocator()
+        -:   66:   {  if (m_ptr)priv_deallocate(alloc_version());  }
+        -:   67:
+        -:   68:   scoped_deallocator(BOOST_RV_REF(scoped_deallocator) o)
+        -:   69:      :  m_ptr(o.m_ptr), m_alloc(o.m_alloc)
+        -:   70:   {  o.release();  }
+        -:   71:
+        -:   72:   pointer get() const
+        -:   73:   {  return m_ptr;  }
+        -:   74:
+        -:   75:   void set(const pointer &p)
+        -:   76:   {  m_ptr = p;  }
+        -:   77:
+        -:   78:   void release()
+        -:   79:   {  m_ptr = 0; }
+        -:   80:};
+        -:   81:
+        -:   82:template <class Allocator>
+        -:   83:struct null_scoped_deallocator
+        -:   84:{
+        -:   85:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:   86:   typedef typename AllocTraits::pointer    pointer;
+        -:   87:
+        -:   88:   null_scoped_deallocator(pointer, Allocator&, std::size_t)
+        -:   89:   {}
+        -:   90:
+        -:   91:   void release()
+        -:   92:   {}
+        -:   93:
+        -:   94:   pointer get() const
+        -:   95:   {  return pointer();  }
+        -:   96:
+        -:   97:   void set(const pointer &)
+        -:   98:   {}
+        -:   99:};
+        -:  100:
+        -:  101://!A deleter for scoped_ptr that deallocates the memory
+        -:  102://!allocated for an array of objects using a STL allocator.
+        -:  103:template <class Allocator>
+        -:  104:struct scoped_array_deallocator
+        -:  105:{
+        -:  106:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  107:   typedef typename AllocTraits::pointer    pointer;
+        -:  108:   typedef typename AllocTraits::size_type  size_type;
+        -:  109:
+function _ZN5boost9container3dtl24scoped_array_deallocatorINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEEC2EPSG_RSH_m called 0 returned 0% blocks executed 0%
+    #####:  110:   scoped_array_deallocator(pointer p, Allocator& a, std::size_t length)
+    #####:  111:      : m_ptr(p), m_alloc(a), m_length(length) {}
+    $$$$$:  111-block  0
+        -:  112:
+function _ZN5boost9container3dtl24scoped_array_deallocatorINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEED2Ev called 0 returned 0% blocks executed 0%
+    #####:  113:   ~scoped_array_deallocator()
+    #####:  114:   {  if (m_ptr) m_alloc.deallocate(m_ptr, size_type(m_length));  }
+    $$$$$:  114-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  114-block  1
+    $$$$$:  114-block  2
+        -:  115:
+function _ZN5boost9container3dtl24scoped_array_deallocatorINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEE7releaseEv called 0 returned 0% blocks executed 0%
+    #####:  116:   void release()
+    #####:  117:   {  m_ptr = 0; }
+    $$$$$:  117-block  0
+        -:  118:
+        -:  119:   private:
+        -:  120:   pointer     m_ptr;
+        -:  121:   Allocator&  m_alloc;
+        -:  122:   std::size_t m_length;
+        -:  123:};
+        -:  124:
+        -:  125:template <class Allocator>
+        -:  126:struct null_scoped_array_deallocator
+        -:  127:{
+        -:  128:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  129:   typedef typename AllocTraits::pointer    pointer;
+        -:  130:
+        -:  131:   null_scoped_array_deallocator(pointer, Allocator&, std::size_t)
+        -:  132:   {}
+        -:  133:
+        -:  134:   void release()
+        -:  135:   {}
+        -:  136:};
+        -:  137:
+        -:  138:template <class Allocator>
+        -:  139:struct scoped_node_destroy_deallocator
+        -:  140:{
+        -:  141:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  142:   typedef typename AllocTraits::pointer    pointer;
+        -:  143:   typedef dtl::integral_constant<unsigned,
+        -:  144:      boost::container::dtl::
+        -:  145:         version<Allocator>::value>                          alloc_version;
+        -:  146:
+        -:  147:   scoped_node_destroy_deallocator(pointer p, Allocator& a)
+        -:  148:      : m_ptr(p), m_alloc(a) {}
+        -:  149:
+        -:  150:   ~scoped_node_destroy_deallocator()
+        -:  151:   {
+        -:  152:      if(m_ptr){
+        -:  153:         boost::movelib::to_raw_pointer(m_ptr)->destructor(m_alloc);
+        -:  154:         priv_deallocate(m_ptr, alloc_version());
+        -:  155:      }
+        -:  156:   }
+        -:  157:
+        -:  158:   void release()
+        -:  159:   {  m_ptr = 0; }
+        -:  160:
+        -:  161:   private:
+        -:  162:
+        -:  163:   void priv_deallocate(const pointer &p, version_1)
+        -:  164:   {  AllocTraits::deallocate(m_alloc, p, 1); }
+        -:  165:
+        -:  166:   void priv_deallocate(const pointer &p, version_2)
+        -:  167:   {  m_alloc.deallocate_one(p); }
+        -:  168:
+        -:  169:   pointer     m_ptr;
+        -:  170:   Allocator&  m_alloc;
+        -:  171:};
+        -:  172:
+        -:  173:
+        -:  174://!A deleter for scoped_ptr that destroys
+        -:  175://!an object using a STL allocator.
+        -:  176:template <class Allocator, class Ptr = typename allocator_traits<Allocator>::pointer>
+        -:  177:struct scoped_destructor_n
+        -:  178:{
+        -:  179:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  180:   typedef Ptr    pointer;
+        -:  181:   typedef typename AllocTraits::value_type value_type;
+        -:  182:
+        -:  183:   inline scoped_destructor_n(Ptr p, Allocator& a, std::size_t n)
+        -:  184:      : m_p(p), m_n(n), m_a(a)
+        -:  185:   {}
+        -:  186:
+        -:  187:   inline void release()
+        -:  188:   {  m_p = Ptr(); m_n = 0; }
+        -:  189:
+        -:  190:   inline void increment_size(std::size_t inc)
+        -:  191:   {  m_n += inc;   }
+        -:  192:
+        -:  193:   inline void increment_size_backwards(std::size_t inc)
+        -:  194:   {  m_n += inc;   m_p -= std::ptrdiff_t(inc);  }
+        -:  195:
+        -:  196:   inline void shrink_forward(std::size_t inc)
+        -:  197:   {  m_n -= inc;   m_p += std::ptrdiff_t(inc);  }
+        -:  198:
+        -:  199:   inline void set_size(std::size_t sz)
+        -:  200:   {  m_n = sz;   }
+        -:  201:
+        -:  202:   ~scoped_destructor_n()
+        -:  203:   {
+        -:  204:      if(m_n){
+        -:  205:         value_type *raw_ptr = boost::movelib::iterator_to_raw_pointer(m_p);
+        -:  206:         do {
+        -:  207:            --m_n;
+        -:  208:            AllocTraits::destroy(m_a, raw_ptr);
+        -:  209:            ++raw_ptr;
+        -:  210:         } while(m_n);
+        -:  211:      }
+        -:  212:   }
+        -:  213:
+        -:  214:   private:
+        -:  215:   pointer     m_p;
+        -:  216:   std::size_t m_n;
+        -:  217:   Allocator& m_a;
+        -:  218:};
+        -:  219:
+        -:  220://!A deleter for scoped_ptr that destroys
+        -:  221://!an object using a STL allocator.
+        -:  222:template <class Allocator, class Ptr = typename allocator_traits<Allocator>::pointer>
+        -:  223:struct null_scoped_destructor_n
+        -:  224:{
+        -:  225:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  226:   typedef Ptr pointer;
+        -:  227:
+        -:  228:   inline null_scoped_destructor_n(Ptr, Allocator&, std::size_t)
+        -:  229:   {}
+        -:  230:
+        -:  231:   inline void increment_size(std::size_t)
+        -:  232:   {}
+        -:  233:
+        -:  234:   inline void increment_size_backwards(std::size_t)
+        -:  235:   {}
+        -:  236:
+        -:  237:   inline void set_size(std::size_t )
+        -:  238:   {}
+        -:  239:
+        -:  240:   inline void shrink_forward(std::size_t)
+        -:  241:   {}
+        -:  242:
+        -:  243:   inline void release()
+        -:  244:   {}
+        -:  245:};
+        -:  246:
+        -:  247:
+        -:  248://!A deleter for scoped_ptr that destroys
+        -:  249://!an object using a STL allocator.
+        -:  250:template <class Allocator>
+        -:  251:struct scoped_destructor_range
+        -:  252:{
+        -:  253:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  254:   typedef typename AllocTraits::pointer    pointer;
+        -:  255:   typedef typename AllocTraits::value_type value_type;
+        -:  256:   
+function _ZN5boost9container3dtl23scoped_destructor_rangeINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEEC2EPSG_SJ_RSH_ called 0 returned 0% blocks executed 0%
+    #####:  257:   inline scoped_destructor_range(pointer p, pointer e, Allocator& a)
+    #####:  258:      : m_p(p), m_e(e), m_a(a)
+    #####:  259:   {}
+    $$$$$:  259-block  0
+        -:  260:
+function _ZN5boost9container3dtl23scoped_destructor_rangeINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEE7releaseEv called 0 returned 0% blocks executed 0%
+    #####:  261:   inline void release()
+    #####:  262:   {  m_p = pointer(); m_e = pointer(); }
+    $$$$$:  262-block  0
+        -:  263:
+function _ZN5boost9container3dtl23scoped_destructor_rangeINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEE7set_endEPSG_ called 0 returned 0% blocks executed 0%
+    #####:  264:   inline void set_end(pointer e)
+    #####:  265:   {  m_e = e;   }
+    $$$$$:  265-block  0
+        -:  266:
+        -:  267:   inline void set_begin(pointer b)
+        -:  268:   {  m_p = b;  }
+        -:  269:
+        -:  270:   inline void set_range(pointer b, pointer e)
+        -:  271:   {  m_p = b; m_e = e;   }
+        -:  272:
+function _ZN5boost9container3dtl23scoped_destructor_rangeINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEEED2Ev called 0 returned 0% blocks executed 0%
+    #####:  273:   ~scoped_destructor_range()
+        -:  274:   {
+    #####:  275:      while(m_p != m_e){
+    $$$$$:  275-block  0
+    $$$$$:  275-block  1
+branch  0 never executed
+branch  1 never executed
+    $$$$$:  275-block  2
+    #####:  276:         value_type *raw_ptr = boost::movelib::to_raw_pointer(m_p);
+    #####:  277:         AllocTraits::destroy(m_a, raw_ptr);
+    #####:  278:         ++m_p;
+        -:  279:      }
+    #####:  280:   }
+    $$$$$:  280-block  0
+        -:  281:
+        -:  282:   private:
+        -:  283:   pointer     m_p;
+        -:  284:   pointer     m_e;
+        -:  285:   Allocator & m_a;
+        -:  286:};
+        -:  287:
+        -:  288://!A deleter for scoped_ptr that destroys
+        -:  289://!an object using a STL allocator.
+        -:  290:template <class Allocator>
+        -:  291:struct null_scoped_destructor_range
+        -:  292:{
+        -:  293:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  294:   typedef typename AllocTraits::pointer pointer;
+        -:  295:
+        -:  296:   inline null_scoped_destructor_range(pointer, pointer, Allocator&)
+        -:  297:   {}
+        -:  298:
+        -:  299:   inline void release()
+        -:  300:   {}
+        -:  301:
+        -:  302:   inline void set_end(pointer)
+        -:  303:   {}
+        -:  304:
+        -:  305:   inline void set_begin(pointer)
+        -:  306:   {}
+        -:  307:
+        -:  308:   inline void set_range(pointer, pointer)
+        -:  309:   {}
+        -:  310:};
+        -:  311:
+        -:  312:
+        -:  313:template<class Allocator>
+        -:  314:class scoped_destructor
+        -:  315:{
+        -:  316:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  317:   public:
+        -:  318:   typedef typename Allocator::value_type value_type;
+        -:  319:   inline scoped_destructor(Allocator &a, value_type *pv)
+        -:  320:      : pv_(pv), a_(a)
+        -:  321:   {}
+        -:  322:
+        -:  323:   inline ~scoped_destructor()
+        -:  324:   {
+        -:  325:      if(pv_){
+        -:  326:         AllocTraits::destroy(a_, pv_);
+        -:  327:      }
+        -:  328:   }
+        -:  329:
+        -:  330:   inline void release()
+        -:  331:   {  pv_ = 0; }
+        -:  332:
+        -:  333:
+        -:  334:   inline void set(value_type *ptr) { pv_ = ptr; }
+        -:  335:
+        -:  336:   inline value_type *get() const { return pv_; }
+        -:  337:
+        -:  338:   private:
+        -:  339:   value_type *pv_;
+        -:  340:   Allocator &a_;
+        -:  341:};
+        -:  342:
+        -:  343:template<class Allocator>
+        -:  344:class null_scoped_destructor
+        -:  345:{
+        -:  346:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  347:   public:
+        -:  348:   typedef typename Allocator::value_type value_type;
+        -:  349:   inline null_scoped_destructor(Allocator &, value_type *)
+        -:  350:   {}
+        -:  351:
+        -:  352:   inline ~null_scoped_destructor()
+        -:  353:   {}
+        -:  354:
+        -:  355:   inline void release()
+        -:  356:   {}
+        -:  357:
+        -:  358:   inline void set(value_type *) { }
+        -:  359:
+        -:  360:   inline value_type *get() const { return 0; }
+        -:  361:};
+        -:  362:
+        -:  363:
+        -:  364:
+        -:  365:template<class Allocator, class Value = typename Allocator::value_type>
+        -:  366:class value_destructor
+        -:  367:{
+        -:  368:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  369:   public:
+        -:  370:   typedef Value value_type;
+function _ZN5boost9container3dtl16value_destructorINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEESG_EC2ERSH_RSG_ called 0 returned 0% blocks executed 0%
+    #####:  371:   inline value_destructor(Allocator &a, value_type &rv)
+    #####:  372:      : rv_(rv), a_(a)
+    #####:  373:   {}
+    $$$$$:  373-block  0
+        -:  374:
+function _ZN5boost9container3dtl16value_destructorINS0_13new_allocatorINS1_4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt10shared_ptrIN8drug_lib4data12DataPropertyEEEEEESG_ED2Ev called 0 returned 0% blocks executed 0%
+    #####:  375:   inline ~value_destructor()
+        -:  376:   {
+    #####:  377:      AllocTraits::destroy(a_, &rv_);
+    #####:  378:   }
+    $$$$$:  378-block  0
+        -:  379:
+        -:  380:   private:
+        -:  381:   value_type &rv_;
+        -:  382:   Allocator &a_;
+        -:  383:};
+        -:  384:
+        -:  385:template <class Allocator>
+        -:  386:class allocator_node_destroyer
+        -:  387:{
+        -:  388:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  389:   typedef typename AllocTraits::value_type value_type;
+        -:  390:   typedef typename AllocTraits::pointer    pointer;
+        -:  391:   typedef dtl::integral_constant<unsigned,
+        -:  392:      boost::container::dtl::
+        -:  393:         version<Allocator>::value>                           alloc_version;
+        -:  394:
+        -:  395:   private:
+        -:  396:   Allocator & a_;
+        -:  397:
+        -:  398:   private:
+        -:  399:   inline void priv_deallocate(const pointer &p, version_1)
+        -:  400:   {  AllocTraits::deallocate(a_,p, 1); }
+        -:  401:
+        -:  402:   inline void priv_deallocate(const pointer &p, version_2)
+        -:  403:   {  a_.deallocate_one(p); }
+        -:  404:
+        -:  405:   public:
+        -:  406:   inline explicit allocator_node_destroyer(Allocator &a)
+        -:  407:      : a_(a)
+        -:  408:   {}
+        -:  409:
+        -:  410:   inline void operator()(const pointer &p)
+        -:  411:   {
+        -:  412:      boost::movelib::to_raw_pointer(p)->destructor(a_);
+        -:  413:      this->priv_deallocate(p, alloc_version());
+        -:  414:   }
+        -:  415:};
+        -:  416:
+        -:  417:template<class Allocator>
+        -:  418:class scoped_node_destructor
+        -:  419:{
+        -:  420:   typedef boost::container::allocator_traits<Allocator> AllocTraits;
+        -:  421:   public:
+        -:  422:   typedef typename Allocator::value_type value_type;
+        -:  423:   inline scoped_node_destructor(Allocator &a, value_type *pv)
+        -:  424:      : pv_(pv), a_(a)
+        -:  425:   {}
+        -:  426:
+        -:  427:   inline ~scoped_node_destructor()
+        -:  428:   {
+        -:  429:      if(pv_){
+        -:  430:         pv_->destructor(a_);
+        -:  431:      }
+        -:  432:   }
+        -:  433:
+        -:  434:   inline void release()
+        -:  435:   {  pv_ = 0; }
+        -:  436:
+        -:  437:
+        -:  438:   inline void set(value_type *ptr) { pv_ = ptr; }
+        -:  439:
+        -:  440:   inline value_type *get() const { return pv_; }
+        -:  441:
+        -:  442:   private:
+        -:  443:   value_type *pv_;
+        -:  444:   Allocator &a_;
+        -:  445:};
+        -:  446:
+        -:  447:
+        -:  448:
+        -:  449:template <class Allocator>
+        -:  450:class allocator_node_destroyer_and_chain_builder
+        -:  451:{
+        -:  452:   typedef allocator_traits<Allocator> allocator_traits_type;
+        -:  453:   typedef typename allocator_traits_type::value_type value_type;
+        -:  454:   typedef typename Allocator::multiallocation_chain    multiallocation_chain;
+        -:  455:
+        -:  456:   Allocator & a_;
+        -:  457:   multiallocation_chain &c_;
+        -:  458:
+        -:  459:   public:
+        -:  460:   inline allocator_node_destroyer_and_chain_builder(Allocator &a, multiallocation_chain &c)
+        -:  461:      :  a_(a), c_(c)
+        -:  462:   {}
+        -:  463:
+        -:  464:   inline void operator()(const typename Allocator::pointer &p)
+        -:  465:   {
+        -:  466:      boost::movelib::to_raw_pointer(p)->destructor(a_);
+        -:  467:      c_.push_back(p);
+        -:  468:   }
+        -:  469:};
+        -:  470:
+        -:  471:template <class Allocator>
+        -:  472:class allocator_multialloc_chain_node_deallocator
+        -:  473:{
+        -:  474:   typedef allocator_traits<Allocator> allocator_traits_type;
+        -:  475:   typedef typename allocator_traits_type::value_type value_type;
+        -:  476:   typedef typename Allocator::multiallocation_chain    multiallocation_chain;
+        -:  477:   typedef allocator_node_destroyer_and_chain_builder<Allocator> chain_builder;
+        -:  478:
+        -:  479:   Allocator & a_;
+        -:  480:   multiallocation_chain c_;
+        -:  481:
+        -:  482:   public:
+        -:  483:   inline allocator_multialloc_chain_node_deallocator(Allocator &a)
+        -:  484:      :  a_(a), c_()
+        -:  485:   {}
+        -:  486:
+        -:  487:   inline chain_builder get_chain_builder()
+        -:  488:   {  return chain_builder(a_, c_);  }
+        -:  489:
+        -:  490:   inline ~allocator_multialloc_chain_node_deallocator()
+        -:  491:   {
+        -:  492:      a_.deallocate_individual(c_);
+        -:  493:   }
+        -:  494:};
+        -:  495:
+        -:  496:}  //namespace dtl {
+        -:  497:}  //namespace container {
+        -:  498:}  //namespace boost {
+        -:  499:
+        -:  500:#include <boost/container/detail/config_end.hpp>
+        -:  501:
+        -:  502:#endif   //#ifndef BOOST_CONTAINER_DESTROYERS_HPP

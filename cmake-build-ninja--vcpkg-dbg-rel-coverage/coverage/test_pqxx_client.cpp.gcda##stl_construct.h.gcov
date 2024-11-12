@@ -1,0 +1,568 @@
+        -:    0:Source:/usr/include/c++/12/bits/stl_construct.h
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:// nonstandard construct and destroy functions -*- C++ -*-
+        -:    2:
+        -:    3:// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+        -:    4://
+        -:    5:// This file is part of the GNU ISO C++ Library.  This library is free
+        -:    6:// software; you can redistribute it and/or modify it under the
+        -:    7:// terms of the GNU General Public License as published by the
+        -:    8:// Free Software Foundation; either version 3, or (at your option)
+        -:    9:// any later version.
+        -:   10:
+        -:   11:// This library is distributed in the hope that it will be useful,
+        -:   12:// but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13:// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        -:   14:// GNU General Public License for more details.
+        -:   15:
+        -:   16:// Under Section 7 of GPL version 3, you are granted additional
+        -:   17:// permissions described in the GCC Runtime Library Exception, version
+        -:   18:// 3.1, as published by the Free Software Foundation.
+        -:   19:
+        -:   20:// You should have received a copy of the GNU General Public License and
+        -:   21:// a copy of the GCC Runtime Library Exception along with this program;
+        -:   22:// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+        -:   23:// <http://www.gnu.org/licenses/>.
+        -:   24:
+        -:   25:/*
+        -:   26: *
+        -:   27: * Copyright (c) 1994
+        -:   28: * Hewlett-Packard Company
+        -:   29: *
+        -:   30: * Permission to use, copy, modify, distribute and sell this software
+        -:   31: * and its documentation for any purpose is hereby granted without fee,
+        -:   32: * provided that the above copyright notice appear in all copies and
+        -:   33: * that both that copyright notice and this permission notice appear
+        -:   34: * in supporting documentation.  Hewlett-Packard Company makes no
+        -:   35: * representations about the suitability of this software for any
+        -:   36: * purpose.  It is provided "as is" without express or implied warranty.
+        -:   37: *
+        -:   38: *
+        -:   39: * Copyright (c) 1996,1997
+        -:   40: * Silicon Graphics Computer Systems, Inc.
+        -:   41: *
+        -:   42: * Permission to use, copy, modify, distribute and sell this software
+        -:   43: * and its documentation for any purpose is hereby granted without fee,
+        -:   44: * provided that the above copyright notice appear in all copies and
+        -:   45: * that both that copyright notice and this permission notice appear
+        -:   46: * in supporting documentation.  Silicon Graphics makes no
+        -:   47: * representations about the suitability of this software for any
+        -:   48: * purpose.  It is provided "as is" without express or implied warranty.
+        -:   49: */
+        -:   50:
+        -:   51:/** @file bits/stl_construct.h
+        -:   52: *  This is an internal header file, included by other library headers.
+        -:   53: *  Do not attempt to use it directly. @headername{memory}
+        -:   54: */
+        -:   55:
+        -:   56:#ifndef _STL_CONSTRUCT_H
+        -:   57:#define _STL_CONSTRUCT_H 1
+        -:   58:
+        -:   59:#include <new>
+        -:   60:#include <bits/move.h>
+        -:   61:#include <bits/stl_iterator_base_types.h> // for iterator_traits
+        -:   62:#include <bits/stl_iterator_base_funcs.h> // for advance
+        -:   63:
+        -:   64:/* This file provides the C++17 functions std::destroy_at, std::destroy, and
+        -:   65: * std::destroy_n, and the C++20 function std::construct_at.
+        -:   66: * It also provides std::_Construct, std::_Destroy,and std::_Destroy_n functions
+        -:   67: * which are defined in all standard modes and so can be used in C++98-14 code.
+        -:   68: * The _Destroy functions will dispatch to destroy_at during constant
+        -:   69: * evaluation, because calls to that function are intercepted by the compiler
+        -:   70: * to allow use in constant expressions.
+        -:   71: */
+        -:   72:
+        -:   73:namespace std _GLIBCXX_VISIBILITY(default)
+        -:   74:{
+        -:   75:_GLIBCXX_BEGIN_NAMESPACE_VERSION
+        -:   76:
+        -:   77:#if __cplusplus >= 201703L
+        -:   78:  template <typename _Tp>
+        -:   79:    _GLIBCXX20_CONSTEXPR inline void
+function _ZSt10destroy_atISt10unique_ptrIN8drug_lib6common8database9FieldBaseESt14default_deleteIS4_EEEvPT_ called 7009304 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database6RecordEEvPT_ called 1325450 returned 100% blocks executed 100%
+function _ZSt10destroy_atISt10shared_ptrIN8drug_lib6common8database9FieldBaseEEEvPT_ called 161 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database14FieldConditionEEvPT_ called 9 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database14OrderConditionEEvPT_ called 1 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database16PatternConditionEEvPT_ called 6 returned 100% blocks executed 100%
+function _ZSt10destroy_atIiEvPT_ called 4 returned 100% blocks executed 100%
+function _ZSt10destroy_atISt10unique_ptrIN8drug_lib6common8database10ViewRecordESt14default_deleteIS4_EEEvPT_ called 39301708 returned 100% blocks executed 100%
+function _ZSt10destroy_atISt6threadEvPT_ called 10 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database10PqxxClientEEvPT_ called 20 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database5FieldIiEEEvPT_ called 20 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEEvPT_ called 42 returned 100% blocks executed 100%
+function _ZSt10destroy_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEEvPT_ called 25 returned 100% blocks executed 100%
+ 47636760:   80:    destroy_at(_Tp* __location)
+        -:   81:    {
+        -:   82:      if constexpr (__cplusplus > 201703L && is_array_v<_Tp>)
+        -:   83:	{
+        -:   84:	  for (auto& __x : *__location)
+        -:   85:	    std::destroy_at(std::__addressof(__x));
+        -:   86:	}
+        -:   87:      else
+ 47636760:   88:	__location->~_Tp();
+ 47636760:   89:    }
+  7009304:   89-block  0
+  1325450:   89-block  1
+      161:   89-block  2
+        9:   89-block  3
+        1:   89-block  4
+        6:   89-block  5
+        4:   89-block  6
+ 39301708:   89-block  7
+       10:   89-block  8
+       20:   89-block  9
+       20:   89-block 10
+       42:   89-block 11
+       25:   89-block 12
+        -:   90:
+        -:   91:#if __cplusplus >= 202002L
+        -:   92:  template<typename _Tp, typename... _Args>
+        -:   93:    constexpr auto
+function _ZSt12construct_atISt10unique_ptrIN8drug_lib6common8database9FieldBaseESt14default_deleteIS4_EEJS7_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS9_DpOSA_ called 6971055 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common8database6RecordEJS3_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS5_DpOS6_ called 1159752 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common8database14FieldConditionEJS3_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS5_DpOS6_ called 9 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common8database16PatternConditionEJS3_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS5_DpOS6_ called 6 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common8database14OrderConditionEJS3_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS5_DpOS6_ called 1 returned 100% blocks executed 100%
+function _ZSt12construct_atISt6threadJS0_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS2_DpOS3_ called 0 returned 0% blocks executed 0%
+function _ZSt12construct_atISt6threadJRZN46PqxxClientTest_InsertMultithreadSpeedTest_Test8TestBodyEvE3$_0RiEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS6_DpOS7_ called 4 returned 100% blocks executed 100%
+function _ZSt12construct_atISt10shared_ptrIN8drug_lib6common8database9FieldBaseEEJS0_INS3_5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSG_DpOSH_ called 42 returned 100% blocks executed 100%
+function _ZSt12construct_atISt10shared_ptrIN8drug_lib6common8database9FieldBaseEEJS5_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS7_DpOS8_ called 21 returned 100% blocks executed 100%
+function _ZSt12construct_atISt6threadJRZN8drug_lib6common8database9utilities14bulk_insertionERKSt10shared_ptrINS3_10PqxxClientEESt17basic_string_viewIcSt11char_traitsIcEEOSt6vectorINS3_6RecordESaISF_EEjaEUliE_RiEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSN_DpOSO_ called 6 returned 100% blocks executed 100%
+function _ZSt12construct_atISt19_Sp_counted_deleterIPN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEESt14default_deleteISB_ESaIvELN9__gnu_cxx12_Lock_policyE2EEJSC_SE_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 2 returned 100% blocks executed 100%
+function _ZSt12construct_atIiJRKiEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPS3_DpOS4_ called 4 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJS9_EEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSB_DpOSC_ called 0 returned 0% blocks executed 0%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA1_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 8 returned 100% blocks executed 42%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA30_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 2 returned 100% blocks executed 42%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA28_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 1 returned 100% blocks executed 42%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA7_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 5 returned 100% blocks executed 42%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSN_DpOSO_ called 6 returned 100% blocks executed 100%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA17_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 2 returned 100% blocks executed 42%
+function _ZSt12construct_atIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEJRA31_KcNS3_10time_pointINS3_3_V212system_clockENS4_IlS5_ILl1ELl1000000000EEEEEEEEDTgsnwcvPvLi0E_T_pispclsr3stdE7declvalIT0_EEEEPSK_DpOSL_ called 1 returned 100% blocks executed 42%
+  8130927:   94:    construct_at(_Tp* __location, _Args&&... __args)
+        -:   95:    noexcept(noexcept(::new((void*)0) _Tp(std::declval<_Args>()...)))
+        -:   96:    -> decltype(::new((void*)0) _Tp(std::declval<_Args>()...))
+  8130927:   97:    { return ::new((void*)__location) _Tp(std::forward<_Args>(__args)...); }
+  6971055:   97-block  0
+  1159752:   97-block  1
+        9:   97-block  2
+        6:   97-block  3
+        1:   97-block  4
+    $$$$$:   97-block  5
+        4:   97-block  6
+       42:   97-block  7
+       21:   97-block  8
+        6:   97-block  9
+        2:   97-block 10
+        4:   97-block 11
+    $$$$$:   97-block 12
+        8:   97-block 13
+branch  0 taken 8
+branch  1 taken 0
+        8:   97-block 14
+branch  2 taken 8
+branch  3 taken 0
+        8:   97-block 15
+    $$$$$:   97-block 16
+    $$$$$:   97-block 17
+    $$$$$:   97-block 18
+    $$$$$:   97-block 19
+        2:   97-block 20
+branch  4 taken 2
+branch  5 taken 0
+        2:   97-block 21
+branch  6 taken 2
+branch  7 taken 0
+        2:   97-block 22
+    $$$$$:   97-block 23
+    $$$$$:   97-block 24
+    $$$$$:   97-block 25
+    $$$$$:   97-block 26
+        1:   97-block 27
+branch  8 taken 1
+branch  9 taken 0
+        1:   97-block 28
+branch 10 taken 1
+branch 11 taken 0
+        1:   97-block 29
+    $$$$$:   97-block 30
+    $$$$$:   97-block 31
+    $$$$$:   97-block 32
+    $$$$$:   97-block 33
+        5:   97-block 34
+branch 12 taken 5
+branch 13 taken 0
+        5:   97-block 35
+branch 14 taken 5
+branch 15 taken 0
+        5:   97-block 36
+    $$$$$:   97-block 37
+    $$$$$:   97-block 38
+    $$$$$:   97-block 39
+    $$$$$:   97-block 40
+        6:   97-block 41
+        2:   97-block 42
+branch 16 taken 2
+branch 17 taken 0
+        2:   97-block 43
+branch 18 taken 2
+branch 19 taken 0
+        2:   97-block 44
+    $$$$$:   97-block 45
+    $$$$$:   97-block 46
+    $$$$$:   97-block 47
+    $$$$$:   97-block 48
+        1:   97-block 49
+branch 20 taken 1
+branch 21 taken 0
+        1:   97-block 50
+branch 22 taken 1
+branch 23 taken 0
+        1:   97-block 51
+    $$$$$:   97-block 52
+    $$$$$:   97-block 53
+    $$$$$:   97-block 54
+    $$$$$:   97-block 55
+        -:   98:#endif // C++20
+        -:   99:#endif// C++17
+        -:  100:
+        -:  101:  /**
+        -:  102:   * Constructs an object in existing memory by invoking an allocated
+        -:  103:   * object's constructor with an initializer.
+        -:  104:   */
+        -:  105:#if __cplusplus >= 201103L
+        -:  106:  template<typename _Tp, typename... _Args>
+        -:  107:    _GLIBCXX20_CONSTEXPR
+        -:  108:    inline void
+function _ZSt10_ConstructISt10shared_ptrIN8drug_lib6common8database9FieldBaseEEJRKS5_EEvPT_DpOT0_ called 98 returned 100% blocks executed 100%
+function _ZSt10_ConstructIN8drug_lib6common8database16PatternConditionEJRKS3_EEvPT_DpOT0_ called 0 returned 0% blocks executed 0%
+function _ZSt10_ConstructIN8drug_lib6common8database13PageConditionEJRS3_EEvPT_DpOT0_ called 3 returned 100% blocks executed 100%
+function _ZSt10_ConstructIN8drug_lib6common8database10PqxxClientEJRKNS2_17PqxxConnectParamsEEEvPT_DpOT0_ called 20 returned 100% blocks executed 100%
+function _ZSt10_ConstructIN8drug_lib6common8database5FieldIiEEJRA3_KciEEvPT_DpOT0_ called 20 returned 100% blocks executed 42%
+function _ZSt10_ConstructIN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEJRA5_KcRA1_SB_EEvPT_DpOT0_ called 21 returned 100% blocks executed 40%
+function _ZSt10_ConstructIN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEJRA12_KcRA1_SB_EEvPT_DpOT0_ called 21 returned 100% blocks executed 40%
+function _ZSt10_ConstructIN8drug_lib6common8database6RecordEJEEvPT_DpOT0_ called 100000 returned 100% blocks executed 100%
+   100183:  109:    _Construct(_Tp* __p, _Args&&... __args)
+        -:  110:    {
+        -:  111:#if __cplusplus >= 202002L
+        -:  112:      if (std::__is_constant_evaluated())
+        -:  113:	{
+        -:  114:	  // Allow std::_Construct to be used in constant expressions.
+        -:  115:	  std::construct_at(__p, std::forward<_Args>(__args)...);
+        -:  116:	  return;
+        -:  117:	}
+        -:  118:#endif
+   100183:  119:      ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+       20:  119-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:  119-block  1
+branch  2 taken 20
+branch  3 taken 0
+    $$$$$:  119-block  2
+    $$$$$:  119-block  3
+    $$$$$:  119-block  4
+       21:  119-block  5
+branch  4 taken 21
+branch  5 taken 0
+       21:  119-block  6
+branch  6 taken 21
+branch  7 taken 0
+       21:  119-block  7
+branch  8 taken 21
+branch  9 taken 0
+    $$$$$:  119-block  8
+    $$$$$:  119-block  9
+    $$$$$:  119-block 10
+    $$$$$:  119-block 11
+       21:  119-block 12
+branch 10 taken 21
+branch 11 taken 0
+       21:  119-block 13
+branch 12 taken 21
+branch 13 taken 0
+       21:  119-block 14
+branch 14 taken 21
+branch 15 taken 0
+    $$$$$:  119-block 15
+    $$$$$:  119-block 16
+    $$$$$:  119-block 17
+    $$$$$:  119-block 18
+   100183:  120:    }
+       98:  120-block  0
+    $$$$$:  120-block  1
+        3:  120-block  2
+       20:  120-block  3
+       20:  120-block  4
+    $$$$$:  120-block  5
+       21:  120-block  6
+    $$$$$:  120-block  7
+    $$$$$:  120-block  8
+       21:  120-block  9
+    $$$$$:  120-block 10
+    $$$$$:  120-block 11
+   100000:  120-block 12
+        -:  121:#else
+        -:  122:  template<typename _T1, typename _T2>
+        -:  123:    inline void
+        -:  124:    _Construct(_T1* __p, const _T2& __value)
+        -:  125:    {
+        -:  126:      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+        -:  127:      // 402. wrong new expression in [some_]allocator::construct
+        -:  128:      ::new(static_cast<void*>(__p)) _T1(__value);
+        -:  129:    }
+        -:  130:#endif
+        -:  131:
+        -:  132:  template<typename _T1>
+        -:  133:    inline void
+        -:  134:    _Construct_novalue(_T1* __p)
+        -:  135:    { ::new((void*)__p) _T1; }
+        -:  136:
+        -:  137:  template<typename _ForwardIterator>
+        -:  138:    _GLIBCXX20_CONSTEXPR void
+        -:  139:    _Destroy(_ForwardIterator __first, _ForwardIterator __last);
+        -:  140:
+        -:  141:  /**
+        -:  142:   * Destroy the object pointed to by a pointer type.
+        -:  143:   */
+        -:  144:  template<typename _Tp>
+        -:  145:    _GLIBCXX14_CONSTEXPR inline void
+function _ZSt8_DestroyISt10unique_ptrIN8drug_lib6common8database9FieldBaseESt14default_deleteIS4_EEEvPT_ called 3977885 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database6RecordEEvPT_ called 1324912 returned 100% blocks executed 100%
+function _ZSt8_DestroyISt10shared_ptrIN8drug_lib6common8database9FieldBaseEEEvPT_ called 140 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database14OrderConditionEEvPT_ called 1 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database16PatternConditionEEvPT_ called 3 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database14FieldConditionEEvPT_ called 7 returned 100% blocks executed 100%
+function _ZSt8_DestroyISt10unique_ptrIN8drug_lib6common8database10ViewRecordESt14default_deleteIS4_EEEvPT_ called 39301708 returned 100% blocks executed 100%
+function _ZSt8_DestroyISt6threadEvPT_ called 10 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database10PqxxClientEEvPT_ called 20 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database5FieldIiEEEvPT_ called 20 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common8database5FieldINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEEvPT_ called 42 returned 100% blocks executed 100%
+function _ZSt8_DestroyIN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEEvPT_ called 25 returned 100% blocks executed 100%
+ 44604773:  146:    _Destroy(_Tp* __pointer)
+        -:  147:    {
+        -:  148:#if __cplusplus > 201703L
+ 44604773:  149:      std::destroy_at(__pointer);
+        -:  150:#else
+        -:  151:      __pointer->~_Tp();
+        -:  152:#endif
+ 44604773:  153:    }
+  3977885:  153-block  0
+  1324912:  153-block  1
+      140:  153-block  2
+        1:  153-block  3
+        3:  153-block  4
+        7:  153-block  5
+ 39301708:  153-block  6
+       10:  153-block  7
+       20:  153-block  8
+       20:  153-block  9
+       42:  153-block 10
+       25:  153-block 11
+        -:  154:
+        -:  155:  template<bool>
+        -:  156:    struct _Destroy_aux
+        -:  157:    {
+        -:  158:      template<typename _ForwardIterator>
+        -:  159:	static _GLIBCXX20_CONSTEXPR void
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPSt10unique_ptrIN8drug_lib6common8database9FieldBaseESt14default_deleteIS6_EEEEvT_SB_ called 2414576 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPN8drug_lib6common8database6RecordEEEvT_S7_ called 100102 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPSt10shared_ptrIN8drug_lib6common8database9FieldBaseEEEEvT_S9_ called 361 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPN8drug_lib6common8database14OrderConditionEEEvT_S7_ called 12 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPN8drug_lib6common8database16PatternConditionEEEvT_S7_ called 15 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPN8drug_lib6common8database14FieldConditionEEEvT_S7_ called 12 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPSt10unique_ptrIN8drug_lib6common8database10ViewRecordESt14default_deleteIS6_EEEEvT_SB_ called 2436 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPSt6threadEEvT_S4_ called 2 returned 100% blocks executed 100%
+function _ZNSt12_Destroy_auxILb0EE9__destroyIPN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEEEvT_SD_ called 12 returned 100% blocks executed 100%
+  2517528:  160:	__destroy(_ForwardIterator __first, _ForwardIterator __last)
+        -:  161:	{
+ 47122219:  162:	  for (; __first != __last; ++__first)
+  2414576:  162-block  0
+  6392461:  162-block  1
+branch  0 taken 3977885
+branch  1 taken 2414576
+  3977885:  162-block  2
+   100102:  162-block  3
+  1425014:  162-block  4
+branch  2 taken 1324912
+branch  3 taken 100102
+  1324912:  162-block  5
+      361:  162-block  6
+      501:  162-block  7
+branch  4 taken 140
+branch  5 taken 361
+      140:  162-block  8
+       12:  162-block  9
+       13:  162-block 10
+branch  6 taken 1
+branch  7 taken 12
+        1:  162-block 11
+       15:  162-block 12
+       18:  162-block 13
+branch  8 taken 3
+branch  9 taken 15
+        3:  162-block 14
+       12:  162-block 15
+       19:  162-block 16
+branch 10 taken 7
+branch 11 taken 12
+        7:  162-block 17
+     2436:  162-block 18
+ 39304144:  162-block 19
+branch 12 taken 39301708
+branch 13 taken 2436
+ 39301708:  162-block 20
+        2:  162-block 21
+       12:  162-block 22
+branch 14 taken 10
+branch 15 taken 2
+       10:  162-block 23
+       12:  162-block 24
+       37:  162-block 25
+branch 16 taken 25
+branch 17 taken 12
+       25:  162-block 26
+ 44604691:  163:	    std::_Destroy(std::__addressof(*__first));
+  3977885:  163-block  0
+  1324912:  163-block  1
+      140:  163-block  2
+        1:  163-block  3
+        3:  163-block  4
+        7:  163-block  5
+ 39301708:  163-block  6
+       10:  163-block  7
+       25:  163-block  8
+  2517528:  164:	}
+  2414576:  164-block  0
+   100102:  164-block  1
+      361:  164-block  2
+       12:  164-block  3
+       15:  164-block  4
+       12:  164-block  5
+     2436:  164-block  6
+        2:  164-block  7
+       12:  164-block  8
+        -:  165:    };
+        -:  166:
+        -:  167:  template<>
+        -:  168:    struct _Destroy_aux<true>
+        -:  169:    {
+        -:  170:      template<typename _ForwardIterator>
+        -:  171:        static void
+        -:  172:        __destroy(_ForwardIterator, _ForwardIterator) { }
+        -:  173:    };
+        -:  174:
+        -:  175:  /**
+        -:  176:   * Destroy a range of objects.  If the value_type of the object has
+        -:  177:   * a trivial destructor, the compiler should optimize all of this
+        -:  178:   * away, otherwise the objects' destructors must be invoked.
+        -:  179:   */
+        -:  180:  template<typename _ForwardIterator>
+        -:  181:    _GLIBCXX20_CONSTEXPR inline void
+function _ZSt8_DestroyIPSt10unique_ptrIN8drug_lib6common8database9FieldBaseESt14default_deleteIS4_EEEvT_S9_ called 2414672 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPN8drug_lib6common8database6RecordEEvT_S5_ called 100102 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPSt10shared_ptrIN8drug_lib6common8database9FieldBaseEEEvT_S7_ called 361 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPN8drug_lib6common8database14OrderConditionEEvT_S5_ called 12 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPN8drug_lib6common8database16PatternConditionEEvT_S5_ called 15 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPN8drug_lib6common8database14FieldConditionEEvT_S5_ called 12 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPSt10unique_ptrIN8drug_lib6common8database10ViewRecordESt14default_deleteIS4_EEEvT_S9_ called 2436 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPSt6threadEvT_S2_ called 2 returned 100% blocks executed 100%
+function _ZSt8_DestroyIPN8drug_lib6common9StopwatchINSt6chrono8durationIlSt5ratioILl1ELl1000EEEEE4FlagEEvT_SB_ called 12 returned 100% blocks executed 100%
+  2517624:  182:    _Destroy(_ForwardIterator __first, _ForwardIterator __last)
+        -:  183:    {
+        -:  184:      typedef typename iterator_traits<_ForwardIterator>::value_type
+        -:  185:                       _Value_type;
+        -:  186:#if __cplusplus >= 201103L
+        -:  187:      // A deleted destructor is trivial, this ensures we reject such types:
+        -:  188:      static_assert(is_destructible<_Value_type>::value,
+        -:  189:		    "value type is destructible");
+        -:  190:#endif
+        -:  191:#if __cplusplus >= 202002L
+        -:  192:      if (std::__is_constant_evaluated())
+        -:  193:	return _Destroy_aux<false>::__destroy(__first, __last);
+        -:  194:#endif
+  2517624:  195:      std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
+  2517624:  196:	__destroy(__first, __last);
+  2517624:  197:    }
+  2414672:  197-block  0
+   100102:  197-block  1
+      361:  197-block  2
+       12:  197-block  3
+       15:  197-block  4
+       12:  197-block  5
+     2436:  197-block  6
+        2:  197-block  7
+       12:  197-block  8
+        -:  198:
+        -:  199:  template<bool>
+        -:  200:    struct _Destroy_n_aux
+        -:  201:    {
+        -:  202:      template<typename _ForwardIterator, typename _Size>
+        -:  203:	static _GLIBCXX20_CONSTEXPR _ForwardIterator
+        -:  204:	__destroy_n(_ForwardIterator __first, _Size __count)
+        -:  205:	{
+        -:  206:	  for (; __count > 0; (void)++__first, --__count)
+        -:  207:	    std::_Destroy(std::__addressof(*__first));
+        -:  208:	  return __first;
+        -:  209:	}
+        -:  210:    };
+        -:  211:
+        -:  212:  template<>
+        -:  213:    struct _Destroy_n_aux<true>
+        -:  214:    {
+        -:  215:      template<typename _ForwardIterator, typename _Size>
+        -:  216:        static _ForwardIterator
+        -:  217:        __destroy_n(_ForwardIterator __first, _Size __count)
+        -:  218:	{
+        -:  219:	  std::advance(__first, __count);
+        -:  220:	  return __first;
+        -:  221:	}
+        -:  222:    };
+        -:  223:
+        -:  224:  /**
+        -:  225:   * Destroy a range of objects.  If the value_type of the object has
+        -:  226:   * a trivial destructor, the compiler should optimize all of this
+        -:  227:   * away, otherwise the objects' destructors must be invoked.
+        -:  228:   */
+        -:  229:  template<typename _ForwardIterator, typename _Size>
+        -:  230:    _GLIBCXX20_CONSTEXPR inline _ForwardIterator
+        -:  231:    _Destroy_n(_ForwardIterator __first, _Size __count)
+        -:  232:    {
+        -:  233:      typedef typename iterator_traits<_ForwardIterator>::value_type
+        -:  234:                       _Value_type;
+        -:  235:#if __cplusplus >= 201103L
+        -:  236:      // A deleted destructor is trivial, this ensures we reject such types:
+        -:  237:      static_assert(is_destructible<_Value_type>::value,
+        -:  238:		    "value type is destructible");
+        -:  239:#endif
+        -:  240:#if __cplusplus >= 202002L
+        -:  241:      if (std::__is_constant_evaluated())
+        -:  242:	return _Destroy_n_aux<false>::__destroy_n(__first, __count);
+        -:  243:#endif
+        -:  244:      return std::_Destroy_n_aux<__has_trivial_destructor(_Value_type)>::
+        -:  245:	__destroy_n(__first, __count);
+        -:  246:    }
+        -:  247:
+        -:  248:#if __cplusplus >= 201703L
+        -:  249:  template <typename _ForwardIterator>
+        -:  250:    _GLIBCXX20_CONSTEXPR inline void
+        -:  251:    destroy(_ForwardIterator __first, _ForwardIterator __last)
+        -:  252:    {
+        -:  253:      std::_Destroy(__first, __last);
+        -:  254:    }
+        -:  255:
+        -:  256:  template <typename _ForwardIterator, typename _Size>
+        -:  257:    _GLIBCXX20_CONSTEXPR inline _ForwardIterator
+        -:  258:    destroy_n(_ForwardIterator __first, _Size __count)
+        -:  259:    {
+        -:  260:      return std::_Destroy_n(__first, __count);
+        -:  261:    }
+        -:  262:#endif // C++17
+        -:  263:
+        -:  264:_GLIBCXX_END_NAMESPACE_VERSION
+        -:  265:} // namespace std
+        -:  266:
+        -:  267:#endif /* _STL_CONSTRUCT_H */

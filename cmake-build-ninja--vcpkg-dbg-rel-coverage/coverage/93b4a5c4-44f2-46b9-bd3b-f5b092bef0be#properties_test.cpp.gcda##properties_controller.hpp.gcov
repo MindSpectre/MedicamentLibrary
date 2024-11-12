@@ -1,0 +1,253 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/creational/property_factory/include/properties_controller.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Medicament_Properties.dir/medicament/properties/properties_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Medicament_Properties.dir/medicament/properties/properties_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:
+        -:    2:#pragma once
+        -:    3:
+        -:    4:#include "medicament_properties.hpp"
+        -:    5:#include "organization_properties.hpp"
+        -:    6:#include "patient_properties.hpp"
+        -:    7:#include "diseases_properties.hpp"
+        -:    8:
+        -:    9:namespace drug_lib::data
+        -:   10:{
+        -:   11:    class PropertyFactory final
+        -:   12:    {
+        -:   13:    public:
+        -:   14:        template <typename T>
+        -:   15:            requires std::is_constructible_v<T, Json::Value>
+        -:   16:        static std::shared_ptr<DataProperty> create(const Json::Value& property_value)
+        -:   17:        {
+        -:   18:            return std::make_shared<T>(property_value);
+        -:   19:        }
+        -:   20:
+        -:   21:        template <typename T, typename... Args>
+function _ZN8drug_lib4data15PropertyFactory6createINS0_7objects11medicaments16PrescriptionDrugEJN4Json5ValueEEEESt10shared_ptrINS0_12DataPropertyEEDpOT0_ called 2 returned 100% blocks executed 100%
+function _ZN8drug_lib4data15PropertyFactory6createINS0_7objects11medicaments16PrescriptionDrugEJS5_EEESt10shared_ptrINS0_12DataPropertyEEDpOT0_ called 2 returned 100% blocks executed 100%
+        4:   22:        static std::shared_ptr<DataProperty> create(Args&&... args)
+        -:   23:        {
+        4:   24:            return std::make_shared<T>(std::forward<Args>(args)...);
+        2:   24-block  0
+        2:   24-block  1
+        -:   25:        }
+        -:   26:
+function _ZN8drug_lib4data15PropertyFactory6createERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN4Json5ValueE called 0 returned 0% blocks executed 0%
+    #####:   27:        static std::shared_ptr<DataProperty> create(const std::string& property_name,
+        -:   28:                                                    const Json::Value& property_value)
+        -:   29:        {
+    #####:   30:            if (property_name == objects::medicaments::properties::prescription)
+    $$$$$:   30-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   31:            {
+    #####:   32:                return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
+    $$$$$:   32-block  0
+        -:   33:            }
+    #####:   34:            if (property_name == objects::diseases::properties::symptoms)
+    $$$$$:   34-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   35:            {
+    #####:   36:                return std::make_shared<objects::diseases::Symptoms>(property_value);
+    $$$$$:   36-block  0
+        -:   37:            }
+    #####:   38:            if (property_name == objects::organizations::properties::license)
+    $$$$$:   38-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   39:            {
+    #####:   40:                return std::make_shared<objects::organizations::License>(property_value);
+    $$$$$:   40-block  0
+        -:   41:            }
+    #####:   42:            if (property_name == objects::patients::properties::current_diseases)
+    $$$$$:   42-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   43:            {
+    #####:   44:                return std::make_shared<objects::patients::CurrentDiseases>(property_value);
+    $$$$$:   44-block  0
+        -:   45:            }
+    #####:   46:            throw std::invalid_argument("Property '" + property_name + "' not found");
+    $$$$$:   46-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   46-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   46-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   46-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   46-block  4
+    $$$$$:   46-block  5
+    $$$$$:   46-block  6
+branch  8 never executed
+branch  9 never executed
+    $$$$$:   46-block  7
+    $$$$$:   46-block  8
+    $$$$$:   46-block  9
+    #####:   47:        }
+    $$$$$:   47-block  0
+    $$$$$:   47-block  1
+    $$$$$:   47-block  2
+        -:   48:    };
+        -:   49:
+        -:   50:    namespace objects
+        -:   51:    {
+function _ZN8drug_lib4data7objects16PropertiesHolderC2Ev called 4 returned 100% blocks executed 100%
+        -:   52:        class PropertiesHolder
+        -:   53:        {
+        -:   54:        protected:
+        -:   55:            PropertyCollection collection_;
+        -:   56:
+function _ZN8drug_lib4data7objects16PropertiesHolder17create_collectionERKSt10unique_ptrINS_6common8database9FieldBaseESt14default_deleteIS6_EE called 0 returned 0% blocks executed 0%
+    #####:   57:            void create_collection(const std::unique_ptr<common::database::FieldBase>& field)
+        -:   58:            {
+    #####:   59:                auto values = field->as<Json::Value>();
+    #####:   60:                for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+    $$$$$:   60-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   60-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   60-block  2
+    $$$$$:   60-block  3
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   60-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   60-block  5
+branch  8 never executed
+branch  9 never executed
+    $$$$$:   60-block  6
+branch 10 never executed
+branch 11 never executed
+    $$$$$:   60-block  7
+        -:   61:                {
+    #####:   62:                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+    $$$$$:   62-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   62-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   62-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   62-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   62-block  4
+    $$$$$:   62-block  5
+    #####:   63:                }
+    $$$$$:   63-block  0
+    #####:   64:            }
+    $$$$$:   64-block  0
+    $$$$$:   64-block  1
+    $$$$$:   64-block  2
+    $$$$$:   64-block  3
+    $$$$$:   64-block  4
+        -:   65:
+function _ZN8drug_lib4data7objects16PropertiesHolder17create_collectionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 0 returned 0% blocks executed 0%
+    #####:   66:            void create_collection(const std::string& field)
+        -:   67:            {
+    #####:   68:                const Json::CharReaderBuilder builder;
+    #####:   69:                Json::Value values;
+    $$$$$:   69-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   70:                std::istringstream s(field);
+    $$$$$:   70-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   71:                std::string errors;
+    #####:   72:                parseFromStream(builder, s, &values, &errors);
+    $$$$$:   72-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   73:                for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+    $$$$$:   73-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   73-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   73-block  2
+    $$$$$:   73-block  3
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   73-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   73-block  5
+branch  8 never executed
+branch  9 never executed
+    $$$$$:   73-block  6
+branch 10 never executed
+branch 11 never executed
+    $$$$$:   73-block  7
+        -:   74:                {
+    #####:   75:                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+    $$$$$:   75-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   75-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   75-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   75-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   75-block  4
+    $$$$$:   75-block  5
+    #####:   76:                }
+    $$$$$:   76-block  0
+    #####:   77:            }
+    $$$$$:   77-block  0
+    $$$$$:   77-block  1
+    $$$$$:   77-block  2
+    $$$$$:   77-block  3
+    $$$$$:   77-block  4
+    $$$$$:   77-block  5
+    $$$$$:   77-block  6
+    $$$$$:   77-block  7
+    $$$$$:   77-block  8
+        -:   78:
+        -:   79:        public:
+function _ZN8drug_lib4data7objects16PropertiesHolderD2Ev called 4 returned 100% blocks executed 100%
+function _ZN8drug_lib4data7objects16PropertiesHolderD0Ev called 0 returned 0% blocks executed 0%
+        4:   80:            virtual ~PropertiesHolder() = default;
+        4:   80-block  0
+    $$$$$:   80-block  1
+        -:   81:
+function _ZN8drug_lib4data7objects16PropertiesHolder12add_propertyERKSt10shared_ptrINS0_12DataPropertyEE called 4 returned 100% blocks executed 100%
+        4:   82:            void add_property(const std::shared_ptr<DataProperty>& prop)
+        -:   83:            {
+        4:   84:                collection_.add_property(prop);
+        4:   85:            }
+        4:   85-block  0
+        -:   86:
+function _ZNK8drug_lib4data7objects16PropertiesHolder12get_propertyERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 3 returned 100% blocks executed 100%
+        3:   87:            [[nodiscard]] std::shared_ptr<DataProperty> get_property(const std::string& name) const
+        -:   88:            {
+        3:   89:                return collection_.get_property(name);
+        3:   89-block  0
+        -:   90:            }
+        -:   91:
+function _ZN8drug_lib4data7objects16PropertiesHolder15remove_propertyERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 100%
+        1:   92:            void remove_property(const std::string& name)
+        -:   93:            {
+        1:   94:                collection_.remove_property(name);
+        1:   95:            }
+        1:   95-block  0
+        -:   96:        };
+        -:   97:    }
+        -:   98:}

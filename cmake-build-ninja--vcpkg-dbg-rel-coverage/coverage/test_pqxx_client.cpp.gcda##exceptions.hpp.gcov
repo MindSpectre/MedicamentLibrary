@@ -1,0 +1,79 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/db/exceptions/exceptions.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/CMakeFiles/DrugLib_Tests_Unit_PqxxClient.dir/unit_tests/pqxx_client/test_pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <stdexcept>
+        -:    4:#include <string>
+        -:    5:
+        -:    6:#include "error_codes.hpp"
+        -:    7:
+        -:    8:namespace drug_lib::common::database::exceptions
+        -:    9:{
+function _ZN8drug_lib6common8database10exceptions17DatabaseExceptionD2Ev called 12210890 returned 100% blocks executed 100%
+function _ZN8drug_lib6common8database10exceptions17DatabaseExceptionD0Ev called 0 returned 0% blocks executed 0%
+        -:   10:    class DatabaseException : public std::runtime_error
+        -:   11:    {
+        -:   12:    protected:
+        -:   13:        errors::db_error_code m_error_code = errors::db_error_code::UNKNOWN_ERROR;
+        -:   14:
+        -:   15:    public:
+function _ZN8drug_lib6common8database10exceptions17DatabaseExceptionC2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS1_6errors13db_error_codeE called 12210890 returned 100% blocks executed 100%
+ 12210890:   16:        explicit DatabaseException(const std::string& message, const errors::db_error_code error_code) :
+ 24421780:   17:            std::runtime_error(message), m_error_code(error_code)
+ 12210890:   18:        {
+ 12210890:   19:        }
+ 12210890:   19-block  0
+        -:   20:
+        -:   21:        [[nodiscard]] errors::db_error_code get_error() const { return m_error_code; }
+        -:   22:    };
+        -:   23:
+function _ZN8drug_lib6common8database10exceptions19ConnectionExceptionD2Ev called 0 returned 0% blocks executed 0%
+function _ZN8drug_lib6common8database10exceptions19ConnectionExceptionD0Ev called 0 returned 0% blocks executed 0%
+        -:   24:    class ConnectionException final : public DatabaseException
+        -:   25:    {
+        -:   26:    public:
+function _ZN8drug_lib6common8database10exceptions19ConnectionExceptionC2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS1_6errors13db_error_codeE called 0 returned 0% blocks executed 0%
+    #####:   27:        explicit ConnectionException(const std::string& message, const errors::db_error_code code)
+    #####:   28:            : DatabaseException("ConnectionException: " + message, code)
+    $$$$$:   28-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   28-block  1
+    $$$$$:   28-block  2
+    #####:   29:        {
+    #####:   30:        }
+    $$$$$:   30-block  0
+        -:   31:    };
+        -:   32:
+        -:   33:    class QueryException final : public DatabaseException
+        -:   34:    {
+        -:   35:    public:
+        -:   36:        explicit QueryException(const std::string& message, const errors::db_error_code code)
+        -:   37:            : DatabaseException("QueryException: " + message, code)
+        -:   38:        {
+        -:   39:        }
+        -:   40:    };
+        -:   41:
+        -:   42:    class TransactionException final : public DatabaseException
+        -:   43:    {
+        -:   44:    public:
+        -:   45:        explicit TransactionException(const std::string& message, const errors::db_error_code code)
+        -:   46:            : DatabaseException("TransactionException: " + message, code)
+        -:   47:        {
+        -:   48:        }
+        -:   49:    };
+        -:   50:
+        -:   51:    class InvalidIdentifierException final : public DatabaseException
+        -:   52:    {
+        -:   53:    public:
+        -:   54:        explicit InvalidIdentifierException(const std::string& message, const errors::db_error_code code)
+        -:   55:            : DatabaseException("InvalidIdentifierException: " + message, code)
+        -:   56:        {
+        -:   57:        }
+        -:   58:    };
+        -:   59:
+        -:   60:    // Additional exceptions can be added here
+        -:   61:}

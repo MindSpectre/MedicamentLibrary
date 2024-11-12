@@ -1,0 +1,109 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/creational/property_factory/include/properties_controller.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_PropertyCollection.dir/support_objects/property_collection_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_PropertyCollection.dir/support_objects/property_collection_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:
+        -:    2:#pragma once
+        -:    3:
+        -:    4:#include "medicament_properties.hpp"
+        -:    5:#include "organization_properties.hpp"
+        -:    6:#include "patient_properties.hpp"
+        -:    7:#include "diseases_properties.hpp"
+        -:    8:
+        -:    9:namespace drug_lib::data
+        -:   10:{
+        -:   11:    class PropertyFactory final
+        -:   12:    {
+        -:   13:    public:
+        -:   14:        template <typename T>
+        -:   15:            requires std::is_constructible_v<T, Json::Value>
+        -:   16:        static std::shared_ptr<DataProperty> create(const Json::Value& property_value)
+        -:   17:        {
+        -:   18:            return std::make_shared<T>(property_value);
+        -:   19:        }
+        -:   20:
+        -:   21:        template <typename T, typename... Args>
+function _ZN8drug_lib4data15PropertyFactory6createINS0_7objects13organizations7LicenseEJRS5_EEESt10shared_ptrINS0_12DataPropertyEEDpOT0_ called 3 returned 100% blocks executed 100%
+function _ZN8drug_lib4data15PropertyFactory6createINS0_7objects8diseases8SymptomsEJRS5_EEESt10shared_ptrINS0_12DataPropertyEEDpOT0_ called 1 returned 100% blocks executed 100%
+function _ZN8drug_lib4data15PropertyFactory6createINS0_7objects13organizations7LicenseEJEEESt10shared_ptrINS0_12DataPropertyEEDpOT0_ called 2 returned 100% blocks executed 100%
+        6:   22:        static std::shared_ptr<DataProperty> create(Args&&... args)
+        -:   23:        {
+        6:   24:            return std::make_shared<T>(std::forward<Args>(args)...);
+        3:   24-block  0
+        1:   24-block  1
+        2:   24-block  2
+        -:   25:        }
+        -:   26:
+        -:   27:        static std::shared_ptr<DataProperty> create(const std::string& property_name,
+        -:   28:                                                    const Json::Value& property_value)
+        -:   29:        {
+        -:   30:            if (property_name == objects::medicaments::properties::prescription)
+        -:   31:            {
+        -:   32:                return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
+        -:   33:            }
+        -:   34:            if (property_name == objects::diseases::properties::symptoms)
+        -:   35:            {
+        -:   36:                return std::make_shared<objects::diseases::Symptoms>(property_value);
+        -:   37:            }
+        -:   38:            if (property_name == objects::organizations::properties::license)
+        -:   39:            {
+        -:   40:                return std::make_shared<objects::organizations::License>(property_value);
+        -:   41:            }
+        -:   42:            if (property_name == objects::patients::properties::current_diseases)
+        -:   43:            {
+        -:   44:                return std::make_shared<objects::patients::CurrentDiseases>(property_value);
+        -:   45:            }
+        -:   46:            throw std::invalid_argument("Property '" + property_name + "' not found");
+        -:   47:        }
+        -:   48:    };
+        -:   49:
+        -:   50:    namespace objects
+        -:   51:    {
+        -:   52:        class PropertiesHolder
+        -:   53:        {
+        -:   54:        protected:
+        -:   55:            PropertyCollection collection_;
+        -:   56:
+        -:   57:            void create_collection(const std::unique_ptr<common::database::FieldBase>& field)
+        -:   58:            {
+        -:   59:                auto values = field->as<Json::Value>();
+        -:   60:                for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+        -:   61:                {
+        -:   62:                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+        -:   63:                }
+        -:   64:            }
+        -:   65:
+        -:   66:            void create_collection(const std::string& field)
+        -:   67:            {
+        -:   68:                const Json::CharReaderBuilder builder;
+        -:   69:                Json::Value values;
+        -:   70:                std::istringstream s(field);
+        -:   71:                std::string errors;
+        -:   72:                parseFromStream(builder, s, &values, &errors);
+        -:   73:                for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+        -:   74:                {
+        -:   75:                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+        -:   76:                }
+        -:   77:            }
+        -:   78:
+        -:   79:        public:
+        -:   80:            virtual ~PropertiesHolder() = default;
+        -:   81:
+        -:   82:            void add_property(const std::shared_ptr<DataProperty>& prop)
+        -:   83:            {
+        -:   84:                collection_.add_property(prop);
+        -:   85:            }
+        -:   86:
+        -:   87:            [[nodiscard]] std::shared_ptr<DataProperty> get_property(const std::string& name) const
+        -:   88:            {
+        -:   89:                return collection_.get_property(name);
+        -:   90:            }
+        -:   91:
+        -:   92:            void remove_property(const std::string& name)
+        -:   93:            {
+        -:   94:                collection_.remove_property(name);
+        -:   95:            }
+        -:   96:        };
+        -:   97:    }
+        -:   98:}

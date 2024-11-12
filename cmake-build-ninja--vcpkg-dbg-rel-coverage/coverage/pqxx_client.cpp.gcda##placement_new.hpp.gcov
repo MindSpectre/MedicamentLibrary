@@ -1,0 +1,33 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/boost/container/detail/placement_new.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#ifndef BOOST_CONTAINER_DETAIL_PLACEMENT_NEW_HPP
+        -:    2:#define BOOST_CONTAINER_DETAIL_PLACEMENT_NEW_HPP
+        -:    3:///////////////////////////////////////////////////////////////////////////////
+        -:    4://
+        -:    5:// (C) Copyright Ion Gaztanaga 2014-2015. Distributed under the Boost
+        -:    6:// Software License, Version 1.0. (See accompanying file
+        -:    7:// LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+        -:    8://
+        -:    9:// See http://www.boost.org/libs/container for documentation.
+        -:   10://
+        -:   11:///////////////////////////////////////////////////////////////////////////////
+        -:   12:
+        -:   13:#include <cstddef>
+        -:   14:
+        -:   15:struct boost_container_new_t{};
+        -:   16:
+        -:   17://avoid including <new>
+function _ZnwmPv21boost_container_new_t called 800 returned 100% blocks executed 100%
+      800:   18:inline void *operator new(std::size_t, void *p, boost_container_new_t)
+      800:   19:{  return p;  }
+      800:   19-block  0
+        -:   20:
+function _ZdlPvS_21boost_container_new_t called 0 returned 0% blocks executed 0%
+    #####:   21:inline void operator delete(void *, void *, boost_container_new_t)
+    #####:   22:{}
+    $$$$$:   22-block  0
+        -:   23:
+        -:   24:#endif   //BOOST_CONTAINER_DETAIL_PLACEMENT_NEW_HPP

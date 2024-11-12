@@ -18,27 +18,9 @@ namespace drug_lib::data
         [[nodiscard]] virtual std::string get_name() const = 0;
 
 
-        void enable()
-        {
-            status_ = true;
-        }
-
-        void disable()
-        {
-            status_ = false;
-        }
-
-        [[nodiscard]] bool enabled() const
-        {
-            return status_;
-        }
-
         struct _common_properties
         {
         };
-
-    protected:
-        bool status_ = false;
     };
 
     class PropertyCollection final
@@ -74,10 +56,7 @@ namespace drug_lib::data
             Json::Value result;
             for (const auto& [name, property] : m_data)
             {
-                if (property->enabled())
-                {
-                    result[name] = property->get_info();
-                }
+                result[name] = property->get_info();
             }
             return result;
         }

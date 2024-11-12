@@ -1,0 +1,631 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/pqxx/field.hxx
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Definitions for the pqxx::field class.
+        -:    2: *
+        -:    3: * pqxx::field refers to a field in a query result.
+        -:    4: *
+        -:    5: * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/field instead.
+        -:    6: *
+        -:    7: * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+        -:    8: *
+        -:    9: * See COPYING for copyright license.  If you did not receive a file called
+        -:   10: * COPYING with this source code, please notify the distributor of this
+        -:   11: * mistake, or contact the author.
+        -:   12: */
+        -:   13:#ifndef PQXX_H_FIELD
+        -:   14:#define PQXX_H_FIELD
+        -:   15:
+        -:   16:#if !defined(PQXX_HEADER_PRE)
+        -:   17:#  error "Include libpqxx headers as <pqxx/header>, not <pqxx/header.hxx>."
+        -:   18:#endif
+        -:   19:
+        -:   20:#include <optional>
+        -:   21:
+        -:   22:#include "pqxx/array.hxx"
+        -:   23:#include "pqxx/composite.hxx"
+        -:   24:#include "pqxx/result.hxx"
+        -:   25:#include "pqxx/strconv.hxx"
+        -:   26:#include "pqxx/types.hxx"
+        -:   27:
+        -:   28:namespace pqxx
+        -:   29:{
+        -:   30:/// Reference to a field in a result set.
+        -:   31:/** A field represents one entry in a row.  It represents an actual value
+        -:   32: * in the result set, and can be converted to various types.
+        -:   33: */
+function _ZN4pqxx5fieldD2Ev called 1931178 returned 100% blocks executed 100%
+function _ZN4pqxx5fieldC2ERKS0_ called 920634 returned 100% blocks executed 100%
+        -:   34:class PQXX_LIBEXPORT field
+        -:   35:{
+        -:   36:public:
+        -:   37:  using size_type = field_size_type;
+        -:   38:
+        -:   39:  /**
+        -:   40:   * @name Comparison
+        -:   41:   */
+        -:   42:  //@{
+        -:   43:  /// Byte-by-byte comparison of two fields (all nulls are considered equal)
+        -:   44:  /** @warning null handling is still open to discussion and change!
+        -:   45:   *
+        -:   46:   * Handling of null values differs from that in SQL where a comparison
+        -:   47:   * involving a null value yields null, so nulls are never considered equal
+        -:   48:   * to one another or even to themselves.
+        -:   49:   *
+        -:   50:   * Null handling also probably differs from the closest equivalent in C++,
+        -:   51:   * which is the NaN (Not-a-Number) value, a singularity comparable to
+        -:   52:   * SQL's null.  This is because the builtin == operator demands that a == a.
+        -:   53:   *
+        -:   54:   * The usefulness of this operator is questionable.  No interpretation
+        -:   55:   * whatsoever is imposed on the data; 0 and 0.0 are considered different,
+        -:   56:   * as are null vs. the empty string, or even different (but possibly
+        -:   57:   * equivalent and equally valid) encodings of the same Unicode character
+        -:   58:   * etc.
+        -:   59:   */
+        -:   60:  [[nodiscard]] PQXX_PURE bool operator==(field const &) const noexcept;
+        -:   61:
+        -:   62:  /// Byte-by-byte comparison (all nulls are considered equal)
+        -:   63:  /** @warning See operator==() for important information about this operator
+        -:   64:   */
+        -:   65:  [[nodiscard]] PQXX_PURE bool operator!=(field const &rhs) const noexcept
+        -:   66:  {
+        -:   67:    return not operator==(rhs);
+        -:   68:  }
+        -:   69:  //@}
+        -:   70:
+        -:   71:  /**
+        -:   72:   * @name Column information
+        -:   73:   */
+        -:   74:  //@{
+        -:   75:  /// Column name.
+        -:   76:  [[nodiscard]] PQXX_PURE char const *name() const &;
+        -:   77:
+        -:   78:  /// Column type.
+        -:   79:  [[nodiscard]] oid PQXX_PURE type() const;
+        -:   80:
+        -:   81:  /// What table did this column come from?
+        -:   82:  [[nodiscard]] PQXX_PURE oid table() const;
+        -:   83:
+        -:   84:  /// Return row number.  The first row is row 0, the second is row 1, etc.
+        -:   85:  PQXX_PURE constexpr row_size_type num() const noexcept { return col(); }
+        -:   86:
+        -:   87:  /// What column number in its originating table did this column come from?
+        -:   88:  [[nodiscard]] PQXX_PURE row_size_type table_column() const;
+        -:   89:  //@}
+        -:   90:
+        -:   91:  /**
+        -:   92:   * @name Content access
+        -:   93:   *
+        -:   94:   * You can read a field as any C++ type for which a conversion from
+        -:   95:   * PostgreSQL's text format is defined.  See @ref datatypes for how this
+        -:   96:   * works.  This mechanism is _weakly typed:_ the conversions do not care
+        -:   97:   * what SQL type a field had in the database, only that its actual contents
+        -:   98:   * convert to the target type without problems.  So for instance, you can
+        -:   99:   * read a `text` field as an `int`, so long as the string in the field spells
+        -:  100:   * out a valid `int` number.
+        -:  101:   *
+        -:  102:   * Many built-in types come with conversions predefined.  To find out how to
+        -:  103:   * add your own, see @ref datatypes.
+        -:  104:   */
+        -:  105:  //@{
+        -:  106:  /// Read as `string_view`, or an empty one if null.
+        -:  107:  /** The result only remains usable while the data for the underlying
+        -:  108:   * @ref result exists.  Once all `result` objects referring to that data have
+        -:  109:   * been destroyed, the `string_view` will no longer point to valid memory.
+        -:  110:   */
+function _ZNKR4pqxx5field4viewEv called 1317202 returned 100% blocks executed 100%
+  1317202:  111:  [[nodiscard]] PQXX_PURE std::string_view view() const &
+        -:  112:  {
+  1317202:  113:    return std::string_view(c_str(), size());
+  1317202:  113-block  0
+        -:  114:  }
+        -:  115:
+        -:  116:  /// Read as plain C string.
+        -:  117:  /** Since the field's data is stored internally in the form of a
+        -:  118:   * zero-terminated C string, this is the fastest way to read it.  Use the
+        -:  119:   * to() or as() functions to convert the string to other types such as
+        -:  120:   * `int`, or to C++ strings.
+        -:  121:   *
+        -:  122:   * Do not use this for BYTEA values, or other binary values.  To read those,
+        -:  123:   * convert the value to your desired type using `to()` or `as()`.  For
+        -:  124:   * example: `f.as<pqx::bytes>()`.
+        -:  125:   */
+        -:  126:  [[nodiscard]] PQXX_PURE char const *c_str() const &;
+        -:  127:
+        -:  128:  /// Is this field's value null?
+        -:  129:  [[nodiscard]] PQXX_PURE bool is_null() const noexcept;
+        -:  130:
+        -:  131:  /// Return number of bytes taken up by the field's value.
+        -:  132:  [[nodiscard]] PQXX_PURE size_type size() const noexcept;
+        -:  133:
+        -:  134:  /// Read value into obj; or if null, leave obj untouched and return `false`.
+        -:  135:  /** This can be used with optional types (except pointers other than C-style
+        -:  136:   * strings).
+        -:  137:   */
+        -:  138:  template<typename T>
+        -:  139:  auto to(T &obj) const ->
+        -:  140:    typename std::enable_if_t<
+        -:  141:      (not std::is_pointer<T>::value or std::is_same<T, char const *>::value),
+        -:  142:      bool>
+        -:  143:  {
+        -:  144:    if (is_null())
+        -:  145:    {
+        -:  146:      return false;
+        -:  147:    }
+        -:  148:    else
+        -:  149:    {
+        -:  150:      auto const data{c_str()};
+        -:  151:      from_string(data, obj);
+        -:  152:      return true;
+        -:  153:    }
+        -:  154:  }
+        -:  155:
+        -:  156:  /// Read field as a composite value, write its components into `fields`.
+        -:  157:  /** @warning This is still experimental.  It may change or be replaced.
+        -:  158:   *
+        -:  159:   * Returns whether the field was null.  If it was, it will not touch the
+        -:  160:   * values in `fields`.
+        -:  161:   */
+        -:  162:  template<typename... T> bool composite_to(T &...fields) const
+        -:  163:  {
+        -:  164:    if (is_null())
+        -:  165:    {
+        -:  166:      return false;
+        -:  167:    }
+        -:  168:    else
+        -:  169:    {
+        -:  170:      parse_composite(m_home.m_encoding, view(), fields...);
+        -:  171:      return true;
+        -:  172:    }
+        -:  173:  }
+        -:  174:
+        -:  175:  /// Read value into obj; or leave obj untouched and return `false` if null.
+        -:  176:  template<typename T> bool operator>>(T &obj) const { return to(obj); }
+        -:  177:
+        -:  178:  /// Read value into obj; or if null, use default value and return `false`.
+        -:  179:  /** This can be used with `std::optional`, as well as with standard smart
+        -:  180:   * pointer types, but not with raw pointers.  If the conversion from a
+        -:  181:   * PostgreSQL string representation allocates a pointer (e.g. using `new`),
+        -:  182:   * then the object's later deallocation should be baked in as well, right
+        -:  183:   * from the point where the object is created.  So if you want a pointer, use
+        -:  184:   * a smart pointer, not a raw pointer.
+        -:  185:   *
+        -:  186:   * There is one exception, of course: C-style strings.  Those are just
+        -:  187:   * pointers to the field's internal text data.
+        -:  188:   */
+        -:  189:  template<typename T>
+        -:  190:  auto to(T &obj, T const &default_value) const ->
+        -:  191:    typename std::enable_if_t<
+        -:  192:      (not std::is_pointer<T>::value or std::is_same<T, char const *>::value),
+        -:  193:      bool>
+        -:  194:  {
+        -:  195:    bool const null{is_null()};
+        -:  196:    if (null)
+        -:  197:      obj = default_value;
+        -:  198:    else
+        -:  199:      obj = from_string<T>(this->view());
+        -:  200:    return not null;
+        -:  201:  }
+        -:  202:
+        -:  203:  /// Return value as object of given type, or default value if null.
+        -:  204:  /** Note that unless the function is instantiated with an explicit template
+        -:  205:   * argument, the Default value's type also determines the result type.
+        -:  206:   */
+        -:  207:  template<typename T> T as(T const &default_value) const
+        -:  208:  {
+        -:  209:    if (is_null())
+        -:  210:      return default_value;
+        -:  211:    else
+        -:  212:      return from_string<T>(this->view());
+        -:  213:  }
+        -:  214:
+        -:  215:  /// Return value as object of given type, or throw exception if null.
+        -:  216:  /** Use as `as<std::optional<int>>()` or `as<my_untemplated_optional_t>()` as
+        -:  217:   * an alternative to `get<int>()`; this is disabled for use with raw pointers
+        -:  218:   * (other than C-strings) because storage for the value can't safely be
+        -:  219:   * allocated here
+        -:  220:   */
+function _ZNK4pqxx5field2asIjEET_v called 222 returned 100% blocks executed 66%
+function _ZNK4pqxx5field2asIiEET_v called 306878 returned 100% blocks executed 66%
+function _ZNK4pqxx5field2asINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEET_v called 613756 returned 100% blocks executed 66%
+function _ZNK4pqxx5field2asIlEET_v called 0 returned 0% blocks executed 0%
+function _ZNK4pqxx5field2asIdEET_v called 0 returned 0% blocks executed 0%
+function _ZNK4pqxx5field2asIbEET_v called 43 returned 100% blocks executed 66%
+   920899:  221:  template<typename T> T as() const
+        -:  222:  {
+   920899:  223:    if (is_null())
+      222:  223-block  0
+branch  0 taken 222
+branch  1 taken 0
+   306878:  223-block  1
+branch  2 taken 306878
+branch  3 taken 0
+   613756:  223-block  2
+branch  4 taken 613756
+branch  5 taken 0
+    $$$$$:  223-block  3
+branch  6 never executed
+branch  7 never executed
+    $$$$$:  223-block  4
+branch  8 never executed
+branch  9 never executed
+       43:  223-block  5
+branch 10 taken 43
+branch 11 taken 0
+        -:  224:    {
+        -:  225:      if constexpr (not nullness<T>::has_null)
+    #####:  226:        internal::throw_null_conversion(type_name<T>);
+    $$$$$:  226-block  0
+    $$$$$:  226-block  1
+    $$$$$:  226-block  2
+    $$$$$:  226-block  3
+    $$$$$:  226-block  4
+    $$$$$:  226-block  5
+        -:  227:      else
+        -:  228:        return nullness<T>::null();
+        -:  229:    }
+        -:  230:    else
+        -:  231:    {
+   920899:  232:      return from_string<T>(this->view());
+      222:  232-block  0
+   306878:  232-block  1
+   613756:  232-block  2
+    $$$$$:  232-block  3
+    $$$$$:  232-block  4
+       43:  232-block  5
+        -:  233:    }
+        -:  234:  }
+        -:  235:
+        -:  236:  /// Return value wrapped in some optional type (empty for nulls).
+        -:  237:  /** Use as `get<int>()` as before to obtain previous behavior, or specify
+        -:  238:   * container type with `get<int, std::optional>()`
+        -:  239:   */
+        -:  240:  template<typename T, template<typename> class O = std::optional>
+        -:  241:  constexpr O<T> get() const
+        -:  242:  {
+        -:  243:    return as<O<T>>();
+        -:  244:  }
+        -:  245:
+        -:  246:  /// Read SQL array contents as a @ref pqxx::array.
+        -:  247:  template<typename ELEMENT, auto... ARGS>
+        -:  248:  array<ELEMENT, ARGS...> as_sql_array() const
+        -:  249:  {
+        -:  250:    using array_type = array<ELEMENT, ARGS...>;
+        -:  251:
+        -:  252:    // There's no such thing as a null SQL array.
+        -:  253:    if (is_null())
+        -:  254:      internal::throw_null_conversion(type_name<array_type>);
+        -:  255:    else
+        -:  256:      return array_type{this->view(), this->m_home.m_encoding};
+        -:  257:  }
+        -:  258:
+        -:  259:  /// Parse the field as an SQL array.
+        -:  260:  /** Call the parser to retrieve values (and structure) from the array.
+        -:  261:   *
+        -:  262:   * Make sure the @ref result object stays alive until parsing is finished. If
+        -:  263:   * you keep the @ref row of `field` object alive, it will keep the @ref
+        -:  264:   * result object alive as well.
+        -:  265:   */
+        -:  266:  [[deprecated(
+        -:  267:    "Avoid pqxx::array_parser.  "
+        -:  268:    "Instead, use as_sql_array() to convert to pqxx::array.")]]
+        -:  269:  array_parser as_array() const & noexcept
+        -:  270:  {
+        -:  271:    return array_parser{c_str(), m_home.m_encoding};
+        -:  272:  }
+        -:  273:  //@}
+        -:  274:
+        -:  275:  /// Constructor.  Do not call this yourself; libpqxx will do it for you.
+        -:  276:  /** Create field as reference to a field in a result set.
+        -:  277:   * @param r Row that this field is part of.
+        -:  278:   * @param c Column number of this field.
+        -:  279:   */
+        -:  280:  [[deprecated(
+        -:  281:    "Do not construct fields yourself.  Get them from the row.")]] field(row const &r, row_size_type c) noexcept;
+        -:  282:
+        -:  283:  /// Constructor.  Do not call this yourself; libpqxx will do it for you.
+        -:  284:  [[deprecated(
+        -:  285:    "Do not construct fields yourself.  Get them from the "
+        -:  286:    "row.")]] field() noexcept = default;
+        -:  287:
+        -:  288:
+        -:  289:protected:
+        -:  290:  constexpr result const &home() const noexcept { return m_home; }
+        -:  291:  constexpr result::size_type idx() const noexcept { return m_row; }
+function _ZNK4pqxx5field3colEv called 7851815 returned 100% blocks executed 100%
+  7851815:  292:  constexpr row_size_type col() const noexcept { return m_col; }
+  7851815:  292-block  0
+        -:  293:
+        -:  294:  // TODO: Create gates.
+        -:  295:  friend class pqxx::result;
+        -:  296:  friend class pqxx::row;
+        -:  297:  field(
+        -:  298:    result const &r, result_size_type row_num, row_size_type col_num) noexcept
+        -:  299:          :
+        -:  300:          m_col{col_num}, m_home{r}, m_row{row_num}
+        -:  301:  {}
+        -:  302:
+        -:  303:  /**
+        -:  304:   * You'd expect this to be unsigned, but due to the way reverse iterators
+        -:  305:   * are related to regular iterators, it must be allowed to underflow to -1.
+        -:  306:   */
+        -:  307:  row_size_type m_col;
+        -:  308:
+        -:  309:private:
+        -:  310:  result m_home;
+        -:  311:  result::size_type m_row;
+        -:  312:};
+        -:  313:
+        -:  314:
+        -:  315:template<> inline bool field::to<std::string>(std::string &obj) const
+        -:  316:{
+        -:  317:  bool const null{is_null()};
+        -:  318:  if (not null)
+        -:  319:    obj = std::string{view()};
+        -:  320:  return not null;
+        -:  321:}
+        -:  322:
+        -:  323:
+        -:  324:template<>
+        -:  325:inline bool field::to<std::string>(
+        -:  326:  std::string &obj, std::string const &default_value) const
+        -:  327:{
+        -:  328:  bool const null{is_null()};
+        -:  329:  if (null)
+        -:  330:    obj = default_value;
+        -:  331:  else
+        -:  332:    obj = std::string{view()};
+        -:  333:  return not null;
+        -:  334:}
+        -:  335:
+        -:  336:
+        -:  337:/// Specialization: `to(char const *&)`.
+        -:  338:/** The buffer has the same lifetime as the data in this result (i.e. of this
+        -:  339: * result object, or the last remaining one copied from it etc.), so take care
+        -:  340: * not to use it after the last result object referring to this query result is
+        -:  341: * destroyed.
+        -:  342: */
+        -:  343:template<> inline bool field::to<char const *>(char const *&obj) const
+        -:  344:{
+        -:  345:  bool const null{is_null()};
+        -:  346:  if (not null)
+        -:  347:    obj = c_str();
+        -:  348:  return not null;
+        -:  349:}
+        -:  350:
+        -:  351:
+        -:  352:template<> inline bool field::to<std::string_view>(std::string_view &obj) const
+        -:  353:{
+        -:  354:  bool const null{is_null()};
+        -:  355:  if (not null)
+        -:  356:    obj = view();
+        -:  357:  return not null;
+        -:  358:}
+        -:  359:
+        -:  360:
+        -:  361:template<>
+        -:  362:inline bool field::to<std::string_view>(
+        -:  363:  std::string_view &obj, std::string_view const &default_value) const
+        -:  364:{
+        -:  365:  bool const null{is_null()};
+        -:  366:  if (null)
+        -:  367:    obj = default_value;
+        -:  368:  else
+        -:  369:    obj = view();
+        -:  370:  return not null;
+        -:  371:}
+        -:  372:
+        -:  373:
+        -:  374:template<> inline std::string_view field::as<std::string_view>() const
+        -:  375:{
+        -:  376:  if (is_null())
+        -:  377:    PQXX_UNLIKELY
+        -:  378:  internal::throw_null_conversion(type_name<std::string_view>);
+        -:  379:  return view();
+        -:  380:}
+        -:  381:
+        -:  382:
+        -:  383:template<>
+        -:  384:inline std::string_view
+        -:  385:field::as<std::string_view>(std::string_view const &default_value) const
+        -:  386:{
+        -:  387:  return is_null() ? default_value : view();
+        -:  388:}
+        -:  389:
+        -:  390:
+        -:  391:template<> inline bool field::to<zview>(zview &obj) const
+        -:  392:{
+        -:  393:  bool const null{is_null()};
+        -:  394:  if (not null)
+        -:  395:    obj = zview{c_str(), size()};
+        -:  396:  return not null;
+        -:  397:}
+        -:  398:
+        -:  399:
+        -:  400:template<>
+        -:  401:inline bool field::to<zview>(zview &obj, zview const &default_value) const
+        -:  402:{
+        -:  403:  bool const null{is_null()};
+        -:  404:  if (null)
+        -:  405:    obj = default_value;
+        -:  406:  else
+        -:  407:    obj = zview{c_str(), size()};
+        -:  408:  return not null;
+        -:  409:}
+        -:  410:
+        -:  411:
+        -:  412:template<> inline zview field::as<zview>() const
+        -:  413:{
+        -:  414:  if (is_null())
+        -:  415:    PQXX_UNLIKELY
+        -:  416:  internal::throw_null_conversion(type_name<zview>);
+        -:  417:  return zview{c_str(), size()};
+        -:  418:}
+        -:  419:
+        -:  420:
+        -:  421:template<> inline zview field::as<zview>(zview const &default_value) const
+        -:  422:{
+        -:  423:  return is_null() ? default_value : zview{c_str(), size()};
+        -:  424:}
+        -:  425:
+        -:  426:
+        -:  427:template<typename CHAR = char, typename TRAITS = std::char_traits<CHAR>>
+        -:  428:class field_streambuf : public std::basic_streambuf<CHAR, TRAITS>
+        -:  429:{
+        -:  430:public:
+        -:  431:  using char_type = CHAR;
+        -:  432:  using traits_type = TRAITS;
+        -:  433:  using int_type = typename traits_type::int_type;
+        -:  434:  using pos_type = typename traits_type::pos_type;
+        -:  435:  using off_type = typename traits_type::off_type;
+        -:  436:  using openmode = std::ios::openmode;
+        -:  437:  using seekdir = std::ios::seekdir;
+        -:  438:
+        -:  439:  explicit field_streambuf(field const &f) : m_field{f} { initialize(); }
+        -:  440:
+        -:  441:protected:
+        -:  442:  virtual int sync() override { return traits_type::eof(); }
+        -:  443:
+        -:  444:  virtual pos_type seekoff(off_type, seekdir, openmode) override
+        -:  445:  {
+        -:  446:    return traits_type::eof();
+        -:  447:  }
+        -:  448:  virtual pos_type seekpos(pos_type, openmode) override
+        -:  449:  {
+        -:  450:    return traits_type::eof();
+        -:  451:  }
+        -:  452:  virtual int_type overflow(int_type) override { return traits_type::eof(); }
+        -:  453:  virtual int_type underflow() override { return traits_type::eof(); }
+        -:  454:
+        -:  455:private:
+        -:  456:  field const &m_field;
+        -:  457:
+        -:  458:  int_type initialize()
+        -:  459:  {
+        -:  460:    auto g{static_cast<char_type *>(const_cast<char *>(m_field.c_str()))};
+        -:  461:    this->setg(g, g, g + std::size(m_field));
+        -:  462:    return int_type(std::size(m_field));
+        -:  463:  }
+        -:  464:};
+        -:  465:
+        -:  466:
+        -:  467:/// Input stream that gets its data from a result field
+        -:  468:/** @deprecated To convert a field's value string to some other type, e.g. to
+        -:  469: * an `int`, use the field's `as<...>()` member function.  To read a field
+        -:  470: * efficiently just as a string, use its `c_str()` or its
+        -:  471: * `as<std::string_vview>()`.
+        -:  472: *
+        -:  473: * Works like any other istream to read data from a field.  It supports all
+        -:  474: * formatting and streaming operations of `std::istream`.  For convenience
+        -:  475: * there is a fieldstream alias, which defines a @ref basic_fieldstream for
+        -:  476: * `char`.  This is similar to how e.g. `std::ifstream` relates to
+        -:  477: * `std::basic_ifstream`.
+        -:  478: *
+        -:  479: * This class has only been tested for the char type (and its default traits).
+        -:  480: */
+        -:  481:template<typename CHAR = char, typename TRAITS = std::char_traits<CHAR>>
+        -:  482:class basic_fieldstream : public std::basic_istream<CHAR, TRAITS>
+        -:  483:{
+        -:  484:  using super = std::basic_istream<CHAR, TRAITS>;
+        -:  485:
+        -:  486:public:
+        -:  487:  using char_type = CHAR;
+        -:  488:  using traits_type = TRAITS;
+        -:  489:  using int_type = typename traits_type::int_type;
+        -:  490:  using pos_type = typename traits_type::pos_type;
+        -:  491:  using off_type = typename traits_type::off_type;
+        -:  492:
+        -:  493:  [[deprecated("Use field::as<...>() or field::c_str().")]] basic_fieldstream(
+        -:  494:    field const &f) :
+        -:  495:          super{nullptr}, m_buf{f}
+        -:  496:  {
+        -:  497:    super::init(&m_buf);
+        -:  498:  }
+        -:  499:
+        -:  500:private:
+        -:  501:  field_streambuf<CHAR, TRAITS> m_buf;
+        -:  502:};
+        -:  503:
+        -:  504:
+        -:  505:/// @deprecated Read a field using `field::as<...>()` or `field::c_str()`.
+        -:  506:using fieldstream = basic_fieldstream<char>;
+        -:  507:
+        -:  508:
+        -:  509:/// Write a result field to any type of stream.
+        -:  510:/** @deprecated The C++ streams library is not great to work with.  In
+        -:  511: * particular, error handling is easy to get wrong.  So you're probably better
+        -:  512: * off doing this by hand.
+        -:  513: *
+        -:  514: * This can be convenient when writing a field to an output stream.  More
+        -:  515: * importantly, it lets you write a field to e.g. a `stringstream` which you
+        -:  516: * can then use to read, format and convert the field in ways that to() does
+        -:  517: * not support.
+        -:  518: *
+        -:  519: * Example: parse a field into a variable of the nonstandard `long long` type.
+        -:  520: *
+        -:  521: * ```cxx
+        -:  522: * extern result R;
+        -:  523: * long long L;
+        -:  524: * stringstream S;
+        -:  525: *
+        -:  526: * // Write field's string into S
+        -:  527: * S << R[0][0];
+        -:  528: *
+        -:  529: * // Parse contents of S into L
+        -:  530: * S >> L;
+        -:  531: * ```
+        -:  532: */
+        -:  533:template<typename CHAR>
+        -:  534:[[deprecated(
+        -:  535:  "Do this by hand, probably with better error checking.")]] inline std::
+        -:  536:  basic_ostream<CHAR> &
+        -:  537:  operator<<(std::basic_ostream<CHAR> &s, field const &value)
+        -:  538:{
+        -:  539:  s.write(value.c_str(), std::streamsize(std::size(value)));
+        -:  540:  return s;
+        -:  541:}
+        -:  542:
+        -:  543:
+        -:  544:/// Convert a field's value to type `T`.
+        -:  545:/** Unlike the "regular" `from_string`, this knows how to deal with null
+        -:  546: * values.
+        -:  547: */
+        -:  548:template<typename T> inline T from_string(field const &value)
+        -:  549:{
+        -:  550:  if (value.is_null())
+        -:  551:  {
+        -:  552:    if constexpr (nullness<T>::has_null)
+        -:  553:      return nullness<T>::null();
+        -:  554:    else
+        -:  555:      internal::throw_null_conversion(type_name<T>);
+        -:  556:  }
+        -:  557:  else
+        -:  558:  {
+        -:  559:    return from_string<T>(value.view());
+        -:  560:  }
+        -:  561:}
+        -:  562:
+        -:  563:
+        -:  564:/// Convert a field's value to `nullptr_t`.
+        -:  565:/** Yes, you read that right.  This conversion does nothing useful.  It always
+        -:  566: * returns `nullptr`.
+        -:  567: *
+        -:  568: * Except... what if the field is not null?  In that case, this throws
+        -:  569: * @ref conversion_error.
+        -:  570: */
+        -:  571:template<>
+        -:  572:inline std::nullptr_t from_string<std::nullptr_t>(field const &value)
+        -:  573:{
+        -:  574:  if (not value.is_null())
+        -:  575:    throw conversion_error{
+        -:  576:      "Extracting non-null field into nullptr_t variable."};
+        -:  577:  return nullptr;
+        -:  578:}
+        -:  579:
+        -:  580:
+        -:  581:/// Convert a field to a string.
+        -:  582:template<> PQXX_LIBEXPORT std::string to_string(field const &value);
+        -:  583:} // namespace pqxx
+        -:  584:#endif

@@ -1,0 +1,408 @@
+        -:    0:Source:/home/neo/.vcpkg-clion/vcpkg/installed/x64-linux/include/pqxx/internal/result_iterator.hxx
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Definitions for the pqxx::result class and support classes.
+        -:    2: *
+        -:    3: * pqxx::result represents the set of result rows from a database query.
+        -:    4: *
+        -:    5: * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/result instead.
+        -:    6: *
+        -:    7: * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+        -:    8: *
+        -:    9: * See COPYING for copyright license.  If you did not receive a file called
+        -:   10: * COPYING with this source code, please notify the distributor of this
+        -:   11: * mistake, or contact the author.
+        -:   12: */
+        -:   13:#ifndef PQXX_H_RESULT_ITERATOR
+        -:   14:#define PQXX_H_RESULT_ITERATOR
+        -:   15:
+        -:   16:#include "pqxx/row.hxx"
+        -:   17:
+        -:   18:
+        -:   19:/* Result iterator.
+        -:   20: *
+        -:   21: * Don't include this header from your own application; it is included for you
+        -:   22: * by other libpqxx headers.
+        -:   23: */
+        -:   24:
+        -:   25:namespace pqxx
+        -:   26:{
+        -:   27:/// Iterator for rows in a result.  Use as result::const_iterator.
+        -:   28:/** A result, once obtained, cannot be modified.  Therefore there is no
+        -:   29: * plain iterator type for result.  However its const_iterator type can be
+        -:   30: * used to inspect its rows without changing them.
+        -:   31: */
+function _ZN4pqxx21const_result_iteratorD2Ev called 4946 returned 100% blocks executed 100%
+        -:   32:class PQXX_LIBEXPORT const_result_iterator : public row
+        -:   33:{
+        -:   34:public:
+        -:   35:  // TODO: Change operator[] so this becomes a proper random_access_iterator.
+        -:   36:  using iterator_category = std::bidirectional_iterator_tag;
+        -:   37:  using value_type = row const;
+        -:   38:  using pointer = row const *;
+        -:   39:  using reference = row;
+        -:   40:  using size_type = result_size_type;
+        -:   41:  using difference_type = result_difference_type;
+        -:   42:
+        -:   43:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:   44:  /// Create an iterator, but in an unusable state.
+        -:   45:  const_result_iterator() noexcept = default;
+        -:   46:  /// Copy an iterator.
+        -:   47:  const_result_iterator(const_result_iterator const &) noexcept = default;
+        -:   48:  /// Move an iterator.
+        -:   49:  const_result_iterator(const_result_iterator &&) noexcept = default;
+        -:   50:
+        -:   51:  /// Begin iterating a @ref row.
+        -:   52:  const_result_iterator(row const &t) noexcept : row{t} {}
+        -:   53:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:   54:
+        -:   55:  /**
+        -:   56:   * @name Dereferencing operators
+        -:   57:   *
+        -:   58:   * An iterator "points to" its own row, which is also itself.  This makes it
+        -:   59:   * easy to address a @ref pqxx::result as a two-dimensional container,
+        -:   60:   * without going through the intermediate step of dereferencing the iterator.
+        -:   61:   * It makes the interface similar to C pointer/array semantics.
+        -:   62:   *
+        -:   63:   * IIRC Alex Stepanov, the inventor of the STL, once remarked that having
+        -:   64:   * this as standard behaviour for pointers would be useful in some
+        -:   65:   * algorithms.  So even if this makes me look foolish, I would seem to be in
+        -:   66:   * distinguished company.
+        -:   67:   */
+        -:   68:  //@{
+        -:   69:  /// Dereference the iterator.
+        -:   70:  [[nodiscard]] pointer operator->() const { return this; }
+        -:   71:
+        -:   72:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:   73:  /// Dereference the iterator.
+function _ZNK4pqxx21const_result_iteratordeEv called 39608806 returned 100% blocks executed 100%
+ 39608806:   74:  [[nodiscard]] reference operator*() const { return *this; }
+ 39608806:   74-block  0
+        -:   75:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:   76:  //@}
+        -:   77:
+        -:   78:  /**
+        -:   79:   * @name Field access
+        -:   80:   */
+        -:   81:  //@{
+        -:   82:  using row::back;
+        -:   83:  using row::front;
+        -:   84:  // TODO: Replace with standard operator[]: i[n] == *(i + n).
+        -:   85:  using row::operator[];
+        -:   86:  using row::at;
+        -:   87:  using row::rownumber;
+        -:   88:  //@}
+        -:   89:
+        -:   90:  /**
+        -:   91:   * @name Manipulations
+        -:   92:   */
+        -:   93:  //@{
+        -:   94:  const_result_iterator &operator=(const_result_iterator const &rhs)
+        -:   95:  {
+        -:   96:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:   97:    row::operator=(rhs);
+        -:   98:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:   99:    return *this;
+        -:  100:  }
+        -:  101:
+        -:  102:  const_result_iterator &operator=(const_result_iterator &&rhs)
+        -:  103:  {
+        -:  104:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  105:    row::operator=(std::move(rhs));
+        -:  106:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  107:    return *this;
+        -:  108:  }
+        -:  109:
+        -:  110:  const_result_iterator operator++(int) &;
+function _ZN4pqxx21const_result_iteratorppEv called 39608806 returned 100% blocks executed 100%
+ 39608806:  111:  const_result_iterator &operator++()
+        -:  112:  {
+ 39608806:  113:    ++m_index;
+ 39608806:  114:    return *this;
+ 39608806:  114-block  0
+        -:  115:  }
+        -:  116:  const_result_iterator operator--(int) &;
+        -:  117:  const_result_iterator &operator--()
+        -:  118:  {
+        -:  119:    --m_index;
+        -:  120:    return *this;
+        -:  121:  }
+        -:  122:
+        -:  123:  const_result_iterator &operator+=(difference_type i)
+        -:  124:  {
+        -:  125:    m_index += i;
+        -:  126:    return *this;
+        -:  127:  }
+        -:  128:  const_result_iterator &operator-=(difference_type i)
+        -:  129:  {
+        -:  130:    m_index -= i;
+        -:  131:    return *this;
+        -:  132:  }
+        -:  133:
+        -:  134:  /// Interchange two iterators in an exception-safe manner.
+        -:  135:  void swap(const_result_iterator &other) noexcept
+        -:  136:  {
+        -:  137:#include "pqxx/internal/ignore-deprecated-pre.hxx"
+        -:  138:    row::swap(other);
+        -:  139:#include "pqxx/internal/ignore-deprecated-post.hxx"
+        -:  140:  }
+        -:  141:  //@}
+        -:  142:
+        -:  143:  /**
+        -:  144:   * @name Comparisons
+        -:  145:   */
+        -:  146:  //@{
+        -:  147:  [[nodiscard]] bool operator==(const_result_iterator const &i) const
+        -:  148:  {
+        -:  149:    return m_index == i.m_index;
+        -:  150:  }
+function _ZNK4pqxx21const_result_iteratorneERKS0_ called 39611279 returned 100% blocks executed 100%
+ 39611279:  151:  [[nodiscard]] bool operator!=(const_result_iterator const &i) const
+        -:  152:  {
+ 39611279:  153:    return m_index != i.m_index;
+ 39611279:  153-block  0
+        -:  154:  }
+        -:  155:  [[nodiscard]] bool operator<(const_result_iterator const &i) const
+        -:  156:  {
+        -:  157:    return m_index < i.m_index;
+        -:  158:  }
+        -:  159:  [[nodiscard]] bool operator<=(const_result_iterator const &i) const
+        -:  160:  {
+        -:  161:    return m_index <= i.m_index;
+        -:  162:  }
+        -:  163:  [[nodiscard]] bool operator>(const_result_iterator const &i) const
+        -:  164:  {
+        -:  165:    return m_index > i.m_index;
+        -:  166:  }
+        -:  167:  [[nodiscard]] bool operator>=(const_result_iterator const &i) const
+        -:  168:  {
+        -:  169:    return m_index >= i.m_index;
+        -:  170:  }
+        -:  171:  //@}
+        -:  172:
+        -:  173:  /**
+        -:  174:   * @name Arithmetic operators
+        -:  175:   */
+        -:  176:  //@{
+        -:  177:  [[nodiscard]] inline const_result_iterator operator+(difference_type) const;
+        -:  178:  friend const_result_iterator
+        -:  179:  operator+(difference_type, const_result_iterator const &);
+        -:  180:  [[nodiscard]] inline const_result_iterator operator-(difference_type) const;
+        -:  181:  [[nodiscard]] inline difference_type
+        -:  182:  operator-(const_result_iterator const &) const;
+        -:  183:  //@}
+        -:  184:
+        -:  185:private:
+        -:  186:  friend class pqxx::result;
+function _ZN4pqxx21const_result_iteratorC2EPKNS_6resultEi called 2473 returned 100% blocks executed 100%
+     2473:  187:  const_result_iterator(pqxx::result const *r, result_size_type i) noexcept :
+     2473:  188:          row{*r, i, r->columns()}
+     2473:  189:  {}
+     2473:  189-block  0
+        -:  190:};
+        -:  191:
+        -:  192:
+        -:  193:/// Reverse iterator for result.  Use as result::const_reverse_iterator.
+        -:  194:class PQXX_LIBEXPORT const_reverse_result_iterator
+        -:  195:        : private const_result_iterator
+        -:  196:{
+        -:  197:public:
+        -:  198:  using super = const_result_iterator;
+        -:  199:  using iterator_type = const_result_iterator;
+        -:  200:  using iterator_type::difference_type;
+        -:  201:  using iterator_type::iterator_category;
+        -:  202:  using iterator_type::pointer;
+        -:  203:  using value_type = iterator_type::value_type;
+        -:  204:  using reference = iterator_type::reference;
+        -:  205:
+        -:  206:  /// Create an iterator, but in an unusable state.
+        -:  207:  const_reverse_result_iterator() = default;
+        -:  208:  /// Copy an iterator.
+        -:  209:  const_reverse_result_iterator(const_reverse_result_iterator const &rhs) =
+        -:  210:    default;
+        -:  211:  /// Copy a reverse iterator from a regular iterator.
+        -:  212:  explicit const_reverse_result_iterator(const_result_iterator const &rhs) :
+        -:  213:          const_result_iterator{rhs}
+        -:  214:  {
+        -:  215:    super::operator--();
+        -:  216:  }
+        -:  217:
+        -:  218:  /// Move a regular iterator into a reverse iterator.
+        -:  219:  explicit const_reverse_result_iterator(const_result_iterator const &&rhs) :
+        -:  220:          const_result_iterator{std::move(rhs)}
+        -:  221:  {
+        -:  222:    super::operator--();
+        -:  223:  }
+        -:  224:
+        -:  225:  /// Return the underlying "regular" iterator (as per standard library).
+        -:  226:  [[nodiscard]] PQXX_PURE const_result_iterator base() const noexcept;
+        -:  227:
+        -:  228:  /**
+        -:  229:   * @name Dereferencing operators
+        -:  230:   */
+        -:  231:  //@{
+        -:  232:  /// Dereference iterator.
+        -:  233:  using const_result_iterator::operator->;
+        -:  234:  /// Dereference iterator.
+        -:  235:  using const_result_iterator::operator*;
+        -:  236:  //@}
+        -:  237:
+        -:  238:  /**
+        -:  239:   * @name Field access
+        -:  240:   */
+        -:  241:  //@{
+        -:  242:  using const_result_iterator::back;
+        -:  243:  using const_result_iterator::front;
+        -:  244:  // TODO: Replace with standard operator[]: i[n] == *(i + n).
+        -:  245:  using const_result_iterator::operator[];
+        -:  246:  using const_result_iterator::at;
+        -:  247:  using const_result_iterator::rownumber;
+        -:  248:  //@}
+        -:  249:
+        -:  250:  /**
+        -:  251:   * @name Manipulations
+        -:  252:   */
+        -:  253:  //@{
+        -:  254:  const_reverse_result_iterator &
+        -:  255:  operator=(const_reverse_result_iterator const &r)
+        -:  256:  {
+        -:  257:    iterator_type::operator=(r);
+        -:  258:    return *this;
+        -:  259:  }
+        -:  260:  const_reverse_result_iterator &operator=(const_reverse_result_iterator &&r)
+        -:  261:  {
+        -:  262:    iterator_type::operator=(std::move(r));
+        -:  263:    return *this;
+        -:  264:  }
+        -:  265:  const_reverse_result_iterator &operator++()
+        -:  266:  {
+        -:  267:    iterator_type::operator--();
+        -:  268:    return *this;
+        -:  269:  }
+        -:  270:  const_reverse_result_iterator operator++(int) &;
+        -:  271:  const_reverse_result_iterator &operator--()
+        -:  272:  {
+        -:  273:    iterator_type::operator++();
+        -:  274:    return *this;
+        -:  275:  }
+        -:  276:  const_reverse_result_iterator operator--(int) &;
+        -:  277:  const_reverse_result_iterator &operator+=(difference_type i)
+        -:  278:  {
+        -:  279:    iterator_type::operator-=(i);
+        -:  280:    return *this;
+        -:  281:  }
+        -:  282:  const_reverse_result_iterator &operator-=(difference_type i)
+        -:  283:  {
+        -:  284:    iterator_type::operator+=(i);
+        -:  285:    return *this;
+        -:  286:  }
+        -:  287:
+        -:  288:  void swap(const_reverse_result_iterator &other) noexcept
+        -:  289:  {
+        -:  290:    const_result_iterator::swap(other);
+        -:  291:  }
+        -:  292:  //@}
+        -:  293:
+        -:  294:  /**
+        -:  295:   * @name Arithmetic operators
+        -:  296:   */
+        -:  297:  //@{
+        -:  298:  [[nodiscard]] const_reverse_result_iterator
+        -:  299:  operator+(difference_type i) const
+        -:  300:  {
+        -:  301:    return const_reverse_result_iterator(base() - i);
+        -:  302:  }
+        -:  303:  [[nodiscard]] const_reverse_result_iterator operator-(difference_type i)
+        -:  304:  {
+        -:  305:    return const_reverse_result_iterator(base() + i);
+        -:  306:  }
+        -:  307:  [[nodiscard]] difference_type
+        -:  308:  operator-(const_reverse_result_iterator const &rhs) const
+        -:  309:  {
+        -:  310:    return rhs.const_result_iterator::operator-(*this);
+        -:  311:  }
+        -:  312:  //@}
+        -:  313:
+        -:  314:  /**
+        -:  315:   * @name Comparisons
+        -:  316:   */
+        -:  317:  //@{
+        -:  318:  [[nodiscard]] bool
+        -:  319:  operator==(const_reverse_result_iterator const &rhs) const noexcept
+        -:  320:  {
+        -:  321:    return iterator_type::operator==(rhs);
+        -:  322:  }
+        -:  323:  [[nodiscard]] bool
+        -:  324:  operator!=(const_reverse_result_iterator const &rhs) const noexcept
+        -:  325:  {
+        -:  326:    return not operator==(rhs);
+        -:  327:  }
+        -:  328:
+        -:  329:  [[nodiscard]] bool operator<(const_reverse_result_iterator const &rhs) const
+        -:  330:  {
+        -:  331:    return iterator_type::operator>(rhs);
+        -:  332:  }
+        -:  333:  [[nodiscard]] bool operator<=(const_reverse_result_iterator const &rhs) const
+        -:  334:  {
+        -:  335:    return iterator_type::operator>=(rhs);
+        -:  336:  }
+        -:  337:  [[nodiscard]] bool operator>(const_reverse_result_iterator const &rhs) const
+        -:  338:  {
+        -:  339:    return iterator_type::operator<(rhs);
+        -:  340:  }
+        -:  341:  [[nodiscard]] bool operator>=(const_reverse_result_iterator const &rhs) const
+        -:  342:  {
+        -:  343:    return iterator_type::operator<=(rhs);
+        -:  344:  }
+        -:  345:  //@}
+        -:  346:};
+        -:  347:
+        -:  348:
+        -:  349:inline const_result_iterator
+        -:  350:const_result_iterator::operator+(result::difference_type o) const
+        -:  351:{
+        -:  352:  return {&m_result, size_type(result::difference_type(m_index) + o)};
+        -:  353:}
+        -:  354:
+        -:  355:inline const_result_iterator
+        -:  356:operator+(result::difference_type o, const_result_iterator const &i)
+        -:  357:{
+        -:  358:  return i + o;
+        -:  359:}
+        -:  360:
+        -:  361:inline const_result_iterator
+        -:  362:const_result_iterator::operator-(result::difference_type o) const
+        -:  363:{
+        -:  364:  return {&m_result, result_size_type(result::difference_type(m_index) - o)};
+        -:  365:}
+        -:  366:
+        -:  367:inline result::difference_type
+        -:  368:const_result_iterator::operator-(const const_result_iterator &i) const
+        -:  369:{
+        -:  370:  return result::difference_type(num() - i.num());
+        -:  371:}
+        -:  372:
+function _ZNK4pqxx6result3endEv called 2473 returned 100% blocks executed 100%
+     2473:  373:inline const_result_iterator result::end() const noexcept
+        -:  374:{
+     2473:  375:  return {this, size()};
+     2473:  375-block  0
+        -:  376:}
+        -:  377:
+        -:  378:
+        -:  379:inline const_result_iterator result::cend() const noexcept
+        -:  380:{
+        -:  381:  return end();
+        -:  382:}
+        -:  383:
+        -:  384:
+        -:  385:inline const_reverse_result_iterator
+        -:  386:operator+(result::difference_type n, const_reverse_result_iterator const &i)
+        -:  387:{
+        -:  388:  return const_reverse_result_iterator{i.base() - n};
+        -:  389:}
+        -:  390:
+        -:  391:} // namespace pqxx
+        -:  392:#endif

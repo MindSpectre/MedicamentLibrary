@@ -13,6 +13,14 @@ target_link_libraries(Sandbox
 
 SET(UNIT_TESTING_TARGET ${PROJECT_NAME}_Tests_Unit)
 SET(TEST_NECESSARY_LIBS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+
+
+##############################################################################
+# 1st Priority tests(Fast)
+##############################################################################
+add_subdirectory(unit_tests/objects)
+##############################################################################
+
 ##############################################################################
 # Test PQxx Client DB
 ##############################################################################
@@ -27,7 +35,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_PqxxClient
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(DbUnitTests ${UNIT_TESTING_TARGET}_PqxxClient)
+add_test(UnitTestPqxxClient ${UNIT_TESTING_TARGET}_PqxxClient)
 ##############################################################################
 
 ##############################################################################
@@ -42,7 +50,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_StopWatch
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(SupportClasses ${UNIT_TESTING_TARGET}_StopWatch)
+add_test(UnitTestStopWatch ${UNIT_TESTING_TARGET}_StopWatch)
 ##############################################################################
 
 ##############################################################################
@@ -58,5 +66,5 @@ target_link_libraries(${UNIT_TESTING_TARGET}_TransactionManager
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(SupportClasses ${UNIT_TESTING_TARGET}_TransactionManager)
+add_test(UnitTestTransactionManager ${UNIT_TESTING_TARGET}_TransactionManager)
 ##############################################################################

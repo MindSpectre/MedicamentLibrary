@@ -1,0 +1,347 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/objects/base/include/disease.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Disease_Properties.dir/disease/properties/properties_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_Disease_Properties.dir/disease/properties/properties_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:
+        -:    4:#include "common_object.hpp"
+        -:    5:#include "properties_controller.hpp"
+        -:    6:
+        -:    7:namespace drug_lib::data::objects
+        -:    8:{
+        -:    9:    class Disease final : public ObjectBase, public PropertiesHolder
+        -:   10:    {
+        -:   11:    public:
+        -:   12:        struct field_name : _common_fields_names
+        -:   13:        {
+        -:   14:            static constexpr auto type = "type";
+        -:   15:            static constexpr auto is_infectious = "is_infectious";
+        -:   16:        };
+        -:   17:
+function _ZNK8drug_lib4data7objects7Disease9to_recordEv called 1 returned 100% blocks executed 55%
+        1:   18:        [[nodiscard]] common::database::Record to_record() const override
+        -:   19:        {
+        1:   20:            common::database::Record record;
+        1:   21:            record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+        1:   21-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   21-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   21-block  2
+        1:   22:            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
+        1:   22-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   22-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   22-block  2
+        1:   23:            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
+        1:   23-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   23-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   23-block  2
+        1:   24:            record.push_back(
+        1:   24-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   24-block  1
+        1:   25:                std::make_unique<common::database::Field<bool>>(field_name::is_infectious, is_infectious_));
+        1:   25-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   26:            record.push_back(collection_.make_properties_field());
+        1:   26-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   26-block  1
+        1:   27:            return record;
+        1:   28:        }
+        1:   28-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   28-block  1
+    $$$$$:   28-block  2
+        1:   28-block  3
+    $$$$$:   28-block  4
+    $$$$$:   28-block  5
+        -:   29:
+function _ZN8drug_lib4data7objects7Disease11from_recordERKNS_6common8database6RecordE called 0 returned 0% blocks executed 0%
+    #####:   30:        void from_record(const common::database::Record& record) override
+        -:   31:        {
+    #####:   32:            for (const auto& field : record.fields())
+    $$$$$:   32-block  0
+    $$$$$:   32-block  1
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   32-block  2
+    $$$$$:   32-block  3
+        -:   33:            {
+    #####:   34:                if (const auto& field_name = field->get_name();
+    $$$$$:   34-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   34-block  1
+branch  2 never executed
+branch  3 never executed
+    #####:   35:                    field_name == field_name::id)
+        -:   36:                {
+    #####:   37:                    id_ = field->as<int32_t>();
+    #####:   38:                }
+    $$$$$:   38-block  0
+    #####:   39:                else if (field_name == field_name::name)
+    $$$$$:   39-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   40:                {
+    #####:   41:                    name_ = field->as<std::string>();
+    #####:   42:                }
+    $$$$$:   42-block  0
+    #####:   43:                else if (field_name == field_name::type)
+    $$$$$:   43-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   44:                {
+    #####:   45:                    type_ = field->as<std::string>();
+    #####:   46:                }
+    $$$$$:   46-block  0
+    #####:   47:                else if (field_name == field_name::is_infectious)
+    $$$$$:   47-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   48:                {
+    #####:   49:                    is_infectious_ = field->as<bool>();
+    #####:   50:                }
+    $$$$$:   50-block  0
+    #####:   51:                else if (field_name == field_name::properties)
+    $$$$$:   51-block  0
+branch  0 never executed
+branch  1 never executed
+        -:   52:                {
+    #####:   53:                    create_collection(field);
+    #####:   54:                }
+    $$$$$:   54-block  0
+        -:   55:                else
+        -:   56:                {
+    #####:   57:                    throw std::invalid_argument("Unknown field name: " + field_name);
+    $$$$$:   57-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   57-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   57-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   57-block  3
+    $$$$$:   57-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   57-block  5
+    $$$$$:   57-block  6
+    $$$$$:   57-block  7
+        -:   58:                }
+        -:   59:            }
+    #####:   60:        }
+    $$$$$:   60-block  0
+    $$$$$:   60-block  1
+        -:   61:
+function _ZN8drug_lib4data7objects7Disease11from_recordERKSt10unique_ptrINS_6common8database10ViewRecordESt14default_deleteIS6_EE called 0 returned 0% blocks executed 0%
+    #####:   62:        void from_record(const std::unique_ptr<common::database::ViewRecord>& viewed) override
+        -:   63:        {
+    #####:   64:            for (std::size_t i = 0; i < viewed->size(); i++)
+    $$$$$:   64-block  0
+    $$$$$:   64-block  1
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   64-block  2
+        -:   65:            {
+    #####:   66:                if (const auto& field_name = viewed->name(i);
+    $$$$$:   66-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   67:                    field_name == field_name::id)
+    $$$$$:   67-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   67-block  1
+    $$$$$:   67-block  2
+        -:   68:                {
+    #####:   69:                    id_ = std::stoi(viewed->extract(i));
+    $$$$$:   69-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   69-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   69-block  2
+    #####:   70:                }
+    $$$$$:   70-block  0
+    #####:   71:                else if (field_name == field_name::name)
+    $$$$$:   71-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   71-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   72:                {
+    #####:   73:                    name_ = viewed->extract(i);
+    $$$$$:   73-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   74:                }
+    $$$$$:   74-block  0
+    #####:   75:                else if (field_name == field_name::type)
+    $$$$$:   75-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   75-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   76:                {
+    #####:   77:                    type_ = viewed->extract(i);
+    $$$$$:   77-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   78:                }
+    $$$$$:   78-block  0
+    #####:   79:                else if (field_name == field_name::is_infectious)
+    $$$$$:   79-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   79-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   80:                {
+    #####:   81:                    is_infectious_ = viewed->extract(i) == "true";
+    $$$$$:   81-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   81-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   81-block  2
+    #####:   82:                }
+    $$$$$:   82-block  0
+    #####:   83:                else if (field_name == field_name::properties)
+    $$$$$:   83-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   83-block  1
+branch  2 never executed
+branch  3 never executed
+        -:   84:                {
+    #####:   85:                    create_collection(viewed->extract(i));
+    $$$$$:   85-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   85-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   85-block  2
+    #####:   86:                }
+    $$$$$:   86-block  0
+        -:   87:                else
+        -:   88:                {
+    #####:   89:                    throw std::invalid_argument("Unknown field name: " + field_name);
+    $$$$$:   89-block  0
+branch  0 never executed
+branch  1 never executed
+    $$$$$:   89-block  1
+branch  2 never executed
+branch  3 never executed
+    $$$$$:   89-block  2
+branch  4 never executed
+branch  5 never executed
+    $$$$$:   89-block  3
+    $$$$$:   89-block  4
+branch  6 never executed
+branch  7 never executed
+    $$$$$:   89-block  5
+    $$$$$:   89-block  6
+        -:   90:                }
+    #####:   91:            }
+    $$$$$:   91-block  0
+    #####:   92:        }
+    $$$$$:   92-block  0
+    $$$$$:   92-block  1
+    $$$$$:   92-block  2
+        -:   93:
+function _ZN8drug_lib4data7objects7DiseaseC2Ev called 3 returned 100% blocks executed 100%
+        9:   94:        Disease() = default;
+        3:   94-block  0
+        3:   94-block  1
+        3:   94-block  2
+        -:   95:
+function _ZN8drug_lib4data7objects7DiseaseC2EiNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_b called 1 returned 100% blocks executed 100%
+        2:   96:        Disease(const int32_t id, std::string name, std::string type, const bool is_infectious)
+        1:   97:            : id_(id),
+        1:   98:              name_(std::move(name)),
+        1:   99:              type_(std::move(type)),
+        1:  100:              is_infectious_(is_infectious)
+        2:  101:        {
+        1:  102:        }
+        1:  102-block  0
+        -:  103:
+        -:  104:        [[nodiscard]] int32_t get_id() const
+        -:  105:        {
+        -:  106:            return id_;
+        -:  107:        }
+        -:  108:
+        -:  109:        void set_id(const int32_t id)
+        -:  110:        {
+        -:  111:            id_ = id;
+        -:  112:        }
+        -:  113:
+        -:  114:        [[nodiscard]] const std::string& get_name() const
+        -:  115:        {
+        -:  116:            return name_;
+        -:  117:        }
+        -:  118:
+        -:  119:        void set_name(const std::string& name)
+        -:  120:        {
+        -:  121:            name_ = name;
+        -:  122:        }
+        -:  123:
+        -:  124:        [[nodiscard]] const std::string& get_type() const
+        -:  125:        {
+        -:  126:            return type_;
+        -:  127:        }
+        -:  128:
+        -:  129:        void set_type(const std::string& type)
+        -:  130:        {
+        -:  131:            type_ = type;
+        -:  132:        }
+        -:  133:
+        -:  134:
+        -:  135:        [[nodiscard]] bool is_is_infectious() const
+        -:  136:        {
+        -:  137:            return is_infectious_;
+        -:  138:        }
+        -:  139:
+        -:  140:        void set_is_infectious(const bool is_infectious)
+        -:  141:        {
+        -:  142:            is_infectious_ = is_infectious;
+        -:  143:        }
+        -:  144:
+        -:  145:
+function _ZN8drug_lib4data7objects7DiseaseD2Ev called 4 returned 100% blocks executed 100%
+function _ZN8drug_lib4data7objects7DiseaseD0Ev called 0 returned 0% blocks executed 0%
+        4:  146:        ~Disease() override = default;
+        4:  146-block  0
+    $$$$$:  146-block  1
+        -:  147:
+        -:  148:    private:
+        3:  149:        int32_t id_ = -1;
+        -:  150:        std::string name_;
+        -:  151:        std::string type_;
+        3:  152:        bool is_infectious_ = false;
+        -:  153:    };
+        -:  154:}

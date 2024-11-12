@@ -4,11 +4,11 @@
 add_library(DrugLib_Data_Objects
         base/source/objects.cpp
         base/include/objects.hpp
-        base/include/types/organization.hpp
-        base/include/types/medicament.hpp
-        base/include/types/patient.hpp
-        base/include/types/common_object.hpp
-        base/include/types/disease.hpp
+        base/include/organization.hpp
+        base/include/medicament.hpp
+        base/include/patient.hpp
+        base/include/common_object.hpp
+        base/include/disease.hpp
 )
 target_link_libraries(DrugLib_Data_Objects
         PUBLIC
@@ -17,7 +17,6 @@ target_link_libraries(DrugLib_Data_Objects
 target_include_directories(DrugLib_Data_Objects
         PUBLIC
         base/include
-        base/
 )
 ##############################################################################
 add_subdirectory(properties)

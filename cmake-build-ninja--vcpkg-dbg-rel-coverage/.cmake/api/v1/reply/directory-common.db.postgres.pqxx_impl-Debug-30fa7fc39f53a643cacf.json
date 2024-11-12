@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "common/db/postgres/pqxx_impl",
+		"source" : "common/db/postgres/pqxx_impl"
+	}
+}

@@ -52,8 +52,7 @@ target_include_directories(DrugLib_Data_Objects_Properties_Organizations
 ##############################################################################
 add_library(DrugLib_Data_Objects_Properties_Patients
         patients/source/patient_properties.cpp
-        patients/include/patient_properties.hpp
-        patients/include/current_diseases.hpp
+        patients/include/patient_properties/current_diseases.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Patients PUBLIC
         ${DATA_OBJECTS_PROPERTIES}_DataProperty

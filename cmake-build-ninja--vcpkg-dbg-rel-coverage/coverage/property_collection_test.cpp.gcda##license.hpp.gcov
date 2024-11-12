@@ -1,0 +1,152 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/data/objects/properties/organizations/include/organization_properties/license.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_PropertyCollection.dir/support_objects/property_collection_test.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/tests/unit_tests/objects/CMakeFiles/DrugLib_Tests_Unit_Objects_PropertyCollection.dir/support_objects/property_collection_test.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <ostream>
+        -:    4:
+        -:    5:#include "organizations/source/properties_definition.hpp"
+        -:    6:
+        -:    7:namespace drug_lib::data::objects::organizations
+        -:    8:{
+function _ZN8drug_lib4data7objects13organizations7LicenseC2ERKS3_ called 3 returned 100% blocks executed 42%
+        3:    9:    class License final : public DataProperty
+        3:    9-block  0
+branch  0 taken 3
+branch  1 taken 0
+        3:    9-block  1
+    $$$$$:    9-block  2
+    $$$$$:    9-block  3
+    $$$$$:    9-block  4
+    $$$$$:    9-block  5
+        -:   10:    {
+        -:   11:    public:
+function _ZN8drug_lib4data7objects13organizations7LicenseC2Ev called 5 returned 100% blocks executed 100%
+        5:   12:        License() = default;
+        5:   12-block  0
+        -:   13:
+function _ZN8drug_lib4data7objects13organizations7LicenseC2ERKN4Json5ValueE called 1 returned 100% blocks executed 50%
+        2:   14:        explicit License(const Json::Value& properties)
+        1:   15:        {
+        1:   16:            this->set_info(properties);
+        1:   16-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   17:        }
+        1:   17-block  0
+    $$$$$:   17-block  1
+    $$$$$:   17-block  2
+        -:   18:
+        -:   19:        License(std::string license_name, std::string license_key)
+        -:   20:            : license_name_(std::move(license_name)),
+        -:   21:              license_key_(std::move(license_key))
+        -:   22:        {
+        -:   23:        }
+        -:   24:
+function _ZN8drug_lib4data7objects13organizations7LicenseD2Ev called 9 returned 100% blocks executed 100%
+function _ZN8drug_lib4data7objects13organizations7LicenseD0Ev called 0 returned 0% blocks executed 0%
+        9:   25:        ~License() override = default;
+        9:   25-block  0
+    $$$$$:   25-block  1
+        -:   26:
+function _ZNK8drug_lib4data7objects13organizations7License8get_infoEv called 1 returned 100% blocks executed 50%
+        1:   27:        [[nodiscard]] Json::Value get_info() const override
+        -:   28:        {
+        1:   29:            Json::Value license_params;
+        1:   30:            license_params[names_of_json_fields::license_name] = license_name_;
+        1:   30-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   30-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   30-block  2
+        1:   31:            license_params[names_of_json_fields::license_key] = license_key_;
+        1:   31-block  0
+branch  0 taken 1
+branch  1 taken 0
+        1:   31-block  1
+branch  2 taken 1
+branch  3 taken 0
+    $$$$$:   31-block  2
+        1:   32:            return license_params;
+        1:   33:        }
+        1:   33-block  0
+branch  0 taken 1
+branch  1 taken 0
+    $$$$$:   33-block  1
+    $$$$$:   33-block  2
+        1:   33-block  3
+    $$$$$:   33-block  4
+    $$$$$:   33-block  5
+        -:   34:
+function _ZN8drug_lib4data7objects13organizations7License8set_infoERKN4Json5ValueE called 1 returned 100% blocks executed 100%
+        1:   35:        void set_info(const Json::Value& property) override
+        -:   36:        {
+        1:   37:            license_name_ = property[names_of_json_fields::license_name].asString();
+        1:   38:            license_key_ = property[names_of_json_fields::license_key].asString();
+        1:   39:        }
+        1:   39-block  0
+        -:   40:
+function _ZNK8drug_lib4data7objects13organizations7License8get_nameB5cxx11Ev called 7 returned 100% blocks executed 50%
+        7:   41:        [[nodiscard]] std::string get_name() const override
+        -:   42:        {
+        7:   43:            return properties::license;
+        7:   43-block  0
+branch  0 taken 7
+branch  1 taken 0
+        7:   43-block  1
+    $$$$$:   43-block  2
+    $$$$$:   43-block  3
+    #####:   44:        }
+        -:   45:
+        -:   46:
+function _ZNK8drug_lib4data7objects13organizations7License16get_license_nameB5cxx11Ev called 1 returned 100% blocks executed 100%
+        1:   47:        [[nodiscard]] const std::string& get_license_name() const
+        -:   48:        {
+        1:   49:            return license_name_;
+        1:   49-block  0
+        -:   50:        }
+        -:   51:
+function _ZN8drug_lib4data7objects13organizations7License16set_license_nameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 4 returned 100% blocks executed 100%
+        4:   52:        void set_license_name(const std::string& license_name)
+        -:   53:        {
+        4:   54:            license_name_ = license_name;
+        4:   55:        }
+        4:   55-block  0
+        -:   56:
+        -:   57:        [[nodiscard]] const std::string& get_license_key() const
+        -:   58:        {
+        -:   59:            return license_key_;
+        -:   60:        }
+        -:   61:
+function _ZN8drug_lib4data7objects13organizations7License15set_license_keyERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 3 returned 100% blocks executed 100%
+        3:   62:        void set_license_key(const std::string& license_key)
+        -:   63:        {
+        3:   64:            license_key_ = license_key;
+        3:   65:        }
+        3:   65-block  0
+        -:   66:
+        -:   67:        struct names_of_json_fields
+        -:   68:        {
+        -:   69:            static constexpr auto license_name = "license_name";
+        -:   70:            static constexpr auto license_key = "license_key";
+        -:   71:        };
+        -:   72:
+function _ZN8drug_lib4data7objects13organizationslsERSoRKNS2_7LicenseE called 0 returned 0% blocks executed 0%
+    #####:   73:        friend std::ostream& operator<<(std::ostream& os, const License& obj)
+        -:   74:        {
+    #####:   75:            return os
+    $$$$$:   75-block  0
+    $$$$$:   75-block  1
+    #####:   76:                << "license_name_: " << obj.license_name_
+    #####:   77:                << " license_key_: " << obj.license_key_;
+        -:   78:        }
+        -:   79:
+        -:   80:    private:
+        -:   81:        std::string license_name_;
+        -:   82:        std::string license_key_;
+        -:   83:    };
+        -:   84:}

@@ -3,7 +3,7 @@
 #include <utility>
 #include <vector>
 
-#include "types/common_object.hpp"
+#include "common_object.hpp"
 #include "db_conditions.hpp"
 #include "db_interface.hpp"
 

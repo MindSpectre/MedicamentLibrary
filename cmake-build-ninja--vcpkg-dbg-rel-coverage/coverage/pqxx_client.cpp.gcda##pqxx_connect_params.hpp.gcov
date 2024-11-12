@@ -1,0 +1,141 @@
+        -:    0:Source:/home/neo/MedicamentLibrary/common/db/postgres/pqxx_impl/include/pqxx_connect_params.hpp
+        -:    0:Graph:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcno
+        -:    0:Data:/home/neo/MedicamentLibrary/cmake-build-ninja--vcpkg-dbg-rel-coverage/common/db/postgres/pqxx_impl/CMakeFiles/DrugLib_Common_Database_PqxxClient.dir/source/pqxx_client.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:
+        -:    4:namespace drug_lib::common::database
+        -:    5:{
+        -:    6:    class PqxxConnectParams
+        -:    7:    {
+        -:    8:    public:
+        -:    9:        PqxxConnectParams(const std::string_view host,
+        -:   10:                          const uint32_t port,
+        -:   11:                          const std::string_view db_name,
+        -:   12:                          const std::string_view login,
+        -:   13:                          const std::string_view password): host_(host), port_(port), db_name_(db_name),
+        -:   14:                                                            login_(login),
+        -:   15:                                                            password_(password)
+        -:   16:        {
+        -:   17:        }
+        -:   18:
+        -:   19:        PqxxConnectParams() = default;
+        -:   20:
+function _ZNK8drug_lib6common8database17PqxxConnectParams8get_hostEv called 0 returned 0% blocks executed 0%
+    #####:   21:        [[nodiscard]] const std::string_view& get_host() const
+        -:   22:        {
+    #####:   23:            return host_;
+    $$$$$:   23-block  0
+        -:   24:        }
+        -:   25:
+        -:   26:        void set_host(const std::string_view& host)
+        -:   27:        {
+        -:   28:            host_ = host;
+        -:   29:        }
+        -:   30:
+function _ZNK8drug_lib6common8database17PqxxConnectParams8get_portEv called 0 returned 0% blocks executed 0%
+    #####:   31:        [[nodiscard]] uint32_t get_port() const
+        -:   32:        {
+    #####:   33:            return port_;
+    $$$$$:   33-block  0
+        -:   34:        }
+        -:   35:
+        -:   36:        void set_port(const uint32_t port)
+        -:   37:        {
+        -:   38:            port_ = port;
+        -:   39:        }
+        -:   40:
+function _ZNK8drug_lib6common8database17PqxxConnectParams11get_db_nameEv called 0 returned 0% blocks executed 0%
+    #####:   41:        [[nodiscard]] const std::string_view& get_db_name() const
+        -:   42:        {
+    #####:   43:            return db_name_;
+    $$$$$:   43-block  0
+        -:   44:        }
+        -:   45:
+        -:   46:        void set_db_name(const std::string_view& db_name)
+        -:   47:        {
+        -:   48:            db_name_ = db_name;
+        -:   49:        }
+        -:   50:
+function _ZNK8drug_lib6common8database17PqxxConnectParams9get_loginEv called 0 returned 0% blocks executed 0%
+    #####:   51:        [[nodiscard]] const std::string_view& get_login() const
+        -:   52:        {
+    #####:   53:            return login_;
+    $$$$$:   53-block  0
+        -:   54:        }
+        -:   55:
+        -:   56:        void set_login(const std::string_view& login)
+        -:   57:        {
+        -:   58:            login_ = login;
+        -:   59:        }
+        -:   60:
+function _ZNK8drug_lib6common8database17PqxxConnectParams12get_passwordEv called 0 returned 0% blocks executed 0%
+    #####:   61:        [[nodiscard]] const std::string_view& get_password() const
+        -:   62:        {
+    #####:   63:            return password_;
+    $$$$$:   63-block  0
+        -:   64:        }
+        -:   65:
+        -:   66:        void set_password(const std::string_view& password)
+        -:   67:        {
+        -:   68:            password_ = password;
+        -:   69:        }
+        -:   70:
+function _ZNK8drug_lib6common8database17PqxxConnectParams19make_connect_stringB5cxx11Ev called 20 returned 100% blocks executed 85%
+       20:   71:        [[nodiscard]] std::string make_connect_string() const
+        -:   72:        {
+       20:   73:            std::ostringstream conn_str;
+       20:   74:            conn_str << "host=" << host_
+       20:   74-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   74-block  1
+branch  2 taken 20
+branch  3 taken 0
+       20:   75:                << " port=" << port_
+       20:   75-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   75-block  1
+branch  2 taken 20
+branch  3 taken 0
+       20:   76:                << " user=" << login_
+       20:   76-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   76-block  1
+branch  2 taken 20
+branch  3 taken 0
+       20:   77:                << " password=" << password_
+       20:   77-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   77-block  1
+branch  2 taken 20
+branch  3 taken 0
+       20:   78:                << " dbname=" << db_name_;
+       20:   78-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   78-block  1
+branch  2 taken 20
+branch  3 taken 0
+       20:   79:            return conn_str.str();
+       20:   79-block  0
+branch  0 taken 20
+branch  1 taken 0
+       20:   80:        }
+       20:   80-block  0
+    $$$$$:   80-block  1
+    $$$$$:   80-block  2
+        -:   81:
+        -:   82:    private:
+        -:   83:        std::string_view host_;
+        -:   84:        uint32_t port_{};
+        -:   85:        std::string_view db_name_;
+        -:   86:        std::string_view login_;
+        -:   87:        std::string_view password_;
+        -:   88:    };
+        -:   89:}
