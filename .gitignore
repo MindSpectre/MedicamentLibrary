@@ -50,12 +50,13 @@
 # ===========================
 /build/
 /_build/
+/.cmake/
 out/
 bin/
 lib/
 /build-upstream-vcpkg/
 /build-upstream-vcpkg-dbg/
-
+/cmake-build-ninja--vcpkg-dbg-rel-coverage/
 # ===========================
 # CMake Generated Files
 # ===========================
@@ -93,4 +94,4 @@ Makefile
 *.ipch
 *.pdb
 *.opendb
-/.cmake/
+
