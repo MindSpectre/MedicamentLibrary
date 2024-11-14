@@ -11,10 +11,11 @@ namespace drug_lib::dao
 {
     namespace handbook_tables_name
     {
-        constexpr std::string_view Medicaments = "drugs";
-        constexpr std::string_view Organizations = "organizations";
-        constexpr std::string_view Patients = "patients";
-        constexpr std::string_view ConfigOperations = "config_operations";
+        constexpr auto Medicaments = "medicaments";
+        constexpr auto Organizations = "organizations";
+        constexpr auto Patients = "patients";
+        constexpr auto Diseases = "diseases";
+        constexpr auto ConfigOperations = "config_operations";
     }
 
     template <typename T>
@@ -41,6 +42,21 @@ namespace drug_lib::dao
         virtual void setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
         {
             connect_ = std::move(client);
+            //creating fields
+            const auto id_field = common::database::make_field_shared_by_default<int32_t>(
+                data::objects::ObjectBase::common_fields_names::id);
+            const auto name_field = common::database::make_field_shared_by_default<std::string>(
+                data::objects::ObjectBase::common_fields_names::name);
+            const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
+                data::objects::ObjectBase::common_fields_names::properties);
+            fts_fields_.push_back(name_field);
+            fts_fields_.push_back(properties_field);
+
+            value_fields_.push_back(name_field);
+            value_fields_.push_back(properties_field);
+
+            key_fields_.push_back(id_field);
+
             if (!table_name_.empty())
             {
                 if (connect_->check_table(table_name_))

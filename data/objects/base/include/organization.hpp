@@ -8,7 +8,7 @@ namespace drug_lib::data::objects
     class Organization final : public ObjectBase, public PropertiesHolder
     {
     public:
-        struct field_name : _common_fields_names
+        struct field_name : common_fields_names
         {
             static constexpr auto type = "type";
             static constexpr auto country = "country";

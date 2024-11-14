@@ -191,6 +191,20 @@ namespace drug_lib::common::database
         T value_;
     };
 
+    template <typename T>
+        requires std::default_initializable<T>
+    std::shared_ptr<Field<T>> make_field_shared_by_default(std::string name)
+    {
+        return std::make_shared<Field<T>>(std::move(name), T());
+    }
+
+    template <typename T>
+        requires std::default_initializable<T>
+    std::unique_ptr<Field<T>> make_field_unique_by_default(std::string name)
+    {
+        return std::make_unique<Field<T>>(std::move(name), T());
+    }
+
     class ViewingField final : public FieldBase
     {
     public:

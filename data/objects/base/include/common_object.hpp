@@ -15,7 +15,7 @@ namespace drug_lib::data
             virtual void from_record(const common::database::Record& selected) = 0;
             virtual void from_record(const std::unique_ptr<common::database::ViewRecord>& viewed) = 0;
 
-            struct _common_fields_names
+            struct common_fields_names
             {
                 static constexpr auto id = "id";
                 static constexpr auto name = "name";
@@ -33,6 +33,6 @@ namespace drug_lib::data
             result[name] = property->get_info();
         }
         return std::make_unique<common::database::Field<Json::Value>>(
-            objects::ObjectBase::_common_fields_names::properties, result);
+            objects::ObjectBase::common_fields_names::properties, result);
     }
 }

@@ -9,10 +9,13 @@ namespace drug_lib::data::objects
     class Medicament final : public ObjectBase, public PropertiesHolder
     {
     public:
-        struct field_name : _common_fields_names
+        struct field_name : common_fields_names
         {
+            /// @typedef string
             static constexpr auto type = "type";
+            /// @typedef bool
             static constexpr auto requires_prescription = "prescription";
+            /// @typedef int32_t
             static constexpr auto manufacturer_id = "manufacturer_id";
         };
 

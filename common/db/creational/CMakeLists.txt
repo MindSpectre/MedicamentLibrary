@@ -18,3 +18,24 @@ target_include_directories(${PROJECT_NAME}_Common_Database_Factory
         factory/
 )
 ##############################################################################
+
+
+##############################################################################
+# Database interface Pool class
+##############################################################################
+
+add_library(${PROJECT_NAME}_Common_Database_Pool
+        STATIC
+        pool/db_interface_pool.cpp
+        pool/db_interface_pool.hpp
+)
+target_link_libraries(${PROJECT_NAME}_Common_Database_Pool
+        PUBLIC
+        ${PROJECT_NAME}_Common_Database_Interface
+        ${PROJECT_NAME}_Common_Database_Factory
+)
+target_include_directories(${PROJECT_NAME}_Common_Database_Pool
+        PUBLIC
+        pool/
+)
+##############################################################################

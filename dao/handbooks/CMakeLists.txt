@@ -1,6 +1,6 @@
 # DAL = DrugLib_Dao
 
-set(Handbooks ${DAL}_Handbook)
+set(Handbooks ${PROJECT_NAME}_Dao_Handbook)
 
 ##############################################################################
 # Handbook: Medicament
