@@ -1,4 +1,4 @@
-
+set(UnitTestObject "UnitTest_Object")
 ##############################################################################
 # Test Disease Base Class
 ##############################################################################
@@ -10,7 +10,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectDiseaseBase ${UNIT_TESTING_TARGET}_Objects_Disease_Base)
+add_test(${UnitTestObject}_DiseaseBase ${UNIT_TESTING_TARGET}_Objects_Disease_Base)
 ##############################################################################
 
 ##############################################################################
@@ -25,7 +25,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectDiseaseProperties ${UNIT_TESTING_TARGET}_Objects_Disease_Properties)
+add_test(${UnitTestObject}_DiseaseProperties ${UNIT_TESTING_TARGET}_Objects_Disease_Properties)
 ##############################################################################
 
 
@@ -40,7 +40,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Base
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectMedicamentBase ${UNIT_TESTING_TARGET}_Objects_Medicament_Base)
+add_test(${UnitTestObject}_MedicamentBase ${UNIT_TESTING_TARGET}_Objects_Medicament_Base)
 ##############################################################################
 
 ##############################################################################
@@ -55,7 +55,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectMedicamentProperties ${UNIT_TESTING_TARGET}_Objects_Medicament_Properties)
+add_test(${UnitTestObject}_MedicamentProperties ${UNIT_TESTING_TARGET}_Objects_Medicament_Properties)
 ##############################################################################
 
 
@@ -70,7 +70,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Base
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectPatientBase ${UNIT_TESTING_TARGET}_Objects_Patient_Base)
+add_test(${UnitTestObject}_PatientBase ${UNIT_TESTING_TARGET}_Objects_Patient_Base)
 ##############################################################################
 
 ##############################################################################
@@ -85,7 +85,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectPatientProperties ${UNIT_TESTING_TARGET}_Objects_Patient_Properties)
+add_test(${UnitTestObject}_PatientProperties ${UNIT_TESTING_TARGET}_Objects_Patient_Properties)
 ##############################################################################
 
 
@@ -100,7 +100,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Organization_Base
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectOrganizationBase ${UNIT_TESTING_TARGET}_Objects_Organization_Base)
+add_test(${UnitTestObject}_OrganizationBase ${UNIT_TESTING_TARGET}_Objects_Organization_Base)
 ##############################################################################
 
 ##############################################################################
@@ -114,7 +114,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Organization_Properties
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectOrganizationProperties ${UNIT_TESTING_TARGET}_Objects_Organization_Properties)
+add_test(${UnitTestObject}_OrganizationProperties ${UNIT_TESTING_TARGET}_Objects_Organization_Properties)
 ##############################################################################
 
 
@@ -129,5 +129,5 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_PropertyCollection
         DrugLib_Data_Objects
         ${TEST_NECESSARY_LIBS}
 )
-add_test(UnitTestObjectPropertyCollection ${UNIT_TESTING_TARGET}_Objects_PropertyCollection)
+add_test(${UnitTestObject}_PropertyCollection ${UNIT_TESTING_TARGET}_Objects_PropertyCollection)
 ##############################################################################
