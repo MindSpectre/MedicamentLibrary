@@ -65,7 +65,7 @@ CMakeCache.txt
 cmake_install.cmake
 CTestTestfile.cmake
 Makefile
-
+Testing/
 # ===========================
 # Project-Specific Build Files
 # ===========================
