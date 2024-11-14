@@ -1,6 +1,8 @@
 // pqxx_client_test.cpp
 
+#include <barrier>
 #include <chrono>
+#include <db_interface_factory.hpp>
 #include <functional>
 #include <gtest/gtest.h>
 
@@ -16,14 +18,15 @@ class PqxxClientTest : public testing::Test
 {
 protected:
     // Database connection parameters
-    const std::string host = "localhost";
-    const int port = 5432;
-    const std::string db_name = "test_db";
-    const std::string username = "postgres";
-    const std::string password = "postgres"; // Replace with your actual password
+    //
+    uint32_t port = 5432;
+    const std::string_view host = "localhost";
+    const std::string_view db_name = "test_db";
+    const std::string_view username = "postgres";
+    const std::string_view password = "postgres"; // Replace with your actual password
 
     // Pointer to the PqxxClient
-    std::shared_ptr<PqxxClient> db_client;
+    std::shared_ptr<interfaces::DbInterface> db_client;
 
     // Test table name
     std::string test_table = "test_table";
@@ -32,7 +35,7 @@ protected:
     void SetUp() override
     {
         // Initialize the database client
-        db_client = std::make_shared<PqxxClient>(host, port, db_name, username, password);
+        db_client = creational::DbInterfaceFactory::create_pqxx_client({host, port, db_name, username, password});
 
         // Ensure the test table does not exist before starting
         if (db_client->check_table(test_table))
@@ -54,7 +57,7 @@ protected:
         fts_fields.emplace_back(std::make_shared<Field<std::string>>("description", ""));
 
 
-        db_client->setup_full_text_search(test_table, std::move(fts_fields));
+        db_client->setup_fts_index(test_table, std::move(fts_fields));
     }
 
     void TearDown() override
@@ -324,7 +327,7 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     // Verify the results
     EXPECT_EQ(results.size(), 2);
 
-    std::set<int> expected_ids = {1, 2};
+    std::set expected_ids = {1, 2};
     std::set<int> result_ids;
     for (const auto& rec : results)
     {
@@ -413,7 +416,7 @@ TEST_F(PqxxClientTest, TransactionSimpleTest)
     auto results = db_client->select(test_table);
     EXPECT_EQ(results.size(), 2);
 
-    EXPECT_NO_THROW(db_client->truncate_table(test_table));;
+    EXPECT_NO_THROW(db_client->truncate_table(test_table));
 
     EXPECT_EQ(db_client->select(test_table).size(), 0);
     // Test rollback
@@ -436,16 +439,20 @@ TEST_F(PqxxClientTest, TransactionConquerenteTest)
 TEST_F(PqxxClientTest, TransactionMultithreadTest)
 {
     std::mutex mtx;
-    std::atomic inserting(true); // Tracks if the poster thread is still inserting data
+    std::atomic inserting1(true), inserting2(true); // Tracks if the poster thread is still inserting data
     constexpr std::size_t expected_record_count = 1e5; // Expected number of rows to insert
     std::condition_variable cv;
-    bool ready_to_listen = false;
+    std::barrier barrier(2), syncer(2);
+    std::atomic transaction_committed{false};
+    std::atomic<bool> ready_to_listen = false;
     // First thread - poster: inserts records within a transaction
-    auto poster_worker = [&]()
+    auto poster_worker = [&]
     {
-        std::unique_lock<std::mutex> lock(mtx);
         EXPECT_NO_THROW(db_client->start_transaction());
-        ready_to_listen = true;
+        {
+            std::unique_lock lock(mtx);
+            ready_to_listen = true;
+        }
         cv.notify_all();
         for (std::size_t i = 1; i <= expected_record_count; ++i)
         {
@@ -457,18 +464,23 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
             EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
         }
 
-        EXPECT_NO_THROW(db_client->commit_transaction());
 
         // Signal that inserting is done
-        inserting.store(false);
+        inserting1.store(false);
+        inserting2.store(false);
+        barrier.arrive_and_wait();
+        EXPECT_NO_THROW(db_client->commit_transaction());
+        transaction_committed.store(true); // Set the flag to indicate commit is done
     };
 
     // Second thread - listener 1: retrieves data without a transaction
-    auto non_transaction_worker = [&]()
+    auto non_transaction_worker = [&]
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&] { return ready_to_listen; });
-        while (inserting.load())
+        {
+            std::unique_lock lock(mtx);
+            cv.wait(lock, [&] { return ready_to_listen.load(); });
+        }
+        while (inserting1.load())
         {
             bool emp = true;
             // This thread should always successfully retrieve data, even if incomplete
@@ -483,17 +495,26 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     };
 
     // Third thread - listener 2: tries to retrieve data inside a transaction
-    auto transactional_listener_worker = [&]()
+    auto transactional_listener_worker = [&]
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&] { return ready_to_listen; });
-        while (inserting.load())
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [&] { return ready_to_listen.load(); });
+        }
+        while (inserting2.load())
         {
             EXPECT_THROW(db_client->start_transaction(),
                          drug_lib::common::database::exceptions::TransactionException);
         }
+        barrier.arrive_and_wait(); // Wait for all threads to reach the barrier
 
-        // Once inserting is done, the transactional listener should now succeed
+        // Ensure that the transaction is committed by Thread 1 before proceeding
+        while (!transaction_committed.load())
+        {
+            std::this_thread::yield(); // Yield to avoid busy waiting
+        }
+
+        // Now proceed with the transaction check
         EXPECT_NO_THROW(db_client->start_transaction());
 
         // Fetch all rows inserted by the poster thread
@@ -514,6 +535,62 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     transactional_listener_thread.join();
 }
 
+TEST_F(PqxxClientTest, OrderByTest)
+{
+    // Add data
+    std::vector<Record> records;
+
+    for (int i = 1; i <= 5; ++i)
+    {
+        Record record;
+        record.push_back(std::make_unique<Field<int>>("id", i * (i + i % 2)));
+        record.push_back(std::make_unique<Field<std::string>>("name", "User" + std::to_string(i)));
+        record.push_back(std::make_unique<Field<std::string>>("description", ""));
+        records.push_back(std::move(record));
+    }
+
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
+
+    Conditions conditions;
+    conditions.add_order_by_condition(
+        OrderCondition("id", order_type::ascending));
+    const auto res = db_client->select(test_table, conditions);
+    int32_t prev = INT_MIN;
+    for (const auto& record : res)
+    {
+        EXPECT_TRUE(prev <= record[0]->as<int32_t>());
+        prev = record[0]->as<int32_t>();
+    }
+    EXPECT_EQ(res.size(), 5);
+}
+
+TEST_F(PqxxClientTest, PagingTest)
+{
+    // Add data
+    std::vector<Record> records;
+
+    for (int i = 1; i <= 500; ++i)
+    {
+        Record record;
+        record.push_back(std::make_unique<Field<int>>("id", i));
+        record.push_back(std::make_unique<Field<std::string>>("name", "User" + std::to_string(i)));
+        record.push_back(std::make_unique<Field<std::string>>("description", ""));
+        records.push_back(std::move(record));
+    }
+
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
+
+    Conditions conditions;
+    PageCondition page_condition(150);
+
+    conditions.set_page_condition(page_condition);
+    auto res = db_client->view(test_table, conditions);
+    EXPECT_EQ(res.size(), 150);
+    page_condition.set_page_number(500 / 150 + 1);
+    conditions.set_page_condition(page_condition);
+    res = db_client->view(test_table, conditions);
+    EXPECT_EQ(res.size(), 50);
+}
 
 // ------------------------------ SPEED TESTS ------------------------------//
 
@@ -615,7 +692,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
     constexpr uint32_t limit_ = flush * 8; // Total number of records each thread should handle
-    db_client->drop_full_text_search(test_table);
+    db_client->drop_fts_index(test_table);
     std::vector<Record> records;
     records.reserve(limit_); // Reserve space for records to avoid reallocations
     for (uint32_t i = 0; i < limit_; i++)
@@ -627,13 +704,14 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
         records.push_back(std::move(record1));
     }
     stopwatch.start("Multithreading insert with dropping fts");
-    stopwatch.flag("Threading launch: 4 threads");
+    stopwatch.flag("Threading launch: 6 threads");
     // stopwatch.flag("Thread " + std::to_string(s) + " finished");
-    utilities::bulk_insertion(db_client, test_table, std::move(records), flush, 8);
-    stopwatch.flag("Threading finished: 4 threads");
+    const std::shared_ptr<PqxxClient> db_client_n = std::dynamic_pointer_cast<PqxxClient>(db_client);
+    utilities::bulk_insertion(db_client_n, test_table, std::move(records), flush, 6);
+    stopwatch.flag("Threading finished: 6 threads");
     // Fetch the records from the database
     const auto results = db_client->view(test_table);
-    stopwatch.finish();
+    stopwatch.flag("Viewed");
     // Check that the correct number of records were inserted
     EXPECT_EQ(results.size(), limit_);
     Conditions conditions;
@@ -687,7 +765,15 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
     results = db_client->select(test_table, conditions);
     stopwatch.flag("Select with conditions: " + std::to_string(b - a));
     EXPECT_EQ(results.size(), b-a);
+
+    Conditions conditions_page;
+    constexpr uint32_t page_sz = 1000;
+    conditions_page.set_page_condition(PageCondition(page_sz));
+    auto page_res = db_client->select(test_table, conditions_page);
+    stopwatch.flag("View with paging");
+    EXPECT_EQ(page_res.size(), page_sz);
 }
+
 
 TEST_F(PqxxClientTest, ViewSpeedTest)
 {
@@ -745,6 +831,37 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
 
     stopwatch.flag("View with conditions: " + std::to_string(b - a));
     EXPECT_EQ(res2.size(), b-a);
+    Record x2;
+    x2.reserve(limit_);
+    for (const auto& record : res2)
+    {
+        auto f = record->extract(0);
+        auto f1 = record->extract(1);
+        auto f2 = record->extract(2);
+        x2.push_back(std::make_unique<Field<std::string>>("id", f));
+        x2.push_back(std::make_unique<Field<std::string>>("name", f1));
+        x2.push_back(std::make_unique<Field<std::string>>("description", f2));
+    }
+    stopwatch.flag("View with conditions + transformed: " + std::to_string(b - a));
+
+    Conditions conditions_page;
+    constexpr uint32_t page_sz = 1000;
+    conditions_page.set_page_condition(PageCondition(page_sz));
+    auto page_res = db_client->view(test_table, conditions_page);
+    stopwatch.flag("View with paging");
+    EXPECT_EQ(page_res.size(), page_sz);
+    x2.clear();
+    x2.reserve(limit_);
+    for (const auto& record : page_res)
+    {
+        auto f = record->extract(0);
+        auto f1 = record->extract(1);
+        auto f2 = record->extract(2);
+        x2.push_back(std::make_unique<Field<std::string>>("id", f));
+        x2.push_back(std::make_unique<Field<std::string>>("name", f1));
+        x2.push_back(std::make_unique<Field<std::string>>("description", f2));
+    }
+    stopwatch.flag("View with paging + transformed");
 }
 
 TEST_F(PqxxClientTest, FtsSpeedTest)
@@ -782,6 +899,6 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
 
 int main()
 {
-    ::testing::InitGoogleTest();
+    testing::InitGoogleTest();
     return RUN_ALL_TESTS();
 }

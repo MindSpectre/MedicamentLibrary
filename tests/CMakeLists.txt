@@ -11,8 +11,16 @@ target_link_libraries(Sandbox
         DrugLib_Common_StopWatch
 )
 
-SET(UNIT_TESTING_TARGET ${PROJECT_NAME}_Tests_Unit)
+SET(UNIT_TESTING_TARGET "${PROJECT_NAME}_Tests_Unit")
 SET(TEST_NECESSARY_LIBS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+
+
+##############################################################################
+# 1st Priority tests(Fast)
+##############################################################################
+add_subdirectory(unit_tests/objects)
+##############################################################################
+
 ##############################################################################
 # Test PQxx Client DB
 ##############################################################################
@@ -22,11 +30,12 @@ add_executable(${UNIT_TESTING_TARGET}_PqxxClient
 target_link_libraries(${UNIT_TESTING_TARGET}_PqxxClient
         PRIVATE
         DrugLib_Common_Database_PqxxClient
+        DrugLib_Common_Database_Factory
         DrugLib_Common_StopWatch
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(DbUnitTests ${UNIT_TESTING_TARGET}_PqxxClient)
+add_test(UnitTest_PqxxClient ${UNIT_TESTING_TARGET}_PqxxClient)
 ##############################################################################
 
 ##############################################################################
@@ -41,7 +50,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_StopWatch
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(SupportClasses ${UNIT_TESTING_TARGET}_StopWatch)
+add_test(UnitTest_StopWatch ${UNIT_TESTING_TARGET}_StopWatch)
 ##############################################################################
 
 ##############################################################################
@@ -53,10 +62,24 @@ add_executable(${UNIT_TESTING_TARGET}_TransactionManager
 target_link_libraries(${UNIT_TESTING_TARGET}_TransactionManager
         PRIVATE
         DrugLib_Common_Database_Behavioral_TransactionManager
-        DrugLib_Common_Database_MockClient
-        DrugLib_Common_Database_Interface
+        DrugLib_Common_Database_Factory
         ${TEST_NECESSARY_LIBS}
 
 )
-add_test(SupportClasses ${UNIT_TESTING_TARGET}_TransactionManager)
+add_test(UnitTest_TransactionManager ${UNIT_TESTING_TARGET}_TransactionManager)
+##############################################################################
+
+##############################################################################
+# Test DbInterface Pool
+##############################################################################
+add_executable(${UNIT_TESTING_TARGET}_DbInterfacePool
+        unit_tests/db_interface_pool/test_db_interface_pool.cpp
+)
+target_link_libraries(${UNIT_TESTING_TARGET}_DbInterfacePool
+        PRIVATE
+        DrugLib_Common_Database_Pool
+        ${TEST_NECESSARY_LIBS}
+
+)
+add_test(UnitTest_DbInterfacePool ${UNIT_TESTING_TARGET}_DbInterfacePool)
 ##############################################################################

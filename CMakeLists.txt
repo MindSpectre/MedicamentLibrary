@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(DrugLib LANGUAGES CXX)
+project("DrugLib" LANGUAGES CXX)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 23)

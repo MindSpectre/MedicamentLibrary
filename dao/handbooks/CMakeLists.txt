@@ -1,6 +1,6 @@
-# PARENT_PROJECT_NAME = DrugLib.Dao
+# DAL = DrugLib_Dao
 
-set(Handbooks ${DAL}_Handbook)
+set(Handbooks ${PROJECT_NAME}_Dao_Handbook)
 
 ##############################################################################
 # Handbook: Medicament
@@ -13,10 +13,7 @@ add_library(${Handbooks}_Medicaments
 
 target_link_libraries(${Handbooks}_Medicaments
         PRIVATE
-        JsonCpp::JsonCpp
         DrugLib_Dao_CrudInterface
-        DrugLib_Common_Database_PqxxClient
-        DrugLib_Data_Objects
 )
 target_include_directories(${Handbooks}_Medicaments
         PUBLIC
@@ -27,17 +24,13 @@ target_include_directories(${Handbooks}_Medicaments
 ##############################################################################
 # Handbook: Organization
 ##############################################################################
-
 add_library(${Handbooks}_Organizations
         STATIC
         organizations/source/organizations_handbook.cpp
 )
-
 target_link_libraries(${Handbooks}_Organizations
         PRIVATE
-        JsonCpp::JsonCpp
         DrugLib_Dao_CrudInterface
-        DrugLib_Data_Objects_Organizations
 )
 target_include_directories(${Handbooks}_Organizations
         PUBLIC
@@ -56,12 +49,29 @@ add_library(${Handbooks}_Patients
 
 target_link_libraries(${Handbooks}_Patients
         PRIVATE
-        JsonCpp::JsonCpp
         DrugLib_Dao_CrudInterface
-        DrugLib_Data_Objects_Patients
 )
 target_include_directories(${Handbooks}_Patients
         PUBLIC
         patients/include
+)
+##############################################################################
+
+
+##############################################################################
+# Handbook: Diseases
+##############################################################################
+add_library(${Handbooks}_Diseases
+        STATIC
+        diseases/source/diseases_handbook.cpp
+)
+
+target_link_libraries(${Handbooks}_Diseases
+        PRIVATE
+        DrugLib_Dao_CrudInterface
+)
+target_include_directories(${Handbooks}_Diseases
+        PUBLIC
+        diseases/include
 )
 ##############################################################################

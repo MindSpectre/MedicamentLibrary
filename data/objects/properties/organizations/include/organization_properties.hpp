@@ -1,9 +1,5 @@
 #pragma once
 
+#include "organization_properties/license.hpp"
 
-#include "data_property.hpp"
 
-
-namespace drug_lib::data::objects::organizations
-{
-}

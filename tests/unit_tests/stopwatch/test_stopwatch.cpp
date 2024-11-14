@@ -6,7 +6,7 @@
 
 using namespace drug_lib::common;
 
-class StopwatchTest : public ::testing::Test
+class StopwatchTest : public testing::Test
 {
 protected:
     Stopwatch<> sw; // Stopwatch object using default time unit (milliseconds)
@@ -78,15 +78,15 @@ TEST_F(StopwatchTest, TestCountdownModes)
 // Test that flags are accurately recorded and the time intervals make sense
 TEST_F(StopwatchTest, TestAccurateFlagging)
 {
-    auto start_time = std::chrono::high_resolution_clock::now();
+    const auto start_time = std::chrono::high_resolution_clock::now();
 
     sw.flag("Initial Flag");
     delay_ms(10); // Simulate a delay
     sw.flag("Second Flag");
 
-    auto end_time = std::chrono::high_resolution_clock::now();
+    const auto end_time = std::chrono::high_resolution_clock::now();
 
-    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    const auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
     // Validate that the elapsed time between start and last flag is within a reasonable range
     EXPECT_GE(elapsed_time, 10); // At least 10 ms should have passed
@@ -124,7 +124,7 @@ TEST(StopwatchDestructorTest, TestDestructorCallsPrint)
 // Test flags capacity reservation and handling large number of flags
 TEST_F(StopwatchTest, TestFlagCapacityHandling)
 {
-    Stopwatch<> large_sw("Capacity testing", 100); // Reserve capacity for 100 flags
+    Stopwatch large_sw("Capacity testing", 100); // Reserve capacity for 100 flags
     large_sw.start();
     for (int i = 0; i < 100; ++i)
     {

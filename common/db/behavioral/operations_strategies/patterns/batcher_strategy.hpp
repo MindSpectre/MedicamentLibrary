@@ -19,13 +19,13 @@ namespace drug_lib::common::database::behavioral::strategies
             }
         }
 
-        size_t threshold = 1;
+        std::size_t threshold = 1;
         std::function<std::tuple<Args...>(BatcherStrategy<Args...>&)> Merge;
 
     public:
         std::queue<std::tuple<Args...>> await;
-        void set_threshold(size_t threshold) { this->threshold = threshold; }
-        [[nodiscard]] int32_t get_threshold() const { return threshold; }
+        void set_threshold(std::size_t threshold) { this->threshold = threshold; }
+        [[nodiscard]] std::size_t get_threshold() const { return threshold; }
         BatcherStrategy() = default;
 
         ~BatcherStrategy() override

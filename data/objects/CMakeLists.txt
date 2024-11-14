@@ -7,16 +7,16 @@ add_library(DrugLib_Data_Objects
         base/include/organization.hpp
         base/include/medicament.hpp
         base/include/patient.hpp
-        base/include/common_obj.hpp
+        base/include/common_object.hpp
+        base/include/disease.hpp
 )
 target_link_libraries(DrugLib_Data_Objects
         PUBLIC
-        DrugLib_Data_PropertyFactory
+        DrugLib_Data_PropertiesController
 )
 target_include_directories(DrugLib_Data_Objects
         PUBLIC
         base/include
-        base/
 )
 ##############################################################################
 add_subdirectory(properties)

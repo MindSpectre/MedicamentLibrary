@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <json/json.h>
 #include <json/value.h>
 
 namespace drug_lib::common::database
@@ -46,6 +47,8 @@ namespace drug_lib::common::database
             }
             throw std::runtime_error("FieldBase::as(): Incorrect type requested for field " + get_name());
         }
+
+        [[nodiscard]] virtual std::unique_ptr<FieldBase> clone() const = 0;
     };
 
     /// @brief Represents a field of a specific type in the database
@@ -178,10 +181,29 @@ namespace drug_lib::common::database
             return {};
         }
 
+        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
+        {
+            return std::make_unique<Field>(*this);
+        }
+
     private:
         std::string name_;
         T value_;
     };
+
+    template <typename T>
+        requires std::default_initializable<T>
+    std::shared_ptr<Field<T>> make_field_shared_by_default(std::string name)
+    {
+        return std::make_shared<Field<T>>(std::move(name), T());
+    }
+
+    template <typename T>
+        requires std::default_initializable<T>
+    std::unique_ptr<Field<T>> make_field_unique_by_default(std::string name)
+    {
+        return std::make_unique<Field<T>>(std::move(name), T());
+    }
 
     class ViewingField final : public FieldBase
     {
@@ -218,6 +240,11 @@ namespace drug_lib::common::database
         [[nodiscard]] std::string get_sql_type() const override
         {
             throw std::runtime_error("get_sql_type() called in VIEWING field");
+        }
+
+        [[nodiscard]] std::unique_ptr<FieldBase> clone() const override
+        {
+            return std::make_unique<ViewingField>(*this);
         }
 
     private:

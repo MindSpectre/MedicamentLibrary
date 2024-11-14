@@ -1,37 +1,21 @@
 #include "organizations_handbook.hpp"
 
-#include <iostream>
-#include <pqxx/except>
-
 namespace drug_lib::dao
 {
-    OrganizationsHandbook::~OrganizationsHandbook()
+    void OrganizationsHandbook::setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
     {
-        try
-        {
-            connect_->drop_connect();
-        }
-        catch (const pqxx::broken_connection& e)
-        {
-            std::cerr << e.what() << std::endl;
-        }
-    }
+        table_name_ = handbook_tables_name::Organizations;
+        const auto country_field = common::database::make_field_shared_by_default<std::string>(
+            objects::Organization::field_name::country);
+        const auto type_field = common::database::make_field_shared_by_default<std::string>(
+            objects::Organization::field_name::type);
+        const auto contact_details_field = common::database::make_field_shared_by_default<std::string>(
+            objects::Organization::field_name::contact_details);
 
-    void OrganizationsHandbook::remove_all()
-    {
-        remove({});
-    }
+        value_fields_.push_back(type_field);
+        value_fields_.push_back(country_field);
+        value_fields_.push_back(contact_details_field);
 
-    std::vector<objects::Organization> OrganizationsHandbook::get_all()
-    {
-        return get({});
-    }
-
-    void OrganizationsHandbook::update_all_fields(const objects::Organization& record)
-    {
-    }
-
-    void OrganizationsHandbook::update_all_fields(const std::vector<objects::Organization>& records)
-    {
+        HandbookBase::setup(std::move(client));
     }
 }

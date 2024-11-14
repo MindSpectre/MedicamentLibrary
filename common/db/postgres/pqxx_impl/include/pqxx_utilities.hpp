@@ -6,7 +6,7 @@
 namespace drug_lib::common::database::utilities
 {
     inline void multi_thread_insertion(const std::shared_ptr<PqxxClient>& client, const std::string_view table_name,
-                                       std::vector<Record>&& records, const uint32_t flush = 1 << 14,
+                                       std::vector<Record>&& records, const uint32_t flush = 1 << 10,
                                        const int8_t thread_count = 4)
     {
         auto poster_worker = [&](const int start_index)
@@ -70,7 +70,7 @@ namespace drug_lib::common::database::utilities
         std::vector<std::thread> threads;
         threads.reserve(thread_count);
         client->start_transaction();
-        client->drop_full_text_search(table_name);
+        client->drop_fts_index(table_name);
         for (int t = 0; t < thread_count; ++t)
         {
             threads.emplace_back(poster_worker, t); // Each thread handles a different starting point
@@ -79,7 +79,7 @@ namespace drug_lib::common::database::utilities
         {
             thread.join();
         }
-        client->restore_full_text_search(table_name);
+        client->restore_fts_index(table_name);
         client->commit_transaction();
     }
 }

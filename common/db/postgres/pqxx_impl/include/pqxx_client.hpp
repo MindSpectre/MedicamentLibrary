@@ -63,18 +63,18 @@ namespace drug_lib::common::database
         /// @brief Create full test search index for given fields
         /// @param table_name For which table created index.
         /// @param fields Fts fields
-        void setup_full_text_search(
+        void setup_fts_index(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) override;
 
         /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
-        void drop_full_text_search(std::string_view table_name) const override;
+        void drop_fts_index(std::string_view table_name) const override;
 
         /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
-        void remove_full_text_search(std::string_view table_name) override;
+        void remove_fts_index(std::string_view table_name) override;
 
         /// @brief Restore index + reindex. Use previous declared fts fields
-        void restore_full_text_search(std::string_view table_name) const override;
+        void restore_fts_index(std::string_view table_name) const override;
         // Table Management
 
         /// @param table_name new table name
@@ -204,11 +204,13 @@ namespace drug_lib::common::database
         void finish_transaction(std::unique_ptr<pqxx::work>&& current_transaction) const;
         static exceptions::DatabaseException adapt_exception(const std::exception& pqxxerr);
 
-        void build_conflict_clause(std::string& query, std::string_view table_name,
-                                   const std::vector<std::shared_ptr<FieldBase>>& replace_fields) const;
-        std::string build_condition_clause(std::string_view table_name, std::ostringstream& query_stream,
-                                           pqxx::params& params,
-                                           uint32_t& param_index, const Conditions& conditions) const;
+        void build_conflict_clause_for_force_insert(std::string& query, std::string_view table_name,
+                                                    const std::vector<std::shared_ptr<FieldBase>>& replace_fields)
+        const &;
+        void conditions_to_query(std::string_view table_name, std::ostringstream& query_stream,
+                                 pqxx::params& params,
+                                 uint32_t& param_index, const Conditions& conditions) const;
+
         void create_fts_index_query(std::string_view table_name, std::ostringstream& index_query) const;
         static std::string make_fts_index_name(std::string_view table_name);
     };
