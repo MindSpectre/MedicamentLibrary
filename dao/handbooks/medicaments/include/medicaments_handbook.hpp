@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handbook.hpp"
+#include "handbook_base.hpp"
 #include "medicament.hpp"
 
 namespace drug_lib::dao
@@ -10,9 +10,9 @@ namespace drug_lib::dao
     class MedicamentsHandbook final : public HandbookBase<objects::Medicament>
     {
     public:
-        void tear_down() override;
 
     private:
-        void setup(std::shared_ptr<common::database::interfaces::DbInterface> client) & override;
+        void tear_down() override;
+        void setup() & override;
     };
 }

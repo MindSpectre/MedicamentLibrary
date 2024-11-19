@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <memory>
+#include <boost/function/function_template.hpp>
+
 #include "db_interface_pool.hpp"
 #include "db_interface.hpp"
 #include "mock_db_client.hpp"
@@ -109,7 +111,7 @@ TEST_F(DbInterfacePoolTest, TestMultiThreadedAcquireRelease)
             catch (const std::runtime_error& e)
             {
                 std::lock_guard lock(stream_mutex);
-                std::cerr << e.what() << "Cought in thread: " << std::this_thread::get_id() << std::endl;
+                std::cerr << e.what() << "Caught in thread: " << std::this_thread::get_id() << std::endl;
             }
         });
     }

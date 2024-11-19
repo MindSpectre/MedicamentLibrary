@@ -91,6 +91,10 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value serialize() override
+        {
+        }
+
         Disease() = default;
 
         Disease(const int32_t id, std::string name, std::string type, const bool is_infectious)

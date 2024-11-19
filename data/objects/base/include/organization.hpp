@@ -100,6 +100,10 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value serialize() override
+        {
+        }
+
         Organization() = default;
 
         // Конструктор с параметрами

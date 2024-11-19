@@ -2,13 +2,13 @@ set(DATA_OBJECTS_PROPERTIES DrugLib_Data_Objects_Properties)
 ##############################################################################
 # Objects: Main data property class
 ##############################################################################
-add_library(${DATA_OBJECTS_PROPERTIES}_DataProperty INTERFACE
+add_library(DrugLib_Data_Objects_Properties_DataProperty INTERFACE
         data_property.hpp
 )
-target_link_libraries(${DATA_OBJECTS_PROPERTIES}_DataProperty INTERFACE
+target_link_libraries(DrugLib_Data_Objects_Properties_DataProperty INTERFACE
         DrugLib_Common_Database_Base
 )
-target_include_directories(${DATA_OBJECTS_PROPERTIES}_DataProperty
+target_include_directories(DrugLib_Data_Objects_Properties_DataProperty
         INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -22,7 +22,7 @@ add_library(DrugLib_Data_Objects_Properties_Medicaments
         medicaments/include/medicament_properties/prescription.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Medicaments PUBLIC
-        ${DATA_OBJECTS_PROPERTIES}_DataProperty
+        DrugLib_Data_Objects_Properties_DataProperty
 )
 target_include_directories(DrugLib_Data_Objects_Properties_Medicaments
         PUBLIC
@@ -39,7 +39,7 @@ add_library(DrugLib_Data_Objects_Properties_Organizations
         organizations/include/organization_properties/license.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Organizations PUBLIC
-        ${DATA_OBJECTS_PROPERTIES}_DataProperty
+        DrugLib_Data_Objects_Properties_DataProperty
 )
 target_include_directories(DrugLib_Data_Objects_Properties_Organizations
         PUBLIC
@@ -55,7 +55,7 @@ add_library(DrugLib_Data_Objects_Properties_Patients
         patients/include/patient_properties/current_diseases.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Patients PUBLIC
-        ${DATA_OBJECTS_PROPERTIES}_DataProperty
+        DrugLib_Data_Objects_Properties_DataProperty
 )
 target_include_directories(DrugLib_Data_Objects_Properties_Patients
         PUBLIC
@@ -72,7 +72,7 @@ add_library(DrugLib_Data_Objects_Properties_Diseases
         diseases/include/diseases_properties.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Diseases PUBLIC
-        ${DATA_OBJECTS_PROPERTIES}_DataProperty
+        DrugLib_Data_Objects_Properties_DataProperty
 )
 target_include_directories(DrugLib_Data_Objects_Properties_Diseases
         PUBLIC

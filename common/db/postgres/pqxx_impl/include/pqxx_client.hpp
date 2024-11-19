@@ -20,18 +20,18 @@ namespace drug_lib::common::database
     class PqxxClient final : public interfaces::DbInterface
     {
     public:
-        /// @brief Creating database with given params using template db
+        /// @brief Creating a database with given params using template db
         static void create_database(std::string_view host,
                                     uint32_t port,
                                     std::string_view db_name,
                                     std::string_view login,
                                     std::string_view password);
         static void create_database(const PqxxConnectParams& pr);
-        /// @brief Explicitly close the connection. Destructor do the same, but this function can throw exception
+        /// @brief Explicitly close the connection. Destructor does the same, but this function can throw exception
         void drop_connect() override;
 
 
-        /// @brief Trying to connect to the database, if connection is not open will throw exception
+        /// @brief Trying to connect to the database, if connection isn't open will throw exception
         /// @throws drug_lib::common::database::exceptions::ConnectionException
         PqxxClient(std::string_view host,
                    uint32_t port,
@@ -46,7 +46,7 @@ namespace drug_lib::common::database
         /// @throws  drug_lib::common::database::exceptions::TransactionException
         void start_transaction() override;
 
-        /// @brief Commit a transaction. If throws an exception, all transaction will be reverted
+        /// @brief Commit a transaction. If throws an exception, all transactions will be reverted
         /// @throws  drug_lib::common::database::exceptions::TransactionException
         void commit_transaction() override;
 
@@ -63,18 +63,19 @@ namespace drug_lib::common::database
         /// @brief Create full test search index for given fields
         /// @param table_name For which table created index.
         /// @param fields Fts fields
-        void setup_fts_index(
+        void setup_search_index(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) override;
 
-        /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
-        void drop_fts_index(std::string_view table_name) const override;
+        /// @brief Drop index, but doesn't remove fts fields from this client.
+        /// Allows restoring it(reindex) using restore_full_text_search method
+        void drop_search_index(std::string_view table_name) const override;
 
         /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
-        void remove_fts_index(std::string_view table_name) override;
+        void remove_search_index(std::string_view table_name) override;
 
         /// @brief Restore index + reindex. Use previous declared fts fields
-        void restore_fts_index(std::string_view table_name) const override;
+        void restore_search_index(std::string_view table_name) const override;
         // Table Management
 
         /// @param table_name new table name
@@ -100,14 +101,14 @@ namespace drug_lib::common::database
 
         /// @brief Faster than select, but doesn't transform and allows only one operation view field
         /// @return Vector of view records. Each element of vector - one row in a table
-        /// @warning If u need not only view data, use select.
+        /// @warning If u needn't only view data, use select.
         [[nodiscard]] std::vector<std::unique_ptr<ViewRecord>> view(
             std::string_view table_name,
             const Conditions& conditions) const override;
 
         /// @brief Faster than select, but doesn't transform and allows only one operation view field
         /// @return Vector of view records. Each element of vector - one row in a table
-        /// @warning If u need not only view data, use select.
+        /// @warning If u needn't only view data, use select.
         [[nodiscard]] std::vector<std::unique_ptr<ViewRecord>> view(std::string_view table_name) const override;
         // Remove Data
         ///@brief remove data following conditions
@@ -137,7 +138,7 @@ namespace drug_lib::common::database
     private:
         boost::container::flat_map<uint32_t, std::string> type_oids_; // id, name
         boost::container::flat_map<std::string, std::vector<std::shared_ptr<FieldBase>>> conflict_fields_ = {};
-        boost::container::flat_map<std::string, std::vector<std::shared_ptr<FieldBase>>> fts_fields_ = {};
+        boost::container::flat_map<std::string, std::vector<std::shared_ptr<FieldBase>>> search_fields_ = {};
         std::shared_ptr<pqxx::connection> conn_;
         mutable std::recursive_mutex conn_mutex_;
         mutable std::unique_ptr<pqxx::work> open_transaction_;
@@ -212,6 +213,8 @@ namespace drug_lib::common::database
                                  uint32_t& param_index, const Conditions& conditions) const;
 
         void create_fts_index_query(std::string_view table_name, std::ostringstream& index_query) const;
+        void create_trgm_index_query(std::string_view table_name, std::ostringstream& index_query) const;
         static std::string make_fts_index_name(std::string_view table_name);
+        static std::string make_trgm_index_name(std::string_view table_name);
     };
 }

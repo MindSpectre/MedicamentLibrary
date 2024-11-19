@@ -1,21 +1,17 @@
-# DAL = DrugLib_Dao
-
-set(Handbooks ${PROJECT_NAME}_Dao_Handbook)
-
 ##############################################################################
 # Handbook: Medicament
 ##############################################################################
 
-add_library(${Handbooks}_Medicaments
+add_library(DrugLib_Dao_Handbook_Medicaments
         STATIC
         medicaments/source/medicaments_handbook.cpp
 )
 
-target_link_libraries(${Handbooks}_Medicaments
-        PRIVATE
-        DrugLib_Dao_CrudInterface
+target_link_libraries(DrugLib_Dao_Handbook_Medicaments
+        PUBLIC
+        DrugLib_Dao_Handbook_Base
 )
-target_include_directories(${Handbooks}_Medicaments
+target_include_directories(DrugLib_Dao_Handbook_Medicaments
         PUBLIC
         medicaments/include
 )
@@ -24,15 +20,15 @@ target_include_directories(${Handbooks}_Medicaments
 ##############################################################################
 # Handbook: Organization
 ##############################################################################
-add_library(${Handbooks}_Organizations
+add_library(DrugLib_Dao_Handbook_Organizations
         STATIC
         organizations/source/organizations_handbook.cpp
 )
-target_link_libraries(${Handbooks}_Organizations
-        PRIVATE
-        DrugLib_Dao_CrudInterface
+target_link_libraries(DrugLib_Dao_Handbook_Organizations
+        PUBLIC
+        DrugLib_Dao_Handbook_Base
 )
-target_include_directories(${Handbooks}_Organizations
+target_include_directories(DrugLib_Dao_Handbook_Organizations
         PUBLIC
         organizations/include
 )
@@ -42,16 +38,16 @@ target_include_directories(${Handbooks}_Organizations
 # Handbook: Medicament
 ##############################################################################
 
-add_library(${Handbooks}_Patients
+add_library(DrugLib_Dao_Handbook_Patients
         STATIC
         patients/source/patients_handbook.cpp
 )
 
-target_link_libraries(${Handbooks}_Patients
-        PRIVATE
-        DrugLib_Dao_CrudInterface
+target_link_libraries(DrugLib_Dao_Handbook_Patients
+        PUBLIC
+        DrugLib_Dao_Handbook_Base
 )
-target_include_directories(${Handbooks}_Patients
+target_include_directories(DrugLib_Dao_Handbook_Patients
         PUBLIC
         patients/include
 )
@@ -61,16 +57,16 @@ target_include_directories(${Handbooks}_Patients
 ##############################################################################
 # Handbook: Diseases
 ##############################################################################
-add_library(${Handbooks}_Diseases
+add_library(DrugLib_Dao_Handbook_Diseases
         STATIC
         diseases/source/diseases_handbook.cpp
 )
 
-target_link_libraries(${Handbooks}_Diseases
-        PRIVATE
-        DrugLib_Dao_CrudInterface
+target_link_libraries(DrugLib_Dao_Handbook_Diseases
+        PUBLIC
+        DrugLib_Dao_Handbook_Base
 )
-target_include_directories(${Handbooks}_Diseases
+target_include_directories(DrugLib_Dao_Handbook_Diseases
         PUBLIC
         diseases/include
 )

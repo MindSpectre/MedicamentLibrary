@@ -80,4 +80,5 @@ add_subdirectory(data)
 
 add_subdirectory(dao)
 
+add_subdirectory(services)
 

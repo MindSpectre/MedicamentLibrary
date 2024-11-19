@@ -1,23 +1,20 @@
-# PARENT_PROJECT_NAME = DrugLib_Common_Database
-set(MockDbClient ${PROJECT_NAME}_Common_Database_MockClient)
-
 ##############################################################################
 # Mock Database client implementation used for testing purposes
 ##############################################################################
-add_library(${MockDbClient}
+add_library(DrugLib_Common_Database_MockClient
         source/mock_db_client.cpp
         include/mock_db_client.hpp
 )
 
-target_link_libraries(${MockDbClient}
+target_link_libraries(DrugLib_Common_Database_MockClient
         PUBLIC
         JsonCpp::JsonCpp
-        ${PROJECT_NAME}_Common_Database_Interface
-        ${PROJECT_NAME}_Common_Database_Exceptions
-        ${PROJECT_NAME}_Common_StopWatch
+        DrugLib_Common_Database_Interface
+        DrugLib_Common_Database_Exceptions
+        DrugLib_Common_StopWatch
 )
 
-target_include_directories(${MockDbClient}
+target_include_directories(DrugLib_Common_Database_MockClient
         PUBLIC
         include/
 )

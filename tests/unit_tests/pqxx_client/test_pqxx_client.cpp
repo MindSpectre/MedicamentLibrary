@@ -3,7 +3,6 @@
 #include <barrier>
 #include <chrono>
 #include <db_interface_factory.hpp>
-#include <functional>
 #include <gtest/gtest.h>
 
 #include "db_conditions.hpp"
@@ -19,11 +18,11 @@ class PqxxClientTest : public testing::Test
 protected:
     // Database connection parameters
     //
-    uint32_t port = 5432;
+    const uint32_t port = 5432;
     const std::string_view host = "localhost";
     const std::string_view db_name = "test_db";
     const std::string_view username = "postgres";
-    const std::string_view password = "postgres"; // Replace with your actual password
+    const std::string_view password = "postgres"; // Replace it with your actual password
 
     // Pointer to the PqxxClient
     std::shared_ptr<interfaces::DbInterface> db_client;
@@ -57,7 +56,7 @@ protected:
         fts_fields.emplace_back(std::make_shared<Field<std::string>>("description", ""));
 
 
-        db_client->setup_fts_index(test_table, std::move(fts_fields));
+        db_client->setup_search_index(test_table, std::move(fts_fields));
     }
 
     void TearDown() override
@@ -359,6 +358,44 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     EXPECT_TRUE(results.empty());
 }
 
+TEST_F(PqxxClientTest, SimilaritySearchTest)
+{
+    // Add data to the table
+    std::vector<Record> records;
+
+    Record record1;
+    record1.push_back(std::make_unique<Field<int>>("id", 1));
+    record1.push_back(std::make_unique<Field<std::string>>("name", "Apple"));
+    record1.push_back(std::make_unique<Field<std::string>>("description", "A sweet red fruit"));
+    records.push_back(std::move(record1));
+
+    Record record2;
+    record2.push_back(std::make_unique<Field<int>>("id", 2));
+    record2.push_back(std::make_unique<Field<std::string>>("name", "Banana"));
+    record2.push_back(std::make_unique<Field<std::string>>("description", "A long yellow fruit"));
+    records.push_back(std::move(record2));
+
+    Record record3;
+    record3.push_back(std::make_unique<Field<int>>("id", 3));
+    record3.push_back(std::make_unique<Field<std::string>>("name", "Carrot"));
+    record3.push_back(std::make_unique<Field<std::string>>("description", "An orange root vegetable"));
+    records.push_back(std::move(record3));
+
+    // Insert records into the database
+    EXPECT_NO_THROW(db_client->insert(test_table, records));
+
+    std::string search_query = "An sweet";
+    Conditions conditions;
+    conditions.add_similarity_condition(search_query);
+    const auto results = db_client->select(test_table, conditions);
+
+    // // Verify the results
+    EXPECT_EQ(results.size(), 3);
+    EXPECT_EQ(results[0].fields()[0]->as<int32_t>(), 1);
+    EXPECT_EQ(results[1].fields()[0]->as<int32_t>(), 3);
+    EXPECT_EQ(results[2].fields()[0]->as<int32_t>(), 2);
+}
+
 TEST_F(PqxxClientTest, TruncateTableTest)
 {
     // Add data
@@ -485,9 +522,9 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
             bool emp = true;
             // This thread should always successfully retrieve data, even if incomplete
             EXPECT_NO_THROW({
-                emp = db_client->view(test_table).empty(); // Replace with actual retrieval logic
+                emp = db_client->view(test_table).empty(); // Replace it with actual retrieval logic
 
-                // Non-transactional fetch should not throw an error
+                // Non-transactional fetch shouldn't throw an error
                 // Optionally, you can log or validate the number of records fetched
                 });
             EXPECT_FALSE(emp);
@@ -508,7 +545,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
         }
         barrier.arrive_and_wait(); // Wait for all threads to reach the barrier
 
-        // Ensure that the transaction is committed by Thread 1 before proceeding
+        // Ensure that Thread 1 commits the transaction before proceeding
         while (!transaction_committed.load())
         {
             std::this_thread::yield(); // Yield to avoid busy waiting
@@ -628,7 +665,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
 {
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
-    constexpr uint32_t limit_ = flush * 2; // Total number of records each thread should handle
+    constexpr uint32_t limit_ = flush * 2; // The Total number of records each thread should handle
     constexpr uint32_t thread_count = 4; // Number of threads to use
 
     // Worker function to insert records in parallel
@@ -637,7 +674,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
         std::vector<Record> records;
         records.reserve(flush); // Reserve space for records to avoid reallocations
 
-        // stopwatch.flag("Thread " + std::to_string(s) + " started");
+        // stopwatch.flag("Thread " + std::to_string + " started");
 
         // Each thread inserts records with step `thread_count` (to avoid overlapping IDs)
         for (uint32_t i = s; i <= limit_ * thread_count; i += thread_count)
@@ -648,7 +685,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
             record1.push_back(std::make_unique<Field<std::string>>("description", "P"));
             records.push_back(std::move(record1));
 
-            // Insert the records into the database in batches when flush limit is reached
+            // Insert the records into the database in batches when the flush limit is reached
             if (records.size() >= flush)
             {
                 EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
@@ -656,7 +693,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
             }
         }
 
-        // stopwatch.flag("Thread " + std::to_string(s) + " finished");
+        // stopwatch.flag("Thread " + std::to_string + " finished");
     };
 
     // Launch threads
@@ -678,7 +715,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
     const auto results = db_client->view(test_table);
     stopwatch.finish();
 
-    // Check that the correct number of records were inserted
+    // Check that the correct number of records was inserted
     EXPECT_EQ(results.size(), limit_ * thread_count);
 }
 
@@ -691,8 +728,8 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
 
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
-    constexpr uint32_t limit_ = flush * 8; // Total number of records each thread should handle
-    db_client->drop_fts_index(test_table);
+    constexpr uint32_t limit_ = flush * 8; // The Total number of records each thread should handle
+    db_client->drop_search_index(test_table);
     std::vector<Record> records;
     records.reserve(limit_); // Reserve space for records to avoid reallocations
     for (uint32_t i = 0; i < limit_; i++)
@@ -705,14 +742,14 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     }
     stopwatch.start("Multithreading insert with dropping fts");
     stopwatch.flag("Threading launch: 6 threads");
-    // stopwatch.flag("Thread " + std::to_string(s) + " finished");
+    // stopwatch.flag("Thread " + std::to_string + " finished");
     const std::shared_ptr<PqxxClient> db_client_n = std::dynamic_pointer_cast<PqxxClient>(db_client);
     utilities::bulk_insertion(db_client_n, test_table, std::move(records), flush, 6);
     stopwatch.flag("Threading finished: 6 threads");
     // Fetch the records from the database
     const auto results = db_client->view(test_table);
     stopwatch.flag("Viewed");
-    // Check that the correct number of records were inserted
+    // Check that the correct number of records was inserted
     EXPECT_EQ(results.size(), limit_);
     Conditions conditions;
     conditions.add_pattern_condition(PatternCondition("Pers2"));

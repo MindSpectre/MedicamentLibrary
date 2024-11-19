@@ -8,7 +8,7 @@ namespace drug_lib::dao
     }
 
 
-    void MedicamentsHandbook::setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
+    void MedicamentsHandbook::setup() &
     {
         table_name_ = handbook_tables_name::Medicaments;
         //creating fields
@@ -22,6 +22,6 @@ namespace drug_lib::dao
         value_fields_.push_back(type_field);
         value_fields_.push_back(infectious_field);
         value_fields_.push_back(manufacturer_id_field);
-        HandbookBase::setup(std::move(client));
+        HandbookBase::setup();
     }
 }

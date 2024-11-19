@@ -3,6 +3,7 @@
 ##############################################################################
 add_library(DrugLib_Data_Objects
         base/source/objects.cpp
+        # Headers
         base/include/objects.hpp
         base/include/organization.hpp
         base/include/medicament.hpp

@@ -39,9 +39,12 @@ namespace drug_lib::dao
         std::vector<std::shared_ptr<common::database::FieldBase>> key_fields_;
         std::vector<std::shared_ptr<common::database::FieldBase>> value_fields_;
 
-        virtual void setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
+        virtual void setup() &
         {
-            connect_ = std::move(client);
+            if (!connect_)
+            {
+                throw std::runtime_error("Cannot connect to database interface.");
+            }
             //creating fields
             const auto id_field = common::database::make_field_shared_by_default<int32_t>(
                 data::objects::ObjectBase::common_fields_names::id);
@@ -72,13 +75,15 @@ namespace drug_lib::dao
                 }
                 connect_->create_table(table_name_, record);
                 connect_->make_unique_constraint(table_name_, key_fields_);
-                connect_->setup_fts_index(table_name_, fts_fields_);
+                connect_->setup_search_index(table_name_, fts_fields_);
             }
             else
             {
                 throw std::runtime_error("Table name must be set before constraints are applied.");
             }
         }
+
+        virtual void tear_down() = 0;
 
     public:
         virtual ~HandbookBase() = default;
@@ -262,16 +267,34 @@ namespace drug_lib::dao
             return records;
         }
 
-        virtual void tear_down() = 0;
-
+        std::vector<RecordType> fuzzy_search_paged(const std::string& pattern, const uint16_t page_limit,
+                                                   const std::size_t page_number = 1) const
+        {
+            common::database::Conditions select_conditions;
+            select_conditions.add_similarity_condition(pattern);
+            select_conditions.set_page_condition(
+                common::database::PageCondition(page_limit).set_page_number(page_number));
+            auto res = connect_->view(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
+        }
 
         void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
         {
             connect_ = std::move(connect);
+            setup();
         }
 
-        void drop_connection() const
+        void drop_connection()
         {
+            tear_down();
             connect_->drop_connect();
         }
 

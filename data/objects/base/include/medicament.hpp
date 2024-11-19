@@ -171,6 +171,10 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value serialize() override
+        {
+        }
+
     private:
         int32_t id_ = -1;
         std::string name_;

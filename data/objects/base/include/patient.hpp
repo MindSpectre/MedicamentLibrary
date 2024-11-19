@@ -127,6 +127,10 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value serialize() override
+        {
+        }
+
         [[nodiscard]] int32_t get_id() const
         {
             return id_;
