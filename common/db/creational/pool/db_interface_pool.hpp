@@ -22,6 +22,10 @@ namespace drug_lib::common::database::creational
 
         void release_db_interface(std::shared_ptr<interfaces::DbInterface>&& obj)
         {
+            if (obj == nullptr)
+            {
+                throw std::invalid_argument("Invalid interface.\t");
+            }
             pool_.push(std::move(obj));
         }
 

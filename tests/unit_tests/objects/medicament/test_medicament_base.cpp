@@ -5,7 +5,7 @@ using namespace drug_lib::data::objects;
 TEST(MedicamentTest, DefaultConstructor)
 {
     const Medicament medicament;
-    EXPECT_EQ(medicament.id(), -1);
+    EXPECT_EQ(medicament.get_id(), -1);
     EXPECT_EQ(medicament.get_name(), "");
     EXPECT_EQ(medicament.get_type(), "");
     EXPECT_FALSE(medicament.is_requires_prescription());
@@ -15,7 +15,7 @@ TEST(MedicamentTest, DefaultConstructor)
 TEST(MedicamentTest, ParameterizedConstructor)
 {
     const Medicament medicament(1, "Aspirin", "Painkiller", true, 1001);
-    EXPECT_EQ(medicament.id(), 1);
+    EXPECT_EQ(medicament.get_id(), 1);
     EXPECT_EQ(medicament.get_name(), "Aspirin");
     EXPECT_EQ(medicament.get_type(), "Painkiller");
     EXPECT_TRUE(medicament.is_requires_prescription());
@@ -31,7 +31,7 @@ TEST(MedicamentTest, SettersAndGetters)
     medicament.set_requires_prescription(false);
     medicament.set_manufacturer_id(1002);
 
-    EXPECT_EQ(medicament.id(), 2);
+    EXPECT_EQ(medicament.get_id(), 2);
     EXPECT_EQ(medicament.get_name(), "Paracetamol");
     EXPECT_EQ(medicament.get_type(), "Antipyretic");
     EXPECT_FALSE(medicament.is_requires_prescription());
@@ -83,7 +83,7 @@ TEST(MedicamentTest, FromRecord)
     Medicament medicament;
     medicament.from_record(record);
 
-    EXPECT_EQ(medicament.id(), 4);
+    EXPECT_EQ(medicament.get_id(), 4);
     EXPECT_EQ(medicament.get_name(), "Codeine");
     EXPECT_EQ(medicament.get_type(), "Opioid");
     EXPECT_TRUE(medicament.is_requires_prescription());

@@ -6,6 +6,8 @@
 #include "common_object.hpp"
 #include "db_conditions.hpp"
 #include "db_interface.hpp"
+#include "error_codes.hpp"
+#include "exceptions.hpp"
 
 namespace drug_lib::dao
 {
@@ -40,7 +42,6 @@ namespace drug_lib::dao
 
         virtual void setup() &
         {
-
             if (!connect_)
             {
                 throw std::runtime_error("Cannot connect to database interface.");
@@ -134,10 +135,11 @@ namespace drug_lib::dao
         {
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>("id", 0),
+                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::id,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-                );
+            );
             connect_->remove(table_name_, removed_conditions);
         }
 
@@ -145,10 +147,11 @@ namespace drug_lib::dao
         {
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
-                std::make_unique<common::database::Field<std::string>>("name", ""),
+                std::make_unique<common::database::Field<std::string>>(
+                    data::objects::ObjectBase::common_fields_names::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             connect_->remove(table_name_, removed_conditions);
         }
 
@@ -157,34 +160,40 @@ namespace drug_lib::dao
             connect_->truncate_table(table_name_);
         }
 
-        std::vector<RecordType> get_by_id(const int32_t id) const
+        RecordType get_by_id(const int32_t id) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
+                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::id,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-                );
+            );
             auto res = connect_->view(table_name_, select_conditions);
-            std::vector<RecordType> records;
-            records.reserve(res.size());
-            for (const auto& record : res)
+            if (res.size() > 1)
             {
-                RecordType tmp;
-                tmp.from_record(record);
-                records.push_back(std::move(tmp));
+                throw common::database::exceptions::InvalidIdentifierException(
+                    "Not unique record", common::database::errors::db_error_code::DUPLICATE_RECORD);
             }
-            return records;
+            if (res.empty())
+            {
+                throw common::database::exceptions::InvalidIdentifierException(
+                    "Record not found", common::database::errors::db_error_code::DUPLICATE_RECORD);
+            }
+            RecordType record;
+            record.from_record(res.front());
+            return record;
         }
 
         std::vector<RecordType> get_by_name(const std::string& name) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<std::string>>(RecordType::fields::name, ""),
+                std::make_unique<common::database::Field<std::string>>(
+                    data::objects::ObjectBase::common_fields_names::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             auto res = connect_->view(table_name_, select_conditions);
             std::vector<RecordType> records;
             records.reserve(res.size());
@@ -197,38 +206,17 @@ namespace drug_lib::dao
             return records;
         }
 
-        std::vector<RecordType> get_by_id_paged(int32_t id, const uint16_t page_limit,
-                                                const std::size_t page_number = 1) const
-        {
-            common::database::Conditions select_conditions;
-            select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
-                "=",
-                std::make_unique<common::database::Field<int32_t>>("", id)
-                );
-            select_conditions.set_page_condition(
-                common::database::PageCondition(page_limit).set_page_number(page_number));
-            auto res = connect_->select(table_name_, select_conditions);
-            std::vector<RecordType> records;
-            records.reserve(res.size());
-            for (const auto& record : res)
-            {
-                RecordType tmp;
-                tmp.from_record(record);
-                records.push_back(std::move(tmp));
-            }
-            return records;
-        }
 
         std::vector<RecordType> get_by_name_paged(const std::string& name, const uint16_t page_limit,
                                                   const std::size_t page_number = 1) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::name, 0),
+                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::name,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             select_conditions.set_page_condition(
                 common::database::PageCondition(page_limit).set_page_number(page_number));
             auto res = connect_->select(table_name_, select_conditions);

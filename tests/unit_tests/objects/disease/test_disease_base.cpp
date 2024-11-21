@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "disease.hpp"
 #include "diseases/source/properties_definition.hpp"
-
 using namespace drug_lib;
 using namespace drug_lib::data::objects;
 
@@ -11,7 +10,7 @@ TEST(DiseaseTest, DefaultConstructor)
     EXPECT_EQ(disease.get_id(), -1);
     EXPECT_EQ(disease.get_name(), "");
     EXPECT_EQ(disease.get_type(), "");
-    EXPECT_FALSE(disease.is_is_infectious());
+    EXPECT_FALSE(disease.is_infectious());
 }
 
 TEST(DiseaseTest, ParameterizedConstructor)
@@ -20,7 +19,7 @@ TEST(DiseaseTest, ParameterizedConstructor)
     EXPECT_EQ(disease.get_id(), 1);
     EXPECT_EQ(disease.get_name(), "Flu");
     EXPECT_EQ(disease.get_type(), "Viral");
-    EXPECT_TRUE(disease.is_is_infectious());
+    EXPECT_TRUE(disease.is_infectious());
 }
 
 TEST(DiseaseTest, SettersAndGetters)
@@ -29,12 +28,12 @@ TEST(DiseaseTest, SettersAndGetters)
     disease.set_id(2);
     disease.set_name("Cold");
     disease.set_type("Viral");
-    disease.set_is_infectious(false);
+    disease.set_infectious(false);
 
     EXPECT_EQ(disease.get_id(), 2);
     EXPECT_EQ(disease.get_name(), "Cold");
     EXPECT_EQ(disease.get_type(), "Viral");
-    EXPECT_FALSE(disease.is_is_infectious());
+    EXPECT_FALSE(disease.is_infectious());
 }
 
 TEST(DiseaseTest, ToRecord)
@@ -75,7 +74,7 @@ TEST(DiseaseTest, FromRecord)
     EXPECT_EQ(disease.get_id(), 4);
     EXPECT_EQ(disease.get_name(), "Measles");
     EXPECT_EQ(disease.get_type(), "Viral");
-    EXPECT_TRUE(disease.is_is_infectious());
+    EXPECT_TRUE(disease.is_infectious());
 }
 
 

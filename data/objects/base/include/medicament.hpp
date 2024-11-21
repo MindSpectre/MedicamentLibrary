@@ -43,7 +43,7 @@ namespace drug_lib::data::objects
             name_ = name;
         }
 
-        [[nodiscard]] int32_t id() const
+        [[nodiscard]] int32_t get_id() const
         {
             return id_;
         }

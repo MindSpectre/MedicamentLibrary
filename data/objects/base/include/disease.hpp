@@ -143,12 +143,12 @@ namespace drug_lib::data::objects
         }
 
 
-        [[nodiscard]] bool is_is_infectious() const
+        [[nodiscard]] bool is_infectious() const
         {
             return is_infectious_;
         }
 
-        void set_is_infectious(const bool is_infectious)
+        void set_infectious(const bool is_infectious)
         {
             is_infectious_ = is_infectious;
         }

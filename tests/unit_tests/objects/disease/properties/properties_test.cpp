@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "disease.hpp"
 #include "test_symptoms.hpp"
+#include "test_curative_drugs.hpp"
 #include "properties_controller.hpp"
 
 using namespace drug_lib;
