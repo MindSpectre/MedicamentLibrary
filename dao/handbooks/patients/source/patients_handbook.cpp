@@ -2,6 +2,10 @@
 
 namespace drug_lib::dao
 {
+    void PatientsHandbook::tear_down()
+    {
+    }
+
     void PatientsHandbook::setup() &
     {
         table_name_ = handbook_tables_name::Patients;

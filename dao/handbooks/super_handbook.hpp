@@ -76,10 +76,9 @@ namespace drug_lib::dao
             diseases_.drop_connection();
             if (used_pool)
             {
-                std::unique_ptr<common::database::interfaces::DbInterface> uniqueConn(std::move(shared_connect).get());
-                shared_connect.reset();
-                used_pool->get().release_db_interface(std::move(uniqueConn));
+                used_pool->get().release_db_interface(std::move(shared_connect));
             }
+            std::cout << "Destroying SuperHandbook" << std::endl;
         }
 
     private:

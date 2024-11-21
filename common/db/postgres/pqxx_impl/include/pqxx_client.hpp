@@ -122,6 +122,9 @@ namespace drug_lib::common::database
         /// @return Count of all records in table
         [[nodiscard]] uint32_t count(std::string_view table_name) const override;
 
+        void set_search_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override;
+        void set_conflict_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override;
+
     protected:
         // Implementation Methods for Data Manipulation
         void insert_implementation(std::string_view table_name, const std::vector<Record>& rows) override;

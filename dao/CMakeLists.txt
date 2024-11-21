@@ -23,17 +23,17 @@ target_include_directories(DrugLib_Dao_Handbook_Base
 add_subdirectory(handbooks)
 
 ##############################################################################
-add_library(DrugLib_Dao_Handbook STATIC
+add_library(DrugLib_Dao_SuperHandbook STATIC
         handbooks/super_handbook.hpp)
 
-target_link_libraries(DrugLib_Dao_Handbook
+target_link_libraries(DrugLib_Dao_SuperHandbook
         PUBLIC
         DrugLib_Dao_Handbook_Diseases
         DrugLib_Dao_Handbook_Patients
         DrugLib_Dao_Handbook_Organizations
         DrugLib_Dao_Handbook_Medicaments
 )
-target_include_directories(DrugLib_Dao_Handbook
+target_include_directories(DrugLib_Dao_SuperHandbook
         PUBLIC
         handbooks/
 )

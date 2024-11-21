@@ -171,8 +171,16 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value serialize() override
+        Json::Value to_json() override
         {
+            Json::Value result;
+            result[field_name::id] = id_;
+            result[field_name::name] = name_;
+            result[field_name::type] = type_;
+            result[field_name::requires_prescription] = requires_prescription_;
+            result[field_name::manufacturer_id] = manufacturer_id_;
+            result[field_name::properties] = collection_.make_properties_field()->value();
+            return result;
         }
 
     private:

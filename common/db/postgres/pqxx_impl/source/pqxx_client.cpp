@@ -21,8 +21,8 @@ namespace drug_lib::common::database
                            const uint32_t port,
                            const std::string_view db_name,
                            const std::string_view login,
-                           const std::string_view password)
-        : in_transaction_(false)
+                           const std::string_view password) :
+        in_transaction_(false)
     {
         try
         {
@@ -57,8 +57,8 @@ namespace drug_lib::common::database
     }
 
 
-    PqxxClient::PqxxClient(const PqxxConnectParams& pr)
-        : in_transaction_(false)
+    PqxxClient::PqxxClient(const PqxxConnectParams& pr) :
+        in_transaction_(false)
     {
         try
         {
@@ -247,7 +247,7 @@ namespace drug_lib::common::database
             {
                 conflict_fields = this->conflict_fields_.at(table_name.data());
             }
-            catch (std::out_of_range&)
+            catch (boost::container::out_of_range&)
             {
                 throw QueryException(
                     "For this table upsert clause is not set up. Or invalid table name credentials",
@@ -282,7 +282,8 @@ namespace drug_lib::common::database
         auto process_fields_clause = [&](const std::vector<FieldCondition>& fields_clause)
         {
             std::optional<std::string> query_;
-            if (fields_clause.empty()) return query_;
+            if (fields_clause.empty())
+                return query_;
             std::ostringstream local_stream;
             for (const auto& condition : fields_clause)
             {
@@ -350,15 +351,15 @@ namespace drug_lib::common::database
                 switch (condition.get_order())
                 {
                 case order_type::ascending:
-                    {
-                        local_stream << "ASC, ";
-                        break;
-                    }
+                {
+                    local_stream << "ASC, ";
+                    break;
+                }
                 case order_type::descending:
-                    {
-                        local_stream << "DESC, ";
-                        break;
-                    }
+                {
+                    local_stream << "DESC, ";
+                    break;
+                }
                 }
             }
             query_ = local_stream.str();
@@ -368,7 +369,7 @@ namespace drug_lib::common::database
         auto process_paging_clause = [&](const PageCondition& paging)
         {
             std::ostringstream local_stream;
-            local_stream << "LIMIT " << paging.get_limit() << " OFFSET " << paging.get_offset();
+            local_stream << " LIMIT " << paging.get_limit() << " OFFSET " << paging.get_offset();
             return local_stream.str();
         };
 
@@ -1091,6 +1092,23 @@ namespace drug_lib::common::database
         return res[0][0].as<uint32_t>();
     }
 
+    void PqxxClient::set_search_fields(const std::string_view table_name,
+                                       std::vector<std::shared_ptr<FieldBase>> fields)
+    {
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->search_fields_[std::string(table_name)] = std::move(fields);
+        }
+    }
+
+    void PqxxClient::set_conflict_fields(const std::string_view table_name,
+                                         std::vector<std::shared_ptr<FieldBase>> fields)
+    {
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->conflict_fields_[std::string(table_name)] = std::move(fields);
+        }
+    }
 
     std::string PqxxClient::make_fts_index_name(const std::string_view table_name)
     {

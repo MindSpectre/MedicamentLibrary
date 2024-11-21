@@ -84,3 +84,10 @@ target_link_libraries(${UNIT_TESTING_TARGET}_DbInterfacePool
 )
 add_test(UnitTest_DbInterfacePool ${UNIT_TESTING_TARGET}_DbInterfacePool)
 ##############################################################################
+
+
+add_executable(HTest_LookUpService non_automate/lookup_service.cpp)
+
+target_link_libraries(HTest_LookUpService
+        DrugLib_Services_Internal_LookUp
+)

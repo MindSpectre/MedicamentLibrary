@@ -198,6 +198,16 @@ namespace drug_lib::common::database
             return 0;
         }
 
+        void set_search_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override
+        {
+            std::cout << "set_search_fields" << std::endl;
+        }
+
+        void set_conflict_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override
+        {
+            std::cout << "set_conflict_fields" << std::endl;
+        }
+
     protected:
         // Implementation Methods for Data Manipulation
         void insert_implementation(std::string_view table_name, const std::vector<Record>& rows) override

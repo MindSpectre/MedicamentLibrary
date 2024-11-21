@@ -15,9 +15,9 @@ protected:
     creational::DbInterfacePool pool;
 
     // Custom factory function for testing
-    static std::unique_ptr<interfaces::DbInterface> create_mock_database()
+    static std::shared_ptr<interfaces::DbInterface> create_mock_database()
     {
-        return std::make_unique<drug_lib::common::database::MockDbClient>();
+        return std::make_shared<MockDbClient>();
     }
 
     void SetUp() override
@@ -46,7 +46,7 @@ TEST_F(DbInterfacePoolTest, TestAcquireAndRelease)
 // Test pool exhaustion
 TEST_F(DbInterfacePoolTest, TestPoolExhaustion)
 {
-    std::vector<std::unique_ptr<interfaces::DbInterface>> interfaces;
+    std::vector<std::shared_ptr<interfaces::DbInterface>> interfaces;
 
     // Acquire all available instances
     interfaces.reserve(5);

@@ -34,7 +34,7 @@ namespace drug_lib::common::database::interfaces
         [[nodiscard]] virtual bool check_table(std::string_view table_name) = 0;
 
         virtual void make_unique_constraint(std::string_view table_name,
-                                            std::vector<std::shared_ptr<FieldBase>> conflict_fields) = 0;
+                                            std::vector<std::shared_ptr<FieldBase>> key_fields) = 0;
         virtual void setup_search_index(std::string_view table_name,
                                         std::vector<std::shared_ptr<FieldBase>> fields) = 0;
         /// @brief Drop index, but doesn't remove fts fields from this client.
@@ -81,6 +81,10 @@ namespace drug_lib::common::database::interfaces
         [[nodiscard]] virtual uint32_t count(std::string_view table_name,
                                              const Conditions& conditions) const = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name) const = 0;
+
+        virtual void set_search_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) = 0;
+        virtual void set_conflict_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) =
+        0;
 
     protected:
         // Implementation Methods for Data Manipulation

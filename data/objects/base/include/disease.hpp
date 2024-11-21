@@ -91,8 +91,15 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value serialize() override
+        Json::Value to_json() override
         {
+            Json::Value result;
+            result[field_name::id] = id_;
+            result[field_name::name] = name_;
+            result[field_name::type] = type_;
+            result[field_name::is_infectious] = is_infectious_;
+            result[field_name::properties] = collection_.make_properties_field()->value();
+            return result;
         }
 
         Disease() = default;

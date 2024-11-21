@@ -15,7 +15,6 @@ target_include_directories(DrugLib_Common_Database_Base
 )
 target_link_libraries(DrugLib_Common_Database_Base
         INTERFACE
-        Boost::boost
         JsonCpp::JsonCpp
 )
 ##############################################################################

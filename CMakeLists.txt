@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
 project("DrugLib" LANGUAGES CXX)
-
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,7 +24,7 @@ option(USE_TESTS "Tests activated" ON)
 # Find necessary packages
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
-find_package(OpenSSL 3.0.0 REQUIRED)
+find_package(OpenSSL 3.3.2 REQUIRED)
 
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
@@ -34,13 +33,14 @@ find_package(libpqxx REQUIRED)
 # Conditionally find Boost if enabled
 if (USE_BOOST)
     # Boost settings (adjust as needed)
-    set(Boost_USE_STATIC_LIBS OFF)
+
+    set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_MULTITHREADED OFF)
-    set(Boost_USE_STATIC_RUNTIME OFF)
-    set(Boost_NO_SYSTEM_PATHS OFF)
+    set(Boost_USE_STATIC_RUNTIME ON)
+    set(Boost_NO_SYSTEM_PATHS ON)
     # set(BOOST_ROOT /opt/vcpkg/installed/x64-linux) # Adjust if necessary
 
-    find_package(Boost REQUIRED container)
+    find_package(Boost CONFIG COMPONENTS container system filesystem)
     if (NOT Boost_FOUND)
         message(FATAL_ERROR "Boost libraries not found, but USE_BOOST is ON.")
     endif ()
@@ -82,3 +82,4 @@ add_subdirectory(dao)
 
 add_subdirectory(services)
 
+add_subdirectory(tools)

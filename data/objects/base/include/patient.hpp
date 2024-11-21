@@ -127,8 +127,17 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value serialize() override
+        Json::Value to_json() override
         {
+            Json::Value result;
+            result[field_name::id] = id_;
+            result[field_name::name] = name_;
+            result[field_name::gender] = gender_;
+            result[field_name::birth_date]["year"] = static_cast<int>(birth_date_.year());
+            result[field_name::birth_date]["month"] = static_cast<uint>(birth_date_.month());
+            result[field_name::birth_date]["day"] = static_cast<uint>(birth_date_.day());
+            result[field_name::properties] = collection_.make_properties_field()->value();
+            return result;
         }
 
         [[nodiscard]] int32_t get_id() const

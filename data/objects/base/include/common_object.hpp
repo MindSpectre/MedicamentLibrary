@@ -14,7 +14,7 @@ namespace drug_lib::data
             [[nodiscard]] virtual common::database::Record to_record() const = 0;
             virtual void from_record(const common::database::Record& selected) = 0;
             virtual void from_record(const std::unique_ptr<common::database::ViewRecord>& viewed) = 0;
-            virtual Json::Value serialize() = 0;
+            virtual Json::Value to_json() = 0;
 
             struct common_fields_names
             {
