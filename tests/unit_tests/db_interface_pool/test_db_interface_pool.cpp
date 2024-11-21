@@ -125,9 +125,10 @@ TEST_F(DbInterfacePoolTest, TestMultiThreadedAcquireRelease)
     EXPECT_NO_THROW(pool.acquire_db_interface()); // Ensure pool is usable after multithreaded access
 }
 
-// Test that releasing null pointers does not affect the pool
+// Test that releasing null pointers doesn't affect the pool
 TEST_F(DbInterfacePoolTest, TestReleaseNull)
 {
     std::unique_ptr<interfaces::DbInterface> nullInterface;
-    EXPECT_NO_THROW(pool.release_db_interface(std::move(nullInterface))); // Should not throw or affect the pool
+    EXPECT_THROW(pool.release_db_interface(std::move(nullInterface)), std::invalid_argument);
+    // Should throw or affect the pool
 }

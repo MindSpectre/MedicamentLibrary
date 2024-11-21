@@ -17,8 +17,9 @@ add_test(${UnitTestObject}_DiseaseBase ${UNIT_TESTING_TARGET}_Objects_Disease_Ba
 # Test Disease Properties Classes
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
-        disease/properties/test_symptoms.hpp
         disease/properties/properties_test.cpp
+        disease/properties/test_symptoms.hpp
+        disease/properties/test_curative_drugs.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         PRIVATE
@@ -79,6 +80,7 @@ add_test(${UnitTestObject}_PatientBase ${UNIT_TESTING_TARGET}_Objects_Patient_Ba
 add_executable(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         patient/properties/properties_test.cpp
         patient/properties/test_current_diseases.hpp
+        patient/properties/test_current_medicaments.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         PRIVATE

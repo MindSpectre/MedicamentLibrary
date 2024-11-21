@@ -2,7 +2,7 @@
 #include "patient.hpp"
 #include "properties_controller.hpp"
 #include "test_current_diseases.hpp"
-
+#include "test_current_medicaments.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects;
 TEST(PatientPropertiesTest, AddProperty)
