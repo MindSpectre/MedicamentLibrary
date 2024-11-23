@@ -139,7 +139,7 @@ namespace drug_lib::dao
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-            );
+                );
             connect_->remove(table_name_, removed_conditions);
         }
 
@@ -151,13 +151,18 @@ namespace drug_lib::dao
                     data::objects::ObjectBase::common_fields_names::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-            );
+                );
             connect_->remove(table_name_, removed_conditions);
         }
 
         void remove_all() const
         {
             connect_->truncate_table(table_name_);
+        }
+
+        void delete_table() const
+        {
+            connect_->remove_table(table_name_);
         }
 
         RecordType get_by_id(const int32_t id) const
@@ -168,7 +173,7 @@ namespace drug_lib::dao
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-            );
+                );
             auto res = connect_->view(table_name_, select_conditions);
             if (res.size() > 1)
             {
@@ -193,7 +198,7 @@ namespace drug_lib::dao
                     data::objects::ObjectBase::common_fields_names::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-            );
+                );
             auto res = connect_->view(table_name_, select_conditions);
             std::vector<RecordType> records;
             records.reserve(res.size());
@@ -216,7 +221,7 @@ namespace drug_lib::dao
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-            );
+                );
             select_conditions.set_page_condition(
                 common::database::PageCondition(page_limit).set_page_number(page_number));
             auto res = connect_->select(table_name_, select_conditions);

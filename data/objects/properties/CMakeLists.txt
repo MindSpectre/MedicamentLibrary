@@ -77,6 +77,9 @@ add_library(DrugLib_Data_Objects_Properties_Diseases
         diseases/source/diseases_properties.cpp
         diseases/include/disease_properties/symptoms.hpp
         diseases/include/disease_properties/curative_drugs.hpp
+        diseases/include/disease_properties/complications.hpp
+        diseases/include/disease_properties/affected_age_groups.hpp
+        diseases/include/disease_properties/risk_factors.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Diseases PUBLIC
         DrugLib_Data_Objects_Properties_DataProperty

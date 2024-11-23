@@ -9,9 +9,10 @@
 #include <random>
 #include <thread>
 
-constexpr int32_t RECORD_LIMIT = 1e6;
-constexpr int32_t BATCH_SIZE = 1e4;
+constexpr int32_t RECORD_LIMIT = 1e5;
+constexpr int32_t BATCH_SIZE = 1e3;
 std::mutex pool_mutex;
+using namespace drug_lib::data::objects;
 
 template <typename T>
 void write_to_csv(std::string_view path)
@@ -30,7 +31,7 @@ void create_meds(drug_lib::common::database::creational::DbInterfacePool& db_poo
     }
     for (int32_t batch_n = 0; batch_n < RECORD_LIMIT / BATCH_SIZE; ++batch_n)
     {
-        std::vector<drug_lib::data::objects::Medicament> medicaments;
+        std::vector<Medicament> medicaments;
         for (int32_t i = 0; i < BATCH_SIZE; ++i)
         {
             const int32_t index = batch_n * BATCH_SIZE + i;
@@ -40,15 +41,52 @@ void create_meds(drug_lib::common::database::creational::DbInterfacePool& db_poo
             std::string approval_num = "AVB" + std::to_string(index) + "SYS" + type;
             std::string approval_status = i % 4 ? "accepted" : "rejected";
             std::string atc_code = "ATC" + std::to_string((index + 11) % 3) + "DE" + type;
-            drug_lib::data::objects::Medicament medicament(index, std::move(name), std::move(type), req_pre, i,
-                                                           std::move(approval_num), std::move(approval_status),
-                                                           std::move(atc_code));
+            Medicament medicament(index, std::move(name), std::move(type), req_pre, i,
+                                  std::move(approval_num), std::move(approval_status),
+                                  std::move(atc_code));
             medicament.add_property(
-                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::medicaments::Prescription>(
+                drug_lib::data::PropertyFactory::create<medicaments::Prescription>(
                     i & 1 ? "Required" : "Likely"));
+            std::vector active_substances = {
+                ::medicaments::ActiveIngredient("Paracetamol", 2),
+                ::medicaments::ActiveIngredient("Caffeine", 3)
+            };
+            medicament.add_property(
+                drug_lib::data::PropertyFactory::create<::medicaments::ActiveIngredients>(std::move(active_substances))
+                );
+
+            // Add Dosage Form
+            medicament.add_property(
+                drug_lib::data::PropertyFactory::create<::medicaments::DosageForm>("Tablet, film-coated")
+                );
+
+            // Add Inactive Ingredients
+            std::vector inactive_substances = {
+                ::medicaments::InactiveIngredient("Microcrystalline Cellulose", 1),
+                ::medicaments::InactiveIngredient("Magnesium Stearate", 1)
+            };
+            medicament.add_property(
+                drug_lib::data::PropertyFactory::create<::medicaments::InactiveIngredients>(
+                    std::move(inactive_substances))
+                );
+
+            // Add Side Effects
+            std::vector<std::string> side_effects = {
+                "Nausea",
+                "Dizziness",
+                "Fatigue"
+            };
+            medicament.add_property(
+                drug_lib::data::PropertyFactory::create<::medicaments::SideEffects>(std::move(side_effects))
+                );
+
+            // Add Strength
+            medicament.add_property(
+                drug_lib::data::PropertyFactory::create<::medicaments::Strength>("500 mg per tablet")
+                );
             medicaments.push_back(std::move(medicament));
         }
-        std::cout << "Insert package: " << batch_n + 1 << std::endl;
+        std::cout << "Insert medicament package: " << batch_n + 1 << std::endl;
         super_handbook.medicaments().force_insert(medicaments);
     }
     stopwatch.finish();
@@ -65,7 +103,7 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool& db
     }
     for (int32_t batch_n = 0; batch_n < RECORD_LIMIT / BATCH_SIZE; ++batch_n)
     {
-        std::vector<drug_lib::data::objects::Disease> diseases;
+        std::vector<Disease> diseases;
         for (int32_t i = 0; i < BATCH_SIZE; ++i)
         {
             const int32_t index = batch_n * BATCH_SIZE + i;
@@ -73,19 +111,35 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool& db
             const bool is_infectious = (i % 2 == 0);
             std::string type = is_infectious ? "infectious" : "non-infectious";
             const std::vector symptoms_list = {
-                drug_lib::data::objects::diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
-                                                           "Persistent cough"),
-                drug_lib::data::objects::diseases::Symptom("Fever", 5, "1 week", "General",
-                                                           "High body temperature")
+                diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
+                                  "Persistent cough"),
+                diseases::Symptom("Fever", 5, "1 week", "General",
+                                  "High body temperature")
             };
-            drug_lib::data::objects::diseases::Symptoms symptoms(symptoms_list);
-            drug_lib::data::objects::Disease disease(index, std::move(name), std::move(type), is_infectious);
+            diseases::Symptoms symptoms(symptoms_list);
+            Disease disease(index, std::move(name), std::move(type), is_infectious);
             disease.add_property(
-                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::diseases::Symptoms>(
+                drug_lib::data::PropertyFactory::create<diseases::Symptoms>(
                     std::move(symptoms)));
+            disease.add_property(
+                drug_lib::data::PropertyFactory::create<diseases::CurativeDrugs>(std::vector{1, 2, 3}));
+            // Adding AffectedAgeGroups property
+            disease.add_property(
+                drug_lib::data::PropertyFactory::create<diseases::AffectedAgeGroups>(
+                    std::vector<std::string>{"Children", "Adults", "Elderly"}));
+
+            // Adding Complications property
+            disease.add_property(
+                drug_lib::data::PropertyFactory::create<diseases::Complications>(
+                    std::vector<std::string>{"Pneumonia", "Organ failure", "Sepsis"}));
+
+            // Adding RiskFactors property
+            disease.add_property(
+                drug_lib::data::PropertyFactory::create<diseases::RiskFactors>(
+                    std::vector<std::string>{"Smoking", "Obesity", "High blood pressure"}));
             diseases.push_back(std::move(disease));
         }
-        std::cout << "Insert package: " << batch_n + 1 << std::endl;
+        std::cout << "Insert disease package: " << batch_n + 1 << std::endl;
         super_handbook.diseases().force_insert(diseases);
     }
     stopwatch.finish();
@@ -107,7 +161,7 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool& db
 
     for (int32_t batch_n = 0; batch_n < RECORD_LIMIT / BATCH_SIZE; ++batch_n)
     {
-        std::vector<drug_lib::data::objects::Patient> patients;
+        std::vector<Patient> patients;
         for (int32_t i = 0; i < BATCH_SIZE; ++i)
         {
             const int32_t index = batch_n * BATCH_SIZE + i;
@@ -122,16 +176,18 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool& db
                                                    std::chrono::day(day)};
             std::string contact_info = "patient" + std::to_string(index) + "@example.com";
 
-            drug_lib::data::objects::Patient patient(index, std::move(name), std::move(gender), birth_date,
-                                                     std::move(contact_info));
+            Patient patient(index, std::move(name), std::move(gender), birth_date,
+                            std::move(contact_info));
             std::vector diseases = {101, 202, 303};
-            drug_lib::data::objects::patients::CurrentDiseases current_diseases(diseases);
+            patients::CurrentDiseases current_diseases(diseases);
             patient.add_property(
-                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::patients::CurrentDiseases>(
+                drug_lib::data::PropertyFactory::create<patients::CurrentDiseases>(
                     std::move(current_diseases)));
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::CurrentMedicaments>(std::vector{1, 2, 3}));
             patients.push_back(std::move(patient));
         }
-        std::cout << "Insert package: " << batch_n + 1 << std::endl;
+        std::cout << "Insert patient package: " << batch_n + 1 << std::endl;
         super_handbook.patients().force_insert(patients);
     }
     stopwatch.finish();
@@ -148,7 +204,7 @@ void create_orgs(drug_lib::common::database::creational::DbInterfacePool& db_poo
     }
     for (int32_t batch_n = 0; batch_n < RECORD_LIMIT / BATCH_SIZE; ++batch_n)
     {
-        std::vector<drug_lib::data::objects::Organization> organizations;
+        std::vector<Organization> organizations;
         for (int32_t i = 0; i < BATCH_SIZE; ++i)
         {
             const int32_t index = batch_n * BATCH_SIZE + i;
@@ -157,17 +213,17 @@ void create_orgs(drug_lib::common::database::creational::DbInterfacePool& db_poo
             std::string country = "Country" + std::to_string(i % 100);
             std::string contact_details = "org" + std::to_string(index) + "@example.com";
 
-            drug_lib::data::objects::Organization organization(index, std::move(name), std::move(type),
-                                                               std::move(country), std::move(contact_details));
-            drug_lib::data::objects::organizations::License license;
+            Organization organization(index, std::move(name), std::move(type),
+                                      std::move(country), std::move(contact_details));
+            organizations::License license;
             license.set_license_name("Sample License");
             license.set_license_key("SAMPLE123");
             organization.add_property(
-                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::organizations::License>(
+                drug_lib::data::PropertyFactory::create<organizations::License>(
                     std::move(license)));
             organizations.push_back(std::move(organization));
         }
-        std::cout << "Insert package: " << batch_n + 1 << std::endl;
+        std::cout << "Insert organization package: " << batch_n + 1 << std::endl;
         super_handbook.organizations().force_insert(organizations);
     }
     stopwatch.finish();

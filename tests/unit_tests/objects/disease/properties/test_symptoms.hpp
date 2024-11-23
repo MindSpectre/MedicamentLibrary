@@ -75,3 +75,10 @@ TEST(SymptomsTest, SetInfo)
     EXPECT_EQ(symptoms.get_data()[0].get_name(), "Dizziness");
     EXPECT_EQ(symptoms.get_data()[0].get_description(), "Feeling lightheaded");
 }
+
+TEST(SymptomsTest, FactoryCreate)
+{
+    const Symptoms symptoms;
+    EXPECT_NO_THROW(data::PropertyFactory::create<Symptoms>(symptoms));
+    EXPECT_NO_THROW(data::PropertyFactory::create(diseases::properties::symptoms, Json::arrayValue));
+}

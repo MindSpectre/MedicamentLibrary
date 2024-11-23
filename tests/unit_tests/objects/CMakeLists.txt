@@ -4,6 +4,7 @@ set(UnitTestObject "UnitTest_Object")
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         disease/test_disease_base.cpp
+
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         PRIVATE
@@ -20,6 +21,9 @@ add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         disease/properties/properties_test.cpp
         disease/properties/test_symptoms.hpp
         disease/properties/test_curative_drugs.hpp
+        disease/properties/test_affected_age_groups.hpp
+        disease/properties/test_risk_factors.hpp
+        disease/properties/test_complications.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         PRIVATE

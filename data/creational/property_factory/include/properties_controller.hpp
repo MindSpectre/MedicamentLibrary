@@ -26,6 +26,7 @@ namespace drug_lib::data
         static std::shared_ptr<DataProperty> create(const std::string& property_name,
                                                     const Json::Value& property_value)
         {
+            // Meds
             if (property_name == objects::medicaments::properties::prescription)
             {
                 return std::make_shared<objects::medicaments::Prescription>(property_value);
@@ -50,17 +51,43 @@ namespace drug_lib::data
             {
                 return std::make_shared<objects::medicaments::Strength>(property_value);
             }
+
+            // Diseases
             if (property_name == objects::diseases::properties::symptoms)
             {
                 return std::make_shared<objects::diseases::Symptoms>(property_value);
             }
+            if (property_name == objects::diseases::properties::curative_drugs)
+            {
+                return std::make_shared<objects::diseases::CurativeDrugs>(property_value);
+            }
+            if (property_name == objects::diseases::properties::affected_age_groups)
+            {
+                return std::make_shared<objects::diseases::AffectedAgeGroups>(property_value);
+            }
+            if (property_name == objects::diseases::properties::complications)
+            {
+                return std::make_shared<objects::diseases::Complications>(property_value);
+            }
+            if (property_name == objects::diseases::properties::risk_factors)
+            {
+                return std::make_shared<objects::diseases::RiskFactors>(property_value);
+            }
+
+            // Orgs
             if (property_name == objects::organizations::properties::license)
             {
                 return std::make_shared<objects::organizations::License>(property_value);
             }
+
+            // Patients
             if (property_name == objects::patients::properties::current_diseases)
             {
                 return std::make_shared<objects::patients::CurrentDiseases>(property_value);
+            }
+            if (property_name == objects::patients::properties::current_medicaments)
+            {
+                return std::make_shared<objects::patients::CurrentMedicaments>(property_value);
             }
             throw std::invalid_argument("Property '" + property_name + "' not found");
         }

@@ -3,11 +3,11 @@
 template <typename T>
 concept Removable = requires(T table)
 {
-    { table.remove_all() };
+    { table.delete_table() };
 };
 
 template <Removable T>
-void drop_obj(T& table_) { table_.remove_all(); }
+void drop_obj(T& table_) { table_.delete_table(); }
 
 template <typename... Args>
 void drop(Args&... args)

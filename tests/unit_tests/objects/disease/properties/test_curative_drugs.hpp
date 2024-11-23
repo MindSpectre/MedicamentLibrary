@@ -71,3 +71,10 @@ TEST(CurativeDrugsTest, GetName)
     const CurativeDrugs curative_drugs;
     EXPECT_EQ(curative_drugs.get_name(), properties::curative_drugs);
 }
+
+TEST(CurativeDrugsTest, FactoryCreate)
+{
+    const CurativeDrugs curative_drugs;
+    EXPECT_NO_THROW(data::PropertyFactory::create<CurativeDrugs>(curative_drugs));
+    EXPECT_NO_THROW(data::PropertyFactory::create(diseases::properties::curative_drugs, Json::arrayValue));
+}

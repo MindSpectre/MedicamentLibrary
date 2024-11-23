@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
+
 #include "disease.hpp"
-#include "test_symptoms.hpp"
-#include "test_curative_drugs.hpp"
 #include "properties_controller.hpp"
+#include "test_affected_age_groups.hpp"
+#include "test_curative_drugs.hpp"
+#include "test_risk_factors.hpp"
+#include "test_complications.hpp"
+#include "test_symptoms.hpp"
 
 using namespace drug_lib;
 using namespace drug_lib::data::objects;
