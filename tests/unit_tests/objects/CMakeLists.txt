@@ -49,7 +49,12 @@ add_test(${UnitTestObject}_MedicamentBase ${UNIT_TESTING_TARGET}_Objects_Medicam
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         medicament/properties/properties_test.cpp
-        medicament/properties/test_prescription_drug.hpp
+        medicament/properties/test_prescription.hpp
+        medicament/properties/test_active_ingredients.hpp
+        medicament/properties/test_inactive_ingredients.hpp
+        medicament/properties/test_dosage_form.hpp
+        medicament/properties/test_side_effects.hpp
+        medicament/properties/test_strength.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         PRIVATE

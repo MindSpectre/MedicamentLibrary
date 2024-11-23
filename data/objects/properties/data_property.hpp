@@ -23,6 +23,13 @@ namespace drug_lib::data
         };
     };
 
+    // template<typename DataPropertyType>
+    // class ArrayProperty : public DataProperty
+    // {
+    //     public:
+    //     ~ArrayProperty() override = default;
+    //
+    // };
     class PropertyCollection final
     {
     public:

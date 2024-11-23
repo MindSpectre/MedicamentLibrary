@@ -6,24 +6,24 @@
 
 namespace drug_lib::data::objects::medicaments
 {
-    class Prescription final : public DataProperty
+    class DosageForm final : public DataProperty
     {
     public:
-        Prescription() = default;
+        DosageForm() = default;
 
-        explicit Prescription(const Json::Value& properties)
+        explicit DosageForm(const Json::Value& properties)
         {
             this->set_info(properties);
         }
 
         template <typename T>
             requires std::is_constructible_v<std::string, T>
-        explicit Prescription(T description)
+        explicit DosageForm(T description)
             : description_(description)
         {
         }
 
-        ~Prescription() override = default;
+        ~DosageForm() override = default;
 
         [[nodiscard]] Json::Value get_info() const override
         {
@@ -39,7 +39,7 @@ namespace drug_lib::data::objects::medicaments
 
         [[nodiscard]] std::string get_name() const override
         {
-            return properties::prescription;
+            return properties::dosage_form;
         }
 
         [[nodiscard]] const std::string& get_description() const
@@ -58,7 +58,7 @@ namespace drug_lib::data::objects::medicaments
             static constexpr std::string description = "description";
         };
 
-        friend std::ostream& operator<<(std::ostream& os, const Prescription& obj)
+        friend std::ostream& operator<<(std::ostream& os, const DosageForm& obj)
         {
             return os << " description_: " << obj.description_;
         }

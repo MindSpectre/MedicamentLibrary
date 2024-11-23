@@ -37,9 +37,14 @@ void create_meds(drug_lib::common::database::creational::DbInterfacePool& db_poo
             std::string name = "medicament" + std::to_string(index);
             const bool req_pre = i % 2;
             std::string type = "medicament" + std::to_string(req_pre);
-            drug_lib::data::objects::Medicament medicament(index, std::move(name), std::move(type), req_pre, i);
+            std::string approval_num = "AVB" + std::to_string(index) + "SYS" + type;
+            std::string approval_status = i % 4 ? "accepted" : "rejected";
+            std::string atc_code = "ATC" + std::to_string((index + 11) % 3) + "DE" + type;
+            drug_lib::data::objects::Medicament medicament(index, std::move(name), std::move(type), req_pre, i,
+                                                           std::move(approval_num), std::move(approval_status),
+                                                           std::move(atc_code));
             medicament.add_property(
-                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::medicaments::PrescriptionDrug>(
+                drug_lib::data::PropertyFactory::create<drug_lib::data::objects::medicaments::Prescription>(
                     i & 1 ? "Required" : "Likely"));
             medicaments.push_back(std::move(medicament));
         }

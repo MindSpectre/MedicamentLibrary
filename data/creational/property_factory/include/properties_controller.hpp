@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "medicament_properties.hpp"
@@ -29,7 +28,27 @@ namespace drug_lib::data
         {
             if (property_name == objects::medicaments::properties::prescription)
             {
-                return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
+                return std::make_shared<objects::medicaments::Prescription>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::active_ingredients)
+            {
+                return std::make_shared<objects::medicaments::ActiveIngredients>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::inactive_ingredients)
+            {
+                return std::make_shared<objects::medicaments::InactiveIngredients>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::dosage_form)
+            {
+                return std::make_shared<objects::medicaments::DosageForm>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::side_effects)
+            {
+                return std::make_shared<objects::medicaments::SideEffects>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::strength)
+            {
+                return std::make_shared<objects::medicaments::Strength>(property_value);
             }
             if (property_name == objects::diseases::properties::symptoms)
             {

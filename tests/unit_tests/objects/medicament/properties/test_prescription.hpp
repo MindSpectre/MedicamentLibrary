@@ -5,62 +5,62 @@
 #include "medicament_properties/prescription.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects::medicaments;
-TEST(PrescriptionDrugTest, DefaultConstructor)
+TEST(PrescriptionTest, DefaultConstructor)
 {
-    const PrescriptionDrug prescription_drug;
+    const Prescription prescription_drug;
     EXPECT_EQ(prescription_drug.get_description(), "");
 }
 
-TEST(PrescriptionDrugTest, ParameterizedConstructorWithJson)
+TEST(PrescriptionTest, ParameterizedConstructorWithJson)
 {
     Json::Value properties;
-    properties[PrescriptionDrug::names_of_json_fields::description] =
+    properties[Prescription::names_of_json_fields::description] =
         "Take twice daily";
 
-    const PrescriptionDrug prescription_drug(properties);
+    const Prescription prescription_drug(properties);
     EXPECT_EQ(prescription_drug.get_description(), "Take twice daily");
 }
 
-TEST(PrescriptionDrugTest, ParameterizedConstructorWithString)
+TEST(PrescriptionTest, ParameterizedConstructorWithString)
 {
-    const PrescriptionDrug prescription_drug("For high blood pressure");
+    const Prescription prescription_drug("For high blood pressure");
 
     EXPECT_EQ(prescription_drug.get_description(), "For high blood pressure");
 }
 
-TEST(PrescriptionDrugTest, GetInfo)
+TEST(PrescriptionTest, GetInfo)
 {
-    const PrescriptionDrug prescription_drug("Use only as directed");
+    const Prescription prescription_drug("Use only as directed");
 
     Json::Value info = prescription_drug.get_info();
     ASSERT_TRUE(info.isObject());
     EXPECT_EQ(
-        info[PrescriptionDrug::names_of_json_fields::description].asString(),
+        info[Prescription::names_of_json_fields::description].asString(),
         "Use only as directed");
 }
 
-TEST(PrescriptionDrugTest, SetInfo)
+TEST(PrescriptionTest, SetInfo)
 {
     Json::Value properties;
-    properties[PrescriptionDrug::names_of_json_fields::description] =
+    properties[Prescription::names_of_json_fields::description] =
         "Take with food";
 
-    PrescriptionDrug prescription_drug;
+    Prescription prescription_drug;
     prescription_drug.set_info(properties);
 
     EXPECT_EQ(prescription_drug.get_description(), "Take with food");
 }
 
-TEST(PrescriptionDrugTest, SetDescription)
+TEST(PrescriptionTest, SetDescription)
 {
-    PrescriptionDrug prescription_drug;
+    Prescription prescription_drug;
     prescription_drug.set_description("For pain relief");
 
     EXPECT_EQ(prescription_drug.get_description(), "For pain relief");
 }
 
-TEST(PrescriptionDrugTest, GetName)
+TEST(PrescriptionTest, GetName)
 {
-    const PrescriptionDrug prescription_drug;
+    const Prescription prescription_drug;
     EXPECT_EQ(prescription_drug.get_name(), properties::prescription);
 }

@@ -20,6 +20,11 @@ target_include_directories(DrugLib_Data_Objects_Properties_DataProperty
 add_library(DrugLib_Data_Objects_Properties_Medicaments
         medicaments/source/medicament_properties.cpp
         medicaments/include/medicament_properties/prescription.hpp
+        medicaments/include/medicament_properties/dosage_form.hpp
+        medicaments/include/medicament_properties/strength.hpp
+        medicaments/include/medicament_properties/side_effects.hpp
+        medicaments/include/medicament_properties/active_ingredients.hpp
+        medicaments/include/medicament_properties/inactive_ingredients.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Medicaments PUBLIC
         DrugLib_Data_Objects_Properties_DataProperty
