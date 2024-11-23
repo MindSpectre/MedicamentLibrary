@@ -16,10 +16,12 @@ namespace drug_lib::data::objects::medicaments
             this->set_info(properties);
         }
 
-        template <typename T>
-            requires std::is_constructible_v<std::string, T>
-        explicit Strength(T description)
-            : description_(description)
+        explicit Strength(std::string description)
+            : description_(std::move(description))
+        {
+        }
+
+        explicit Strength(const char* description) : description_(std::move(description))
         {
         }
 
@@ -37,10 +39,6 @@ namespace drug_lib::data::objects::medicaments
             description_ = property[names_of_json_fields::description].asString();
         }
 
-        [[nodiscard]] std::string get_name() const override
-        {
-            return properties::strength;
-        }
 
         [[nodiscard]] const std::string& get_description() const
         {
@@ -52,6 +50,10 @@ namespace drug_lib::data::objects::medicaments
             description_ = std::move(description);
         }
 
+        [[nodiscard]] std::string get_name() const override
+        {
+            return properties::strength;
+        }
 
         struct names_of_json_fields
         {

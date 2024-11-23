@@ -24,6 +24,11 @@ namespace drug_lib::data::objects::organizations
 
         ~License() override = default;
 
+        [[nodiscard]] std::string get_name() const override
+        {
+            return properties::license;
+        }
+
         [[nodiscard]] Json::Value get_info() const override
         {
             Json::Value license_params;
@@ -36,11 +41,6 @@ namespace drug_lib::data::objects::organizations
         {
             license_name_ = property[names_of_json_fields::license_name].asString();
             license_key_ = property[names_of_json_fields::license_key].asString();
-        }
-
-        [[nodiscard]] std::string get_name() const override
-        {
-            return properties::license;
         }
 
 

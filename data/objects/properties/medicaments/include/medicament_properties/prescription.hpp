@@ -16,14 +16,21 @@ namespace drug_lib::data::objects::medicaments
             this->set_info(properties);
         }
 
-        template <typename T>
-            requires std::is_constructible_v<std::string, T>
-        explicit Prescription(T description)
-            : description_(description)
+        explicit Prescription(std::string description)
+            : description_(std::move(description))
+        {
+        }
+
+        explicit Prescription(const char* description) : description_(std::move(description))
         {
         }
 
         ~Prescription() override = default;
+
+        [[nodiscard]] std::string get_name() const override
+        {
+            return properties::prescription;
+        }
 
         [[nodiscard]] Json::Value get_info() const override
         {
@@ -37,10 +44,6 @@ namespace drug_lib::data::objects::medicaments
             description_ = property[names_of_json_fields::description].asString();
         }
 
-        [[nodiscard]] std::string get_name() const override
-        {
-            return properties::prescription;
-        }
 
         [[nodiscard]] const std::string& get_description() const
         {

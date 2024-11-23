@@ -73,10 +73,10 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool& db
             const bool is_infectious = (i % 2 == 0);
             std::string type = is_infectious ? "infectious" : "non-infectious";
             const std::vector symptoms_list = {
-                drug_lib::data::objects::diseases::Symptoms::Symptom("Cough", 3, "2 weeks", "Respiratory",
-                                                                     "Persistent cough"),
-                drug_lib::data::objects::diseases::Symptoms::Symptom("Fever", 5, "1 week", "General",
-                                                                     "High body temperature")
+                drug_lib::data::objects::diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
+                                                           "Persistent cough"),
+                drug_lib::data::objects::diseases::Symptom("Fever", 5, "1 week", "General",
+                                                           "High body temperature")
             };
             drug_lib::data::objects::diseases::Symptoms symptoms(symptoms_list);
             drug_lib::data::objects::Disease disease(index, std::move(name), std::move(type), is_infectious);

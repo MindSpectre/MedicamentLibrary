@@ -31,7 +31,7 @@ TEST(DiseasePropertiesTest, GetPropertyInfo)
 {
     Disease disease;
     std::vector symptoms_list = {
-        diseases::Symptoms::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
@@ -45,7 +45,7 @@ TEST(DiseasePropertiesTest, ValidationJson)
 {
     Disease disease(3, "Chickenpox", "Viral", true);
     std::vector symptoms_list = {
-        diseases::Symptoms::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
@@ -74,13 +74,13 @@ TEST(DiseasePropertiesTest, ValidationJson)
             EXPECT_TRUE(info.isMember(diseases::properties::symptoms));
             EXPECT_EQ(
                 info[diseases::properties::symptoms][0]
-                [diseases::Symptoms::Symptom::names_of_json_fields::name].asString(), "Cough");
+                [diseases::Symptom::names_of_json_fields::name].asString(), "Cough");
             EXPECT_EQ(
                 info[diseases::properties::symptoms][0]
-                [diseases::Symptoms::Symptom::names_of_json_fields::type].asString(), "Respiratory");
+                [diseases::Symptom::names_of_json_fields::type].asString(), "Respiratory");
             EXPECT_EQ(
                 info[diseases::properties::symptoms][0]
-                [diseases::Symptoms::Symptom::names_of_json_fields::severity].asInt(), 3);
+                [diseases::Symptom::names_of_json_fields::severity].asInt(), 3);
         }
     }
 }

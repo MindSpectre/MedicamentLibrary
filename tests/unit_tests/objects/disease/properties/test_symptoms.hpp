@@ -8,45 +8,45 @@ using namespace drug_lib::data::objects::diseases;
 TEST(SymptomsTest, DefaultConstructor)
 {
     const Symptoms symptoms;
-    EXPECT_EQ(symptoms.get_symptoms().size(), 0);
+    EXPECT_EQ(symptoms.get_data().size(), 0);
 }
 
 TEST(SymptomsTest, ParameterizedConstructor)
 {
-    const std::vector symptoms_list = {
-        Symptoms::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
-        Symptoms::Symptom("Fever", 5, "1 week", "General", "High body temperature")
+    const std::vector<Symptom> symptoms_list = {
+        Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
+        Symptom("Fever", 5, "1 week", "General", "High body temperature")
     };
     const Symptoms symptoms(symptoms_list);
-    EXPECT_EQ(symptoms.get_symptoms().size(), 2);
-    EXPECT_EQ(symptoms.get_symptoms()[0].get_name(), "Cough");
-    EXPECT_EQ(symptoms.get_symptoms()[1].get_name(), "Fever");
+    EXPECT_EQ(symptoms.get_data().size(), 2);
+    EXPECT_EQ(symptoms.get_data()[0].get_name(), "Cough");
+    EXPECT_EQ(symptoms.get_data()[1].get_name(), "Fever");
 }
 
 TEST(SymptomsTest, SetSymptoms)
 {
     Symptoms symptoms;
     const std::vector symptoms_list = {
-        Symptoms::Symptom("Headache", 4, "3 days", "Neurological", "Throbbing pain")
+        Symptom("Headache", 4, "3 days", "Neurological", "Throbbing pain")
     };
-    symptoms.set_symptoms(symptoms_list);
-    EXPECT_EQ(symptoms.get_symptoms().size(), 1);
-    EXPECT_EQ(symptoms.get_symptoms()[0].get_name(), "Headache");
+    symptoms.set_data(symptoms_list);
+    EXPECT_EQ(symptoms.get_data().size(), 1);
+    EXPECT_EQ(symptoms.get_data()[0].get_name(), "Headache");
 }
 
 TEST(SymptomsTest, EmplaceBack)
 {
     Symptoms symptoms;
     symptoms.emplace_back("Nausea", 2, "1 day", "Digestive", "Feeling of sickness");
-    EXPECT_EQ(symptoms.get_symptoms().size(), 1);
-    EXPECT_EQ(symptoms.get_symptoms()[0].get_name(), "Nausea");
+    EXPECT_EQ(symptoms.get_data().size(), 1);
+    EXPECT_EQ(symptoms.get_data()[0].get_name(), "Nausea");
 }
 
 TEST(SymptomsTest, GetInfo)
 {
     const std::vector symptoms_list = {
-        Symptoms::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
-        Symptoms::Symptom("Fever", 5, "1 week", "General", "High body temperature")
+        Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
+        Symptom("Fever", 5, "1 week", "General", "High body temperature")
     };
     const Symptoms symptoms(symptoms_list);
 
@@ -71,7 +71,7 @@ TEST(SymptomsTest, SetInfo)
     Symptoms symptoms;
     symptoms.set_info(symptoms_json);
 
-    EXPECT_EQ(symptoms.get_symptoms().size(), 1);
-    EXPECT_EQ(symptoms.get_symptoms()[0].get_name(), "Dizziness");
-    EXPECT_EQ(symptoms.get_symptoms()[0].get_description(), "Feeling lightheaded");
+    EXPECT_EQ(symptoms.get_data().size(), 1);
+    EXPECT_EQ(symptoms.get_data()[0].get_name(), "Dizziness");
+    EXPECT_EQ(symptoms.get_data()[0].get_description(), "Feeling lightheaded");
 }

@@ -27,7 +27,7 @@ std::vector<drug_lib::data::objects::Medicament> drug_lib::services::PatientProf
     const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
     const std::vector medicament_indexes = std::dynamic_pointer_cast<
         data::objects::patients::CurrentMedicaments>(
-        persona.get_property(data::objects::patients::properties::current_medicaments))->get_current_medicaments();
+        persona.get_property(data::objects::patients::properties::current_medicaments))->get_data();
     std::vector<data::objects::Medicament> result;
     result.reserve(medicament_indexes.size());
     for (const int32_t ids : medicament_indexes)
@@ -43,7 +43,7 @@ std::vector<drug_lib::data::objects::Disease> drug_lib::services::PatientProfile
     const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
     const std::vector<int32_t>& disease_indexes = std::dynamic_pointer_cast<
         data::objects::patients::CurrentDiseases>(
-        persona.get_property(data::objects::patients::properties::current_diseases))->get_current_diseases();
+        persona.get_property(data::objects::patients::properties::current_diseases))->get_data();
     std::vector<data::objects::Disease> result;
     result.reserve(disease_indexes.size());
     for (const int32_t ids : disease_indexes)
@@ -70,7 +70,7 @@ medicament_compatibility(const int32_t patient_id)
     const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
     const std::vector cur_meds = std::dynamic_pointer_cast<
         data::objects::patients::CurrentMedicaments>(
-        persona.get_property(data::objects::patients::properties::current_medicaments))->get_current_medicaments();
+        persona.get_property(data::objects::patients::properties::current_medicaments))->get_data();
     if (cur_meds.size() <= 1)
         return Ok;
     if (cur_meds.size() == 2)

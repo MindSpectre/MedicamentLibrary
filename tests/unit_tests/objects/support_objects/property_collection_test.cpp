@@ -10,7 +10,7 @@ namespace drug_lib::data
         license.set_license_name("Sample License");
         license.set_license_key("LICENSE123");
         objects::diseases::Symptoms symptoms;
-        symptoms.set_symptoms({});
+        symptoms.set_data({});
         collection.add_property(PropertyFactory::create<objects::organizations::License>(license));
         collection.add_property(PropertyFactory::create<objects::diseases::Symptoms>(symptoms));
         EXPECT_NO_THROW(auto v = collection.get_property(objects::organizations::properties::license));
