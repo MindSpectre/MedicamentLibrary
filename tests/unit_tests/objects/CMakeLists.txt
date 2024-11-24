@@ -90,6 +90,7 @@ add_executable(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         patient/properties/properties_test.cpp
         patient/properties/test_current_diseases.hpp
         patient/properties/test_current_medicaments.hpp
+        patient/properties/test_allergies.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         PRIVATE

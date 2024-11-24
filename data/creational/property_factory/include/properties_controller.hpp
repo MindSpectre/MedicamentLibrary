@@ -89,6 +89,28 @@ namespace drug_lib::data
             {
                 return std::make_shared<objects::patients::CurrentMedicaments>(property_value);
             }
+            if (property_name == objects::patients::properties::allergies)
+            {
+                return std::make_shared<objects::patients::Allergies>(property_value);
+            }
+            if (property_name == objects::patients::properties::blood_type)
+            {
+                return std::make_shared<objects::patients::BloodType>(property_value);
+            }
+            if (property_name == objects::patients::properties::insurance)
+            {
+                return std::make_shared<objects::patients::Insurance>(property_value);
+            }
+            if (property_name == objects::patients::properties::medical_history)
+            {
+                return std::make_shared<objects::patients::MedicalHistory>(property_value);
+            }
+            if (property_name == objects::patients::properties::vaccines)
+            {
+                return std::make_shared<objects::patients::Vaccines>(property_value);
+            }
+
+
             throw std::invalid_argument("Property '" + property_name + "' not found");
         }
     };

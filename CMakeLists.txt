@@ -80,6 +80,6 @@ add_subdirectory(data)
 
 add_subdirectory(dao)
 
-add_subdirectory(services)
+add_subdirectory(services/internal)
 
 add_subdirectory(tools)

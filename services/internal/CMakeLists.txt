@@ -2,6 +2,8 @@
 # Internal services
 ##############################################################################
 
-add_subdirectory(lookup_service)
+add_subdirectory(lookup)
 
-add_subdirectory(patient_profile_service)
+add_subdirectory(treatment_manager)
+
+add_subdirectory(patient_info_editor)

@@ -16,12 +16,13 @@ namespace drug_lib::data::objects::medicaments
             this->set_info(properties);
         }
 
-        explicit DosageForm(std::string description)
-            : description_(std::move(description))
+        explicit DosageForm(std::string description) :
+            description_(std::move(description))
         {
         }
 
-        explicit DosageForm(const char* description) : description_(std::move(description))
+        explicit DosageForm(const char* description) :
+            description_(description)
         {
         }
 

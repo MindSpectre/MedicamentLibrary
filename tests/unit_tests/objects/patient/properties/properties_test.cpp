@@ -3,6 +3,11 @@
 #include "properties_controller.hpp"
 #include "test_current_diseases.hpp"
 #include "test_current_medicaments.hpp"
+#include "test_allergies.hpp"
+#include "test_blood_type.hpp"
+#include "test_insurance.hpp"
+#include "test_medical_history.hpp"
+#include "test_vaccines.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects;
 TEST(PatientPropertiesTest, AddProperty)

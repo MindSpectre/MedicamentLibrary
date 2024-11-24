@@ -5,7 +5,7 @@
 
 namespace drug_lib::services
 {
-    class PatientProfileServiceInternal
+    class TreatmentManagerServiceInternal
     {
     public:
         struct MedicamentSuggestion
@@ -28,14 +28,12 @@ namespace drug_lib::services
             Ok = 3
         };
 
-        void diagnose(int32_t patient_id, int32_t disease_id);
+        void assign_disease(int32_t patient_id, int32_t disease_id);
         void assign_drug(int32_t patient_id, int32_t drug_id);
         std::vector<data::objects::Medicament> current_drugs(int32_t patient_id);
         std::vector<data::objects::Disease> current_diseases(int32_t patient_id);
         data::objects::Patient patient_profile(int32_t patient_id);
         bool is_dangerous(int32_t patient_id);
-        DrugCompatibility medicament_compatibility(int32_t patient_id);
-        std::vector<MedicamentSuggestion> recommend(int32_t patient_id);
 
         void setup_from_one(const std::shared_ptr<common::database::interfaces::DbInterface>& connect)
         {
@@ -47,13 +45,13 @@ namespace drug_lib::services
             handbook_.establish_from_pool(pool);
         }
 
-        explicit PatientProfileServiceInternal(
+        explicit TreatmentManagerServiceInternal(
             const std::shared_ptr<common::database::interfaces::DbInterface>& connect)
         {
             setup_from_one(connect);
         }
 
-        PatientProfileServiceInternal() = default;
+        TreatmentManagerServiceInternal() = default;
 
     private:
         dao::SuperHandbook handbook_;

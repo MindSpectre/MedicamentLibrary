@@ -59,6 +59,11 @@ add_library(DrugLib_Data_Objects_Properties_Patients
         patients/source/patient_properties.cpp
         patients/include/patient_properties/current_diseases.hpp
         patients/include/patient_properties/current_medicaments.hpp
+        patients/include/patient_properties/allergies.hpp
+        patients/include/patient_properties/blood_type.hpp
+        patients/include/patient_properties/medical_history.hpp
+        patients/include/patient_properties/insurance.hpp
+        patients/include/patient_properties/vaccines.hpp
 )
 target_link_libraries(DrugLib_Data_Objects_Properties_Patients PUBLIC
         DrugLib_Data_Objects_Properties_DataProperty
