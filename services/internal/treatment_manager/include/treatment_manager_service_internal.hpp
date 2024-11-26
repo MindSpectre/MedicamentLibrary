@@ -29,7 +29,10 @@ namespace drug_lib::services
         };
 
         void assign_disease(int32_t patient_id, int32_t disease_id);
+        void remove_disease(int32_t patient_id, int32_t disease_id);
+        void cure_disease(int32_t patient_id, int32_t disease_id);
         void assign_drug(int32_t patient_id, int32_t drug_id);
+        void remove_drug(int32_t patient_id, int32_t drug_id);
         std::vector<data::objects::Medicament> current_drugs(int32_t patient_id);
         std::vector<data::objects::Disease> current_diseases(int32_t patient_id);
         data::objects::Patient patient_profile(int32_t patient_id);

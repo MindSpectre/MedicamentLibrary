@@ -50,7 +50,7 @@ namespace drug_lib::dao
             const auto id_field = common::database::make_field_shared_by_default<int32_t>(
                 data::objects::ObjectBase::common_fields_names::id);
             const auto name_field = common::database::make_field_shared_by_default<std::string>(
-                data::objects::ObjectBase::common_fields_names::name);
+                RecordType::field_name::name);
             const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
                 data::objects::ObjectBase::common_fields_names::properties);
             fts_fields_.push_back(name_field);
@@ -139,7 +139,7 @@ namespace drug_lib::dao
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-                );
+            );
             connect_->remove(table_name_, removed_conditions);
         }
 
@@ -148,10 +148,10 @@ namespace drug_lib::dao
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
                 std::make_unique<common::database::Field<std::string>>(
-                    data::objects::ObjectBase::common_fields_names::name, ""),
+                    RecordType::field_name::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             connect_->remove(table_name_, removed_conditions);
         }
 
@@ -173,7 +173,7 @@ namespace drug_lib::dao
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
-                );
+            );
             auto res = connect_->view(table_name_, select_conditions);
             if (res.size() > 1)
             {
@@ -195,10 +195,10 @@ namespace drug_lib::dao
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
                 std::make_unique<common::database::Field<std::string>>(
-                    data::objects::ObjectBase::common_fields_names::name, ""),
+                    RecordType::field_name::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             auto res = connect_->view(table_name_, select_conditions);
             std::vector<RecordType> records;
             records.reserve(res.size());
@@ -217,11 +217,11 @@ namespace drug_lib::dao
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::name,
+                std::make_unique<common::database::Field<int32_t>>(RecordType::field_name::name,
                                                                    0),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
-                );
+            );
             select_conditions.set_page_condition(
                 common::database::PageCondition(page_limit).set_page_number(page_number));
             auto res = connect_->select(table_name_, select_conditions);

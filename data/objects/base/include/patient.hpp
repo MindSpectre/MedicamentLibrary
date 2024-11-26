@@ -10,6 +10,7 @@ namespace drug_lib::data::objects
     public:
         struct field_name : common_fields_names
         {
+            static constexpr auto name = "name";
             static constexpr auto gender = "gender";
             static constexpr auto birth_date = "birth_date";
             static constexpr auto contact_information = "contact_information";
@@ -19,12 +20,11 @@ namespace drug_lib::data::objects
 
 
         Patient(const int32_t id, std::string name, std::string gender, std::chrono::year_month_day const birth_date,
-                std::string contact_information)
-            : id_(id),
-              name_(std::move(name)),
-              gender_(std::move(gender)),
-              birth_date_(birth_date),
-              contact_information_(std::move(contact_information))
+                std::string contact_information) :
+            ObjectBase(id), name_(std::move(name)),
+            gender_(std::move(gender)),
+            birth_date_(birth_date),
+            contact_information_(std::move(contact_information))
         {
         }
 
@@ -137,17 +137,29 @@ namespace drug_lib::data::objects
             result[field_name::birth_date]["month"] = static_cast<uint>(birth_date_.month());
             result[field_name::birth_date]["day"] = static_cast<uint>(birth_date_.day());
             result[field_name::properties] = collection_.make_properties_field()->value();
+
             return result;
         }
 
-        [[nodiscard]] int32_t get_id() const
+        void from_json(const Json::Value& val) override
         {
-            return id_;
-        }
+            id_ = val[field_name::id].asInt();
+            name_ = val[field_name::name].asString();
+            gender_ = val[field_name::gender].asString();
 
-        void set_id(const int32_t id)
-        {
-            id_ = id;
+            if (const Json::Value& birthDate = val[field_name::birth_date]; birthDate.isMember("year") && birthDate.
+                isMember("month") && birthDate.isMember("day"))
+            {
+                const int32_t year = birthDate["year"].asInt();
+                const uint32_t month = birthDate["month"].asUInt();
+                const uint32_t day = birthDate["day"].asUInt();
+                birth_date_ = std::chrono::year_month_day{
+                    std::chrono::year{year},
+                    std::chrono::month{month},
+                    std::chrono::day{day}
+                };
+            }
+            create_collection(val[field_name::properties]);
         }
 
         [[nodiscard]] const std::string& get_name() const
@@ -191,7 +203,6 @@ namespace drug_lib::data::objects
         }
 
     private:
-        int32_t id_ = -1;
         std::string name_;
         std::string gender_;
         std::chrono::year_month_day birth_date_{};

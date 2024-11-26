@@ -131,6 +131,14 @@ namespace drug_lib::data
                 }
             }
 
+            void create_collection(const Json::Value& json)
+            {
+                for (auto it = json.begin(); it != json.end(); ++it)
+                {
+                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+                }
+            }
+
             void create_collection(const std::string& field)
             {
                 const Json::CharReaderBuilder builder;
@@ -160,6 +168,16 @@ namespace drug_lib::data
             void remove_property(const std::string& name)
             {
                 collection_.remove_property(name);
+            }
+
+            friend bool operator==(const PropertiesHolder& lhs, const PropertiesHolder& rhs)
+            {
+                return lhs.collection_ == rhs.collection_;
+            }
+
+            friend bool operator!=(const PropertiesHolder& lhs, const PropertiesHolder& rhs)
+            {
+                return !(lhs == rhs);
             }
         };
     }

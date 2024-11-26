@@ -17,6 +17,15 @@ namespace drug_lib::data
 
         [[nodiscard]] virtual std::string get_name() const = 0;
 
+        friend bool operator==(const DataProperty& lhs, const DataProperty& rhs)
+        {
+            return lhs.get_info() == rhs.get_info();
+        }
+
+        friend bool operator!=(const DataProperty& lhs, const DataProperty& rhs)
+        {
+            return !(lhs == rhs);
+        }
 
         struct _common_properties
         {
@@ -29,14 +38,19 @@ namespace drug_lib::data
     public:
         ~ArrayProperty() override = default;
 
-        explicit ArrayProperty(std::vector<DataPropertyType> data_v)
-            : data_(std::move(data_v))
+        explicit ArrayProperty(std::vector<DataPropertyType> data_v) :
+            data_(std::move(data_v))
         {
         }
 
         ArrayProperty() = default;
 
         [[nodiscard]] const std::vector<DataPropertyType>& get_data() const
+        {
+            return data_;
+        }
+
+        [[nodiscard]] std::vector<DataPropertyType>& get_data()
         {
             return data_;
         }
@@ -63,6 +77,11 @@ namespace drug_lib::data
         void pop_back()
         {
             data_.pop_back();
+        }
+
+        [[nodiscard]] std::size_t size() const
+        {
+            return data_.size();
         }
 
         DataPropertyType operator[](const std::size_t index) const
@@ -96,6 +115,16 @@ namespace drug_lib::data
             }
             os << "]";
             return os;
+        }
+
+        friend bool operator==(const ArrayProperty& lhs, const ArrayProperty& rhs)
+        {
+            return lhs.data_ == rhs.data_;
+        }
+
+        friend bool operator!=(const ArrayProperty& lhs, const ArrayProperty& rhs)
+        {
+            return !(lhs == rhs);
         }
 
     protected:
@@ -141,6 +170,36 @@ namespace drug_lib::data
         }
 
         [[nodiscard]] std::unique_ptr<common::database::Field<Json::Value>> make_properties_field() const noexcept;
+
+        friend bool operator==(const PropertyCollection& lhs, const PropertyCollection& rhs)
+        {
+            if (lhs.m_data.size() != rhs.m_data.size())
+            {
+                return false;
+            }
+
+            // Compare each key-value pair in the maps
+            return std::equal(
+                lhs.m_data.begin(), lhs.m_data.end(),
+                rhs.m_data.begin(),
+                [](const auto& lhs_pair, const auto& rhs_pair)
+                {
+                    // Keys must match
+                    if (lhs_pair.first != rhs_pair.first)
+                    {
+                        return false;
+                    }
+                    // Values must match (dereference shared_ptr and compare contents)
+                    const auto& lhs_value = lhs_pair.second;
+                    const auto& rhs_value = rhs_pair.second;
+                    return lhs_value && rhs_value && *lhs_value == *rhs_value;
+                });
+        }
+
+        friend bool operator!=(const PropertyCollection& lhs, const PropertyCollection& rhs)
+        {
+            return !(lhs == rhs);
+        }
 
     private:
         boost::container::flat_map<std::string, std::shared_ptr<DataProperty>> m_data;

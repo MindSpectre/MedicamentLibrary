@@ -11,6 +11,7 @@ namespace drug_lib::data::objects
     public:
         struct field_name : common_fields_names
         {
+            static constexpr auto name = "name";
             /// @typedef string
             static constexpr auto type = "type";
             /// @typedef bool
@@ -31,16 +32,16 @@ namespace drug_lib::data::objects
         // Конструктор с параметрами
         Medicament(const int32_t id, std::string name, std::string type, const bool requires_prescription,
                    const int32_t manufacturer_id, std::string approval_number, std::string approval_status,
-                   std::string atc_code)
-            : id_(id), name_(std::move(name)), type_(std::move(type)), requires_prescription_(requires_prescription),
-              manufacturer_id_(manufacturer_id), approval_number_(std::move(approval_number)),
-              approval_status_(std::move(approval_status)), atc_code_(std::move(atc_code))
+                   std::string atc_code) :
+            ObjectBase(id), name_(std::move(name)), type_(std::move(type)),
+            requires_prescription_(requires_prescription),
+            manufacturer_id_(manufacturer_id), approval_number_(std::move(approval_number)),
+            approval_status_(std::move(approval_status)), atc_code_(std::move(atc_code))
         {
         }
 
         ~Medicament() override = default;
 
-        // Методы для получения и установки данных медикамента
         [[nodiscard]] const std::string& get_name() const
         {
             return name_;
@@ -49,16 +50,6 @@ namespace drug_lib::data::objects
         void set_name(const std::string& name)
         {
             name_ = name;
-        }
-
-        [[nodiscard]] int32_t get_id() const
-        {
-            return id_;
-        }
-
-        void set_id(const int32_t id)
-        {
-            id_ = id;
         }
 
         [[nodiscard]] const std::string& get_type() const
@@ -253,8 +244,20 @@ namespace drug_lib::data::objects
             return result;
         }
 
+        void from_json(const Json::Value& val) override
+        {
+            id_ = val[field_name::id].asInt();
+            name_ = val[field_name::name].asString();
+            type_ = val[field_name::type].asString();
+            requires_prescription_ = val[field_name::requires_prescription].asBool();
+            manufacturer_id_ = val[field_name::manufacturer_id].asInt();
+            approval_number_ = val[field_name::approval_number].asString();
+            approval_status_ = val[field_name::approval_status].asString();
+            atc_code_ = val[field_name::atc_code].asString();
+            create_collection(val[field_name::properties]);
+        }
+
     private:
-        int32_t id_ = -1;
         std::string name_;
         std::string type_;
         bool requires_prescription_ = false;

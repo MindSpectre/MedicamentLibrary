@@ -185,6 +185,33 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool& db
                     std::move(current_diseases)));
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::CurrentMedicaments>(std::vector{1, 2, 3}));
+            // Adding Allergies property
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::Allergies>(
+                    std::vector<std::string>{"Peanuts", "Dust", "Pollen"}));
+
+            // Adding BloodType property
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::BloodType>("O+"));
+            // Replace "O+" with the actual blood type as required
+
+            // Adding Insurance property
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::Insurance>("PremiumCare"));
+            // Replace "PremiumCare" with the actual insurance name as required
+
+            // Adding MedicalHistory property
+            std::vector<patients::HealthRecord> medical_history = {
+                {101, std::chrono::year{2022} / std::chrono::month{5}, std::chrono::year{2023} / std::chrono::month{2}},
+                {102, std::chrono::year{2023} / std::chrono::month{3}} // Ongoing disease without an end date
+            };
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::MedicalHistory>(std::move(medical_history)));
+
+            // Adding Vaccines property
+            patient.add_property(
+                drug_lib::data::PropertyFactory::create<patients::Vaccines>(
+                    std::vector<std::string>{"COVID-19", "Influenza", "Rabies"}));
             patients.push_back(std::move(patient));
         }
         std::cout << "Insert patient package: " << batch_n + 1 << std::endl;
