@@ -13,41 +13,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout the repository
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # 1. Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 2. Install dependencies using install.sh script
-    - name: Install dependencies
-      run: |
-        chmod +x tools/installer/install.sh
-        tools/installer/install.sh
+      # 2. Install dependencies using install.sh script
+      - name: Install dependencies
+        run: |
+          chmod +x tools/installer/install.sh
+          tools/installer/install.sh
+      - name: Cache vcpkg
+        uses: actions/cache@v3
+        with:
+          path: /opt/vcpkg
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
+      # 3. Create build directory
+      - name: Create build directory
+        run: mkdir -p build
 
-    # 3. Create build directory
-    - name: Create build directory
-      run: mkdir -p build
+      # 4. Configure the project with CMake using vcpkg toolchain
+      - name: Configure with CMake
+        run: |
+          cd build
+          cmake .. -G Ninja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-    # 4. Configure the project with CMake using vcpkg toolchain
-    - name: Configure with CMake
-      run: |
-        cd build
-        cmake .. -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+      # 5. Build the project
+      - name: Build with CMake
+        run: |
+          cd build
+          cmake --build .
 
-    # 5. Build the project
-    - name: Build with CMake
-      run: |
-        cd build
-        cmake --build .
+      # 6. Run tests with CTest
+      - name: Run tests with CTest
+        run: |
+          cd build
+          ctest --output-on-failure
 
-    # 6. Run tests with CTest
-    - name: Run tests with CTest
-      run: |
-        cd build
-        ctest --output-on-failure
-
-    # 7. Cache vcpkg for faster builds (optional)
-    - name: Cache vcpkg
-      uses: actions/cache@v3
-      with:
-        path: /opt/vcpkg
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
