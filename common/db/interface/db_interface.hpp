@@ -34,17 +34,18 @@ namespace drug_lib::common::database::interfaces
         [[nodiscard]] virtual bool check_table(std::string_view table_name) = 0;
 
         virtual void make_unique_constraint(std::string_view table_name,
-                                            std::vector<std::shared_ptr<FieldBase>> conflict_fields) = 0;
-        virtual void setup_fts_index(std::string_view table_name,
-                                     std::vector<std::shared_ptr<FieldBase>> fields) = 0;
-        /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
-        virtual void drop_fts_index(std::string_view table_name) const = 0;
+                                            std::vector<std::shared_ptr<FieldBase>> key_fields) = 0;
+        virtual void setup_search_index(std::string_view table_name,
+                                        std::vector<std::shared_ptr<FieldBase>> fields) = 0;
+        /// @brief Drop index, but doesn't remove fts fields from this client.
+        /// Allows restoring it(reindex) using restore_full_text_search method
+        virtual void drop_search_index(std::string_view table_name) const = 0;
 
         /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
-        virtual void remove_fts_index(std::string_view table_name) = 0;
+        virtual void remove_search_index(std::string_view table_name) = 0;
 
         /// @brief Restore index + reindex. Use previous declared fts fields
-        virtual void restore_fts_index(std::string_view table_name) const = 0;
+        virtual void restore_search_index(std::string_view table_name) const = 0;
         // Data Manipulation using Perfect Forwarding
         template <RecordContainer Rows>
         void insert(std::string_view table_name, Rows&& rows)
@@ -80,6 +81,10 @@ namespace drug_lib::common::database::interfaces
         [[nodiscard]] virtual uint32_t count(std::string_view table_name,
                                              const Conditions& conditions) const = 0;
         [[nodiscard]] virtual uint32_t count(std::string_view table_name) const = 0;
+
+        virtual void set_search_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) = 0;
+        virtual void set_conflict_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) =
+        0;
 
     protected:
         // Implementation Methods for Data Manipulation

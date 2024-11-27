@@ -11,6 +11,7 @@ namespace drug_lib::data::objects
     public:
         struct field_name : common_fields_names
         {
+            static constexpr auto name = "name";
             static constexpr auto type = "type";
             static constexpr auto is_infectious = "is_infectious";
         };
@@ -91,24 +92,33 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value to_json() override
+        {
+            Json::Value result;
+            result[field_name::id] = id_;
+            result[field_name::name] = name_;
+            result[field_name::type] = type_;
+            result[field_name::is_infectious] = is_infectious_;
+            result[field_name::properties] = collection_.make_properties_field()->value();
+            return result;
+        }
+
+        void from_json(const Json::Value& val) override
+        {
+            id_ = val[field_name::id].asInt();
+            name_ = val[field_name::name].asString();
+            type_ = val[field_name::type].asString();
+            is_infectious_ = val[field_name::is_infectious].asBool();
+            create_collection(val[field_name::properties]);
+        }
+
         Disease() = default;
 
-        Disease(const int32_t id, std::string name, std::string type, const bool is_infectious)
-            : id_(id),
-              name_(std::move(name)),
-              type_(std::move(type)),
-              is_infectious_(is_infectious)
+        Disease(const int32_t id, std::string name, std::string type, const bool is_infectious) :
+            ObjectBase(id), name_(std::move(name)),
+            type_(std::move(type)),
+            is_infectious_(is_infectious)
         {
-        }
-
-        [[nodiscard]] int32_t get_id() const
-        {
-            return id_;
-        }
-
-        void set_id(const int32_t id)
-        {
-            id_ = id;
         }
 
         [[nodiscard]] const std::string& get_name() const
@@ -132,12 +142,12 @@ namespace drug_lib::data::objects
         }
 
 
-        [[nodiscard]] bool is_is_infectious() const
+        [[nodiscard]] bool is_infectious() const
         {
             return is_infectious_;
         }
 
-        void set_is_infectious(const bool is_infectious)
+        void set_infectious(const bool is_infectious)
         {
             is_infectious_ = is_infectious;
         }
@@ -145,8 +155,20 @@ namespace drug_lib::data::objects
 
         ~Disease() override = default;
 
+        friend bool operator==(const Disease& lhs, const Disease& rhs)
+        {
+            return lhs.id_ == rhs.id_
+                && lhs.name_ == rhs.name_
+                && lhs.type_ == rhs.type_
+                && lhs.is_infectious_ == rhs.is_infectious_ && lhs.collection_ == rhs.collection_;
+        }
+
+        friend bool operator!=(const Disease& lhs, const Disease& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
     private:
-        int32_t id_ = -1;
         std::string name_;
         std::string type_;
         bool is_infectious_ = false;

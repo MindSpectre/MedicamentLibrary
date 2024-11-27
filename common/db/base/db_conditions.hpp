@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "db_field.hpp"
@@ -136,6 +137,30 @@ namespace drug_lib::common::database
         std::string specifier_;
     };
 
+    class SimilarityCondition final
+    {
+    public:
+        ~SimilarityCondition() = default;
+        SimilarityCondition(SimilarityCondition&&) noexcept = default;
+        SimilarityCondition& operator=(SimilarityCondition&&) noexcept = default;
+        SimilarityCondition(const SimilarityCondition&) = delete;
+        SimilarityCondition& operator=(const SimilarityCondition&) = delete;
+
+        explicit SimilarityCondition(std::string pattern)
+            : pattern_(std::move(pattern))
+        {
+        }
+
+
+        [[nodiscard]] std::string get_pattern() const
+        {
+            return pattern_;
+        }
+
+    private:
+        std::string pattern_;
+    };
+
     class PageCondition final
     {
     public:
@@ -218,6 +243,17 @@ namespace drug_lib::common::database
             patterns_.emplace_back(std::forward<Args>(args)...);
         }
 
+        void add_similarity_condition(SimilarityCondition&& condition) &
+        {
+            similarity_conditions_.push_back(std::move(condition));
+        }
+
+        template <typename... Args>
+        void add_similarity_condition(Args&&... args) &
+        {
+            similarity_conditions_.emplace_back(std::forward<Args>(args)...);
+        }
+
         void add_order_by_condition(OrderCondition&& condition) &
         {
             orders_.push_back(std::move(condition));
@@ -257,6 +293,11 @@ namespace drug_lib::common::database
             orders_.pop_back();
         }
 
+        void pop_similarity_condition() &
+        {
+            similarity_conditions_.pop_back();
+        }
+
         void clear_field_conditions() &
         {
             conditions_.clear();
@@ -275,6 +316,11 @@ namespace drug_lib::common::database
         void clear_page_conditions() &
         {
             pages_.reset();
+        }
+
+        void clear_similarity_conditions() &
+        {
+            similarity_conditions_.clear();
         }
 
         [[nodiscard]] const std::vector<FieldCondition>& fields_conditions() const &
@@ -297,14 +343,21 @@ namespace drug_lib::common::database
             return pages_;
         }
 
+        [[nodiscard]] const std::vector<SimilarityCondition>& similarity_conditions() const &
+        {
+            return similarity_conditions_;
+        }
+
         [[nodiscard]] bool empty() const
         {
-            return conditions_.empty() && patterns_.empty() && orders_.empty() && !pages_.has_value();
+            return conditions_.empty() && patterns_.empty() && orders_.empty() && similarity_conditions_.empty() && !
+                pages_.has_value();
         }
 
     private:
         std::vector<FieldCondition> conditions_;
         std::vector<PatternCondition> patterns_;
+        std::vector<SimilarityCondition> similarity_conditions_;
         std::vector<OrderCondition> orders_;
         std::optional<PageCondition> pages_;
     };

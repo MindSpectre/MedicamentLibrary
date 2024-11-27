@@ -1,6 +1,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <openssl/rand.h>
+#include <stdexcept>
+#include <ostream>
+#include <iomanip>
 
 namespace drug_lib::common::hash_creator
 {
@@ -9,15 +14,38 @@ namespace drug_lib::common::hash_creator
     protected:
         /// @brief Secret key for HMAC
         std::string key;
+        /// @brief Generates a random salt
+        /// @param length The length of the salt in bytes
+        /// @return A random salt as a hexadecimal string
+        static std::string generate_salt(size_t length)
+        {
+            std::vector<unsigned char> salt(length);
+            if (!RAND_bytes(salt.data(), static_cast<int>(length)))
+            {
+                throw std::runtime_error("Failed to generate random salt");
+            }
+
+            std::ostringstream oss;
+            for (const unsigned char c : salt)
+            {
+                oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(c);
+            }
+            return oss.str();
+        }
 
     public:
         virtual ~HashCreator() = default;
 
-        HashCreator() : key("af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf")
-        {
-        }
+        HashCreator() = default;
 
         virtual std::string hash_function(const std::string& data, const std::string& salt) = 0;
+
+        std::pair<std::string, std::string> hash_with_generated_salt(const std::string& password)
+        {
+            std::string salt = generate_salt(16); // 16-byte salt
+            std::string hash = hash_function(password, salt);
+            return {salt, hash};
+        }
 
         /// @brief Sets the secret key for HMAC
         void set_key(const std::string& newKey)

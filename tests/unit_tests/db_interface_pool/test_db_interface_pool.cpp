@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <memory>
+#include <boost/function/function_template.hpp>
+
 #include "db_interface_pool.hpp"
 #include "db_interface.hpp"
 #include "mock_db_client.hpp"
@@ -13,9 +15,9 @@ protected:
     creational::DbInterfacePool pool;
 
     // Custom factory function for testing
-    static std::unique_ptr<interfaces::DbInterface> create_mock_database()
+    static std::shared_ptr<interfaces::DbInterface> create_mock_database()
     {
-        return std::make_unique<drug_lib::common::database::MockDbClient>();
+        return std::make_shared<MockDbClient>();
     }
 
     void SetUp() override
@@ -44,7 +46,7 @@ TEST_F(DbInterfacePoolTest, TestAcquireAndRelease)
 // Test pool exhaustion
 TEST_F(DbInterfacePoolTest, TestPoolExhaustion)
 {
-    std::vector<std::unique_ptr<interfaces::DbInterface>> interfaces;
+    std::vector<std::shared_ptr<interfaces::DbInterface>> interfaces;
 
     // Acquire all available instances
     interfaces.reserve(5);
@@ -109,7 +111,7 @@ TEST_F(DbInterfacePoolTest, TestMultiThreadedAcquireRelease)
             catch (const std::runtime_error& e)
             {
                 std::lock_guard lock(stream_mutex);
-                std::cerr << e.what() << "Cought in thread: " << std::this_thread::get_id() << std::endl;
+                std::cerr << e.what() << "Caught in thread: " << std::this_thread::get_id() << std::endl;
             }
         });
     }
@@ -123,9 +125,10 @@ TEST_F(DbInterfacePoolTest, TestMultiThreadedAcquireRelease)
     EXPECT_NO_THROW(pool.acquire_db_interface()); // Ensure pool is usable after multithreaded access
 }
 
-// Test that releasing null pointers does not affect the pool
+// Test that releasing null pointers doesn't affect the pool
 TEST_F(DbInterfacePoolTest, TestReleaseNull)
 {
     std::unique_ptr<interfaces::DbInterface> nullInterface;
-    EXPECT_NO_THROW(pool.release_db_interface(std::move(nullInterface))); // Should not throw or affect the pool
+    EXPECT_THROW(pool.release_db_interface(std::move(nullInterface)), std::invalid_argument);
+    // Should throw or affect the pool
 }

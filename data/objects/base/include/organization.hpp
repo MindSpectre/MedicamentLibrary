@@ -10,6 +10,7 @@ namespace drug_lib::data::objects
     public:
         struct field_name : common_fields_names
         {
+            static constexpr auto name = "name";
             static constexpr auto type = "type";
             static constexpr auto country = "country";
             static constexpr auto contact_details = "contact_details";
@@ -100,27 +101,38 @@ namespace drug_lib::data::objects
             }
         }
 
+        Json::Value to_json() override
+        {
+            Json::Value result;
+            result[field_name::id] = id_;
+            result[field_name::name] = name_;
+            result[field_name::type] = type_;
+            result[field_name::contact_details] = contact_details_;
+            result[field_name::country] = country_;
+            result[field_name::properties] = collection_.make_properties_field()->value();
+            return result;
+        }
+
+        void from_json(const Json::Value& val) override
+        {
+            id_ = val[field_name::id].asInt();
+            name_ = val[field_name::name].asString();
+            type_ = val[field_name::type].asString();
+            contact_details_ = val[field_name::contact_details].asString();
+            country_ = val[field_name::country].asString();
+            create_collection(val[field_name::properties]);
+        }
+
         Organization() = default;
 
         // Конструктор с параметрами
         Organization(const int32_t id, std::string name, std::string type, std::string country,
-                     std::string contact_details)
-            : id_(id),
-              name_(std::move(name)),
-              type_(std::move(type)),
-              country_(std::move(country)),
-              contact_details_(std::move(contact_details))
+                     std::string contact_details) :
+            ObjectBase(id), name_(std::move(name)),
+            type_(std::move(type)),
+            country_(std::move(country)),
+            contact_details_(std::move(contact_details))
         {
-        }
-
-        [[nodiscard]] int32_t get_id() const
-        {
-            return id_;
-        }
-
-        void set_id(const int32_t id)
-        {
-            id_ = id;
         }
 
         [[nodiscard]] const std::string& get_name() const
@@ -166,7 +178,6 @@ namespace drug_lib::data::objects
         ~Organization() override = default;
 
     private:
-        int32_t id_ = -1;
         std::string name_;
         std::string type_;
         std::string country_;

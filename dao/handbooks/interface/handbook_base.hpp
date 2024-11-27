@@ -6,6 +6,8 @@
 #include "common_object.hpp"
 #include "db_conditions.hpp"
 #include "db_interface.hpp"
+#include "error_codes.hpp"
+#include "exceptions.hpp"
 
 namespace drug_lib::dao
 {
@@ -26,6 +28,7 @@ namespace drug_lib::dao
             { a.from_record(record) } -> std::same_as<void>;
             { T::field_name::id };
             { T::field_name::name };
+            { T::field_name::properties };
         };
 
     template <RecordTypeConcept RecordType>
@@ -35,20 +38,22 @@ namespace drug_lib::dao
         std::shared_ptr<common::database::interfaces::DbInterface> connect_;
         std::string_view table_name_;
         std::vector<std::shared_ptr<common::database::FieldBase>> fts_fields_;
-        std::vector<std::shared_ptr<common::database::FieldBase>> replaceable_fields_;
         std::vector<std::shared_ptr<common::database::FieldBase>> key_fields_;
         std::vector<std::shared_ptr<common::database::FieldBase>> value_fields_;
 
-        virtual void setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
+        virtual void setup() &
         {
-            connect_ = std::move(client);
+            if (!connect_)
+            {
+                throw std::runtime_error("Cannot connect to database interface.");
+            }
             //creating fields
             const auto id_field = common::database::make_field_shared_by_default<int32_t>(
-                data::objects::ObjectBase::common_fields_names::id);
+                RecordType::field_name::id);
             const auto name_field = common::database::make_field_shared_by_default<std::string>(
-                data::objects::ObjectBase::common_fields_names::name);
+                RecordType::field_name::name);
             const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
-                data::objects::ObjectBase::common_fields_names::properties);
+                RecordType::field_name::properties);
             fts_fields_.push_back(name_field);
             fts_fields_.push_back(properties_field);
 
@@ -60,7 +65,11 @@ namespace drug_lib::dao
             if (!table_name_.empty())
             {
                 if (connect_->check_table(table_name_))
+                {
+                    connect_->set_conflict_fields(table_name_, key_fields_);
+                    connect_->set_search_fields(table_name_, fts_fields_);
                     return;
+                }
                 common::database::Record record;
                 for (const auto& field : key_fields_)
                 {
@@ -72,7 +81,7 @@ namespace drug_lib::dao
                 }
                 connect_->create_table(table_name_, record);
                 connect_->make_unique_constraint(table_name_, key_fields_);
-                connect_->setup_fts_index(table_name_, fts_fields_);
+                connect_->setup_search_index(table_name_, fts_fields_);
             }
             else
             {
@@ -80,8 +89,12 @@ namespace drug_lib::dao
             }
         }
 
+        virtual void tear_down() = 0;
+
     public:
         virtual ~HandbookBase() = default;
+
+        HandbookBase() = default;
 
         void insert(const RecordType& record)
         {
@@ -105,7 +118,7 @@ namespace drug_lib::dao
         {
             std::vector<common::database::Record> db_records;
             db_records.push_back(record.to_record());
-            connect_->upsert(table_name_, std::move(db_records), replaceable_fields_);
+            connect_->upsert(table_name_, std::move(db_records), value_fields_);
         }
 
         void force_insert(const std::vector<RecordType>& records)
@@ -116,14 +129,15 @@ namespace drug_lib::dao
             {
                 db_records.push_back(record.to_record());
             }
-            connect_->upsert(table_name_, std::move(db_records), replaceable_fields_);
+            connect_->upsert(table_name_, std::move(db_records), value_fields_);
         }
 
         void remove_by_id(const int32_t id) const
         {
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>("id", 0),
+                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::id,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
             );
@@ -134,38 +148,55 @@ namespace drug_lib::dao
         {
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
-                std::make_unique<common::database::Field<std::string>>("name", ""),
+                std::make_unique<common::database::Field<std::string>>(
+                    RecordType::field_name::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
             );
             connect_->remove(table_name_, removed_conditions);
         }
 
-        std::vector<RecordType> get_by_id(const int32_t id) const
+        void remove_all() const
+        {
+            connect_->truncate_table(table_name_);
+        }
+
+        void delete_table() const
+        {
+            connect_->remove_table(table_name_);
+        }
+
+        RecordType get_by_id(const int32_t id) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
+                std::make_unique<common::database::Field<int32_t>>(data::objects::ObjectBase::common_fields_names::id,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
             );
             auto res = connect_->view(table_name_, select_conditions);
-            std::vector<RecordType> records;
-            records.reserve(res.size());
-            for (const auto& record : res)
+            if (res.size() > 1)
             {
-                RecordType tmp;
-                tmp.from_record(record);
-                records.push_back(std::move(tmp));
+                throw common::database::exceptions::InvalidIdentifierException(
+                    "Not unique record", common::database::errors::db_error_code::DUPLICATE_RECORD);
             }
-            return records;
+            if (res.empty())
+            {
+                throw common::database::exceptions::InvalidIdentifierException(
+                    "Record not found", common::database::errors::db_error_code::DUPLICATE_RECORD);
+            }
+            RecordType record;
+            record.from_record(res.front());
+            return record;
         }
 
         std::vector<RecordType> get_by_name(const std::string& name) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<std::string>>(RecordType::fields::name, ""),
+                std::make_unique<common::database::Field<std::string>>(
+                    RecordType::field_name::name, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
             );
@@ -181,35 +212,14 @@ namespace drug_lib::dao
             return records;
         }
 
-        std::vector<RecordType> get_by_id_paged(int32_t id, const uint16_t page_limit,
-                                                const std::size_t page_number = 1) const
-        {
-            common::database::Conditions select_conditions;
-            select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::id, 0),
-                "=",
-                std::make_unique<common::database::Field<int32_t>>("", id)
-            );
-            select_conditions.set_page_condition(
-                common::database::PageCondition(page_limit).set_page_number(page_number));
-            auto res = connect_->select(table_name_, select_conditions);
-            std::vector<RecordType> records;
-            records.reserve(res.size());
-            for (const auto& record : res)
-            {
-                RecordType tmp;
-                tmp.from_record(record);
-                records.push_back(std::move(tmp));
-            }
-            return records;
-        }
 
         std::vector<RecordType> get_by_name_paged(const std::string& name, const uint16_t page_limit,
                                                   const std::size_t page_number = 1) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
-                std::make_unique<common::database::Field<int32_t>>(RecordType::fields::name, 0),
+                std::make_unique<common::database::Field<int32_t>>(RecordType::field_name::name,
+                                                                   0),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", name)
             );
@@ -262,16 +272,34 @@ namespace drug_lib::dao
             return records;
         }
 
-        virtual void tear_down() = 0;
-
-
-        void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
+        std::vector<RecordType> fuzzy_search_paged(const std::string& pattern, const uint16_t page_limit,
+                                                   const std::size_t page_number = 1) const
         {
-            connect_ = std::move(connect);
+            common::database::Conditions select_conditions;
+            select_conditions.add_similarity_condition(pattern);
+            select_conditions.set_page_condition(
+                common::database::PageCondition(page_limit).set_page_number(page_number));
+            auto res = connect_->view(table_name_, select_conditions);
+            std::vector<RecordType> records;
+            records.reserve(res.size());
+            for (const auto& record : res)
+            {
+                RecordType tmp;
+                tmp.from_record(record);
+                records.push_back(std::move(tmp));
+            }
+            return records;
         }
 
-        void drop_connection() const
+        virtual void set_connection(std::shared_ptr<common::database::interfaces::DbInterface> connect)
         {
+            connect_ = std::move(connect);
+            this->setup();
+        }
+
+        void drop_connection()
+        {
+            tear_down();
             connect_->drop_connect();
         }
 

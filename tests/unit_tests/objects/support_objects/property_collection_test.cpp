@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "objects.hpp"
-#include <json/json.h>
 
 namespace drug_lib::data
 {
@@ -11,7 +10,7 @@ namespace drug_lib::data
         license.set_license_name("Sample License");
         license.set_license_key("LICENSE123");
         objects::diseases::Symptoms symptoms;
-        symptoms.set_symptoms({});
+        symptoms.set_data({});
         collection.add_property(PropertyFactory::create<objects::organizations::License>(license));
         collection.add_property(PropertyFactory::create<objects::diseases::Symptoms>(symptoms));
         EXPECT_NO_THROW(auto v = collection.get_property(objects::organizations::properties::license));
@@ -39,12 +38,12 @@ namespace drug_lib::data
     TEST(PropertyCollectionTest, GetProperty)
     {
         PropertyCollection collection;
-        auto license = std::make_shared<objects::organizations::License>(Json::Value());
+        const auto license = std::make_shared<objects::organizations::License>(Json::Value());
         license->set_license_name("Test License");
         collection.add_property(license);
 
-        auto retrieved = collection.get_property("license");
-        auto retrieved_license = std::dynamic_pointer_cast<objects::organizations::License>(retrieved);
+        const auto retrieved = collection.get_property("license");
+        const auto retrieved_license = std::dynamic_pointer_cast<objects::organizations::License>(retrieved);
         ASSERT_NE(retrieved_license, nullptr);
         EXPECT_EQ(retrieved_license->get_license_name(), "Test License");
     }

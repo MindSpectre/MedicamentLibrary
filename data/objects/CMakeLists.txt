@@ -3,6 +3,7 @@
 ##############################################################################
 add_library(DrugLib_Data_Objects
         base/source/objects.cpp
+        # Headers
         base/include/objects.hpp
         base/include/organization.hpp
         base/include/medicament.hpp
@@ -17,6 +18,20 @@ target_link_libraries(DrugLib_Data_Objects
 target_include_directories(DrugLib_Data_Objects
         PUBLIC
         base/include
+)
+##############################################################################
+add_library(DrugLib_Data_AuthObject
+        auth_objects/include/auth_object.hpp
+        auth_objects/source/auth_object.cpp
+)
+target_link_libraries(DrugLib_Data_AuthObject
+        PUBLIC
+        DrugLib_Common_HashCreator_Factory
+        DrugLib_Common_Database_Base
+)
+target_include_directories(DrugLib_Data_AuthObject
+        PUBLIC
+        auth_objects/include
 )
 ##############################################################################
 add_subdirectory(properties)

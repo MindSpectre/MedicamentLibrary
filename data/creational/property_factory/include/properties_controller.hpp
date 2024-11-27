@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "medicament_properties.hpp"
@@ -27,22 +26,91 @@ namespace drug_lib::data
         static std::shared_ptr<DataProperty> create(const std::string& property_name,
                                                     const Json::Value& property_value)
         {
+            // Meds
             if (property_name == objects::medicaments::properties::prescription)
             {
-                return std::make_shared<objects::medicaments::PrescriptionDrug>(property_value);
+                return std::make_shared<objects::medicaments::Prescription>(property_value);
             }
+            if (property_name == objects::medicaments::properties::active_ingredients)
+            {
+                return std::make_shared<objects::medicaments::ActiveIngredients>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::inactive_ingredients)
+            {
+                return std::make_shared<objects::medicaments::InactiveIngredients>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::dosage_form)
+            {
+                return std::make_shared<objects::medicaments::DosageForm>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::side_effects)
+            {
+                return std::make_shared<objects::medicaments::SideEffects>(property_value);
+            }
+            if (property_name == objects::medicaments::properties::strength)
+            {
+                return std::make_shared<objects::medicaments::Strength>(property_value);
+            }
+
+            // Diseases
             if (property_name == objects::diseases::properties::symptoms)
             {
                 return std::make_shared<objects::diseases::Symptoms>(property_value);
             }
+            if (property_name == objects::diseases::properties::curative_drugs)
+            {
+                return std::make_shared<objects::diseases::CurativeDrugs>(property_value);
+            }
+            if (property_name == objects::diseases::properties::affected_age_groups)
+            {
+                return std::make_shared<objects::diseases::AffectedAgeGroups>(property_value);
+            }
+            if (property_name == objects::diseases::properties::complications)
+            {
+                return std::make_shared<objects::diseases::Complications>(property_value);
+            }
+            if (property_name == objects::diseases::properties::risk_factors)
+            {
+                return std::make_shared<objects::diseases::RiskFactors>(property_value);
+            }
+
+            // Orgs
             if (property_name == objects::organizations::properties::license)
             {
                 return std::make_shared<objects::organizations::License>(property_value);
             }
+
+            // Patients
             if (property_name == objects::patients::properties::current_diseases)
             {
                 return std::make_shared<objects::patients::CurrentDiseases>(property_value);
             }
+            if (property_name == objects::patients::properties::current_medicaments)
+            {
+                return std::make_shared<objects::patients::CurrentMedicaments>(property_value);
+            }
+            if (property_name == objects::patients::properties::allergies)
+            {
+                return std::make_shared<objects::patients::Allergies>(property_value);
+            }
+            if (property_name == objects::patients::properties::blood_type)
+            {
+                return std::make_shared<objects::patients::BloodType>(property_value);
+            }
+            if (property_name == objects::patients::properties::insurance)
+            {
+                return std::make_shared<objects::patients::Insurance>(property_value);
+            }
+            if (property_name == objects::patients::properties::medical_history)
+            {
+                return std::make_shared<objects::patients::MedicalHistory>(property_value);
+            }
+            if (property_name == objects::patients::properties::vaccines)
+            {
+                return std::make_shared<objects::patients::Vaccines>(property_value);
+            }
+
+
             throw std::invalid_argument("Property '" + property_name + "' not found");
         }
     };
@@ -58,6 +126,14 @@ namespace drug_lib::data
             {
                 auto values = field->as<Json::Value>();
                 for (Json::Value::const_iterator it = values.begin(); it != values.end(); ++it)
+                {
+                    collection_.add_property(PropertyFactory::create(it.name(), *it));
+                }
+            }
+
+            void create_collection(const Json::Value& json)
+            {
+                for (auto it = json.begin(); it != json.end(); ++it)
                 {
                     collection_.add_property(PropertyFactory::create(it.name(), *it));
                 }
@@ -92,6 +168,16 @@ namespace drug_lib::data
             void remove_property(const std::string& name)
             {
                 collection_.remove_property(name);
+            }
+
+            friend bool operator==(const PropertiesHolder& lhs, const PropertiesHolder& rhs)
+            {
+                return lhs.collection_ == rhs.collection_;
+            }
+
+            friend bool operator!=(const PropertiesHolder& lhs, const PropertiesHolder& rhs)
+            {
+                return !(lhs == rhs);
             }
         };
     }

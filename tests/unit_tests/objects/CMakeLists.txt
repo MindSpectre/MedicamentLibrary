@@ -4,6 +4,7 @@ set(UnitTestObject "UnitTest_Object")
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         disease/test_disease_base.cpp
+
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         PRIVATE
@@ -17,8 +18,12 @@ add_test(${UnitTestObject}_DiseaseBase ${UNIT_TESTING_TARGET}_Objects_Disease_Ba
 # Test Disease Properties Classes
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
-        disease/properties/test_symptoms.hpp
         disease/properties/properties_test.cpp
+        disease/properties/test_symptoms.hpp
+        disease/properties/test_curative_drugs.hpp
+        disease/properties/test_affected_age_groups.hpp
+        disease/properties/test_risk_factors.hpp
+        disease/properties/test_complications.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         PRIVATE
@@ -48,7 +53,12 @@ add_test(${UnitTestObject}_MedicamentBase ${UNIT_TESTING_TARGET}_Objects_Medicam
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         medicament/properties/properties_test.cpp
-        medicament/properties/test_prescription_drug.hpp
+        medicament/properties/test_prescription.hpp
+        medicament/properties/test_active_ingredients.hpp
+        medicament/properties/test_inactive_ingredients.hpp
+        medicament/properties/test_dosage_form.hpp
+        medicament/properties/test_side_effects.hpp
+        medicament/properties/test_strength.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         PRIVATE
@@ -79,6 +89,8 @@ add_test(${UnitTestObject}_PatientBase ${UNIT_TESTING_TARGET}_Objects_Patient_Ba
 add_executable(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         patient/properties/properties_test.cpp
         patient/properties/test_current_diseases.hpp
+        patient/properties/test_current_medicaments.hpp
+        patient/properties/test_allergies.hpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         PRIVATE

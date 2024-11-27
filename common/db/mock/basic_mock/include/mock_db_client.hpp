@@ -82,7 +82,7 @@ namespace drug_lib::common::database
         /// @brief Create full test search index for given fields
         /// @param table_name For which table created index.
         /// @param fields Fts fields
-        void setup_fts_index(
+        void setup_search_index(
             std::string_view table_name,
             std::vector<std::shared_ptr<FieldBase>> fields) override
         {
@@ -90,19 +90,19 @@ namespace drug_lib::common::database
         }
 
         /// @brief Drop index, but doesn't remove fts fields from this client. Allows to restore it(reindex) using restore_full_text_search method
-        void drop_fts_index(std::string_view table_name) const override
+        void drop_search_index(std::string_view table_name) const override
         {
             std::cout << "drop_full_text_search " << std::endl;
         }
 
         /// @brief Drop index + remove fields from this client. For using fts further setup_fulltext_search should be called again
-        void remove_fts_index(std::string_view table_name) override
+        void remove_search_index(std::string_view table_name) override
         {
             std::cout << "remove_full_text_search " << std::endl;
         }
 
         /// @brief Restore index + reindex. Use previous declared fts fields
-        void restore_fts_index(std::string_view table_name) const override
+        void restore_search_index(std::string_view table_name) const override
         {
             std::cout << "restore_full_text_search " << std::endl;
         }
@@ -196,6 +196,16 @@ namespace drug_lib::common::database
         {
             std::cout << "count" << std::endl;
             return 0;
+        }
+
+        void set_search_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override
+        {
+            std::cout << "set_search_fields" << std::endl;
+        }
+
+        void set_conflict_fields(std::string_view table_name, std::vector<std::shared_ptr<FieldBase>> fields) override
+        {
+            std::cout << "set_conflict_fields" << std::endl;
         }
 
     protected:

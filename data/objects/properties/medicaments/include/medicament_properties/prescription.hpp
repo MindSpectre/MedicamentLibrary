@@ -6,24 +6,31 @@
 
 namespace drug_lib::data::objects::medicaments
 {
-    class PrescriptionDrug final : public DataProperty
+    class Prescription final : public DataProperty
     {
     public:
-        PrescriptionDrug() = default;
+        Prescription() = default;
 
-        explicit PrescriptionDrug(const Json::Value& properties)
+        explicit Prescription(const Json::Value& properties)
         {
             this->set_info(properties);
         }
 
-        template <typename T>
-            requires std::is_constructible_v<std::string, T>
-        explicit PrescriptionDrug(T description)
-            : description_(description)
+        explicit Prescription(std::string description)
+            : description_(std::move(description))
         {
         }
 
-        ~PrescriptionDrug() override = default;
+        explicit Prescription(const char* description) : description_(std::move(description))
+        {
+        }
+
+        ~Prescription() override = default;
+
+        [[nodiscard]] std::string get_name() const override
+        {
+            return properties::prescription;
+        }
 
         [[nodiscard]] Json::Value get_info() const override
         {
@@ -37,10 +44,6 @@ namespace drug_lib::data::objects::medicaments
             description_ = property[names_of_json_fields::description].asString();
         }
 
-        [[nodiscard]] std::string get_name() const override
-        {
-            return properties::prescription;
-        }
 
         [[nodiscard]] const std::string& get_description() const
         {
@@ -58,7 +61,7 @@ namespace drug_lib::data::objects::medicaments
             static constexpr std::string description = "description";
         };
 
-        friend std::ostream& operator<<(std::ostream& os, const PrescriptionDrug& obj)
+        friend std::ostream& operator<<(std::ostream& os, const Prescription& obj)
         {
             return os << " description_: " << obj.description_;
         }

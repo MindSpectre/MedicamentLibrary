@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include "db_interface_factory.hpp"
-#include "mock_db_client.hpp"
 #include "transaction_manager.hpp"
 
 class TransactionManagerTest : public testing::Test

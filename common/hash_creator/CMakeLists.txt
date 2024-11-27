@@ -1,13 +1,12 @@
-# PARENT_PROJECT_NAME = DrugLib.Common
-
-set(TARGET ${PROJECT_NAME}_Common_HashCreator)
 
 ##############################################################################
 # Hash Creator Interface
 ##############################################################################
-add_library(${TARGET}_Interface INTERFACE)
+add_library(DrugLib_Common_HashCreator_Interface INTERFACE
+        interface/hash_creator_interface.hpp
+)
 
-target_include_directories(${TARGET}_Interface
+target_include_directories(DrugLib_Common_HashCreator_Interface
         INTERFACE
         interface
 )
@@ -15,18 +14,39 @@ target_include_directories(${TARGET}_Interface
 ##############################################################################
 # Hash Utilities: SHA256
 ##############################################################################
-add_library(${TARGET}_SHA256
+add_library(DrugLib_Common_HashCreator_SHA256
         sha_256/source/sha_256.cpp
+        sha_256/include/sha_256.h
 )
 
-target_include_directories(${TARGET}_SHA256 PUBLIC
+target_include_directories(DrugLib_Common_HashCreator_SHA256 PUBLIC
         sha_256/include
-        sha_256/source
 )
 
-target_link_libraries(${TARGET}_SHA256
+target_link_libraries(DrugLib_Common_HashCreator_SHA256
         PUBLIC
-        ${TARGET}_Interface
+        DrugLib_Common_HashCreator_Interface
+        OpenSSL::SSL
+        OpenSSL::Crypto
+)
+
+##############################################################################
+
+##############################################################################
+# Hash Utilities: PBKDF2
+##############################################################################
+add_library(DrugLib_Common_HashCreator_PBKDF2
+        pbkdf2/source/pbkdf2.cpp
+        pbkdf2/include/pbkdf2.hpp
+)
+
+target_include_directories(DrugLib_Common_HashCreator_PBKDF2 PUBLIC
+        pbkdf2/include
+)
+
+target_link_libraries(DrugLib_Common_HashCreator_PBKDF2
+        PUBLIC
+        DrugLib_Common_HashCreator_Interface
         OpenSSL::SSL
         OpenSSL::Crypto
 )
@@ -36,18 +56,19 @@ target_link_libraries(${TARGET}_SHA256
 ##############################################################################
 # Hash Creator Factory
 ##############################################################################
-add_library(${TARGET}_Factory STATIC
+add_library(DrugLib_Common_HashCreator_Factory STATIC
         factory/hash_creator_factory.cpp
         interface/hash_creator_interface.hpp
 )
 
-target_include_directories(${TARGET}_Factory PUBLIC
+target_include_directories(DrugLib_Common_HashCreator_Factory PUBLIC
         factory
 )
 
-target_link_libraries(${TARGET}_Factory
+target_link_libraries(DrugLib_Common_HashCreator_Factory
         PUBLIC
-        ${TARGET}_SHA256
-        ${TARGET}_Interface
+        DrugLib_Common_HashCreator_SHA256
+        DrugLib_Common_HashCreator_PBKDF2
+        DrugLib_Common_HashCreator_Interface
 )
 ##############################################################################

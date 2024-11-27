@@ -1,0 +1,8 @@
+//
+// Created by neo on 11/25/24.
+//
+
+#ifndef AUTHENTICATOR_SERVICE_HPP
+#define AUTHENTICATOR_SERVICE_HPP
+
+#endif //AUTHENTICATOR_SERVICE_HPP

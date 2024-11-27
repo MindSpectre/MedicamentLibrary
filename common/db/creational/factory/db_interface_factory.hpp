@@ -39,11 +39,6 @@ namespace drug_lib::common::database::creational
             return connect;
         }
 
-        static std::unique_ptr<interfaces::DbInterface> create_mock_database()
-        {
-            return std::make_unique<MockDbClient>();
-        }
-
         template <typename... Args>
         static std::unique_ptr<interfaces::DbInterface> create_mock_database(Args... argv)
         {

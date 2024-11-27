@@ -2,7 +2,11 @@
 
 namespace drug_lib::dao
 {
-    void PatientsHandbook::setup(std::shared_ptr<common::database::interfaces::DbInterface> client) &
+    void PatientsHandbook::tear_down()
+    {
+    }
+
+    void PatientsHandbook::setup() &
     {
         table_name_ = handbook_tables_name::Patients;
         //creating field
@@ -18,6 +22,6 @@ namespace drug_lib::dao
         value_fields_.push_back(birth_date_field);
         value_fields_.push_back(contact_information_field);
 
-        HandbookBase::setup(std::move(client));
+        HandbookBase::setup();
     }
 }

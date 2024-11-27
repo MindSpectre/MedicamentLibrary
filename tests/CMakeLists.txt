@@ -4,7 +4,7 @@ add_executable(Sandbox
 
 target_link_libraries(Sandbox
         PRIVATE
-        DrugLib_Dao_CrudInterface
+        DrugLib_Dao_Handbook_Base
         #        DrugLib.Dao.Handbook.Medicaments
         DrugLib_Common_Database_PqxxClient
         DrugLib_Common_Database_Behavioral_OperationsStrategies
@@ -78,8 +78,16 @@ add_executable(${UNIT_TESTING_TARGET}_DbInterfacePool
 target_link_libraries(${UNIT_TESTING_TARGET}_DbInterfacePool
         PRIVATE
         DrugLib_Common_Database_Pool
+        DrugLib_Common_Database_Factory
         ${TEST_NECESSARY_LIBS}
 
 )
 add_test(UnitTest_DbInterfacePool ${UNIT_TESTING_TARGET}_DbInterfacePool)
 ##############################################################################
+
+
+add_executable(HTest_LookUpService non_automate/lookup_service.cpp)
+
+target_link_libraries(HTest_LookUpService
+        DrugLib_Services_Internal_LookUp
+)

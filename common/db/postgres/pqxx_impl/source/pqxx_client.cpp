@@ -21,8 +21,8 @@ namespace drug_lib::common::database
                            const uint32_t port,
                            const std::string_view db_name,
                            const std::string_view login,
-                           const std::string_view password)
-        : in_transaction_(false)
+                           const std::string_view password) :
+        in_transaction_(false)
     {
         try
         {
@@ -57,8 +57,8 @@ namespace drug_lib::common::database
     }
 
 
-    PqxxClient::PqxxClient(const PqxxConnectParams& pr)
-        : in_transaction_(false)
+    PqxxClient::PqxxClient(const PqxxConnectParams& pr) :
+        in_transaction_(false)
     {
         try
         {
@@ -247,7 +247,7 @@ namespace drug_lib::common::database
             {
                 conflict_fields = this->conflict_fields_.at(table_name.data());
             }
-            catch (std::out_of_range&)
+            catch (boost::container::out_of_range&)
             {
                 throw QueryException(
                     "For this table upsert clause is not set up. Or invalid table name credentials",
@@ -282,7 +282,8 @@ namespace drug_lib::common::database
         auto process_fields_clause = [&](const std::vector<FieldCondition>& fields_clause)
         {
             std::optional<std::string> query_;
-            if (fields_clause.empty()) return query_;
+            if (fields_clause.empty())
+                return query_;
             std::ostringstream local_stream;
             for (const auto& condition : fields_clause)
             {
@@ -308,7 +309,7 @@ namespace drug_lib::common::database
                 std::lock_guard lock(this->conn_mutex_);
                 try
                 {
-                    fts_fields = this->fts_fields_.at(table_name.data());
+                    fts_fields = this->search_fields_.at(table_name.data());
                 }
                 catch (std::out_of_range&)
                 {
@@ -331,64 +332,153 @@ namespace drug_lib::common::database
             std::string tsquery = tsquery_stream.str();
             tsquery.erase(tsquery.size() - 3); // Remove last " & "
             local_stream << "to_tsvector('simple', " << fields_concatenated << ") @@ to_tsquery('simple', $"
-                << param_index++ << ");";
+                << param_index++ << ") AND ";
             params.append(tsquery);
             query_ = local_stream.str();
             return query_;
         };
         auto process_order_by_clause = [&](const std::vector<OrderCondition>& order_by_clause)
         {
+            std::optional<std::string> query_;
             std::ostringstream local_stream;
-            if (order_by_clause.empty()) return local_stream.str();
-            local_stream << "ORDER BY ";
+            if (order_by_clause.empty())
+            {
+                return query_;
+            }
             for (const auto& condition : order_by_clause)
             {
                 local_stream << escape_identifier(condition.get_column()->get_name()) << " ";
                 switch (condition.get_order())
                 {
                 case order_type::ascending:
-                    {
-                        local_stream << "ASC ";
-                        break;
-                    }
+                {
+                    local_stream << "ASC, ";
+                    break;
+                }
                 case order_type::descending:
-                    {
-                        local_stream << "DESC ";
-                        break;
-                    }
+                {
+                    local_stream << "DESC, ";
+                    break;
+                }
                 }
             }
-            return local_stream.str();
+            query_ = local_stream.str();
+            return query_;
         };
 
         auto process_paging_clause = [&](const PageCondition& paging)
         {
             std::ostringstream local_stream;
-            local_stream << "LIMIT " << paging.get_limit() << " OFFSET " << paging.get_offset();
+            local_stream << " LIMIT " << paging.get_limit() << " OFFSET " << paging.get_offset();
             return local_stream.str();
         };
 
+        auto process_similarity_clause = [&](const std::vector<SimilarityCondition>& similarity_conditions)
+
+        {
+            std::optional<std::string> res;
+            // If no patterns, return empty clauses
+            if (similarity_conditions.empty())
+            {
+                return res;
+            }
+            std::ostringstream order_by_clause_stream;
+            std::ostringstream fields_stream;
+            std::vector<std::shared_ptr<FieldBase>> search_fields;
+
+            {
+                std::lock_guard lock(this->conn_mutex_);
+                try
+                {
+                    // Retrieve searchable fields for the table
+                    search_fields = this->search_fields_.at(table_name.data());
+                }
+                catch (std::out_of_range&)
+                {
+                    throw QueryException(
+                        "For this table, search fields are not set up or invalid table name credentials.",
+                        db_err::INVALID_DATA);
+                }
+            }
+
+            // Concatenate all fields into a single expression
+            for (const auto& field : search_fields)
+            {
+                fields_stream << "coalesce(" << field->get_name() << "::text, '') || ' ' || ";
+            }
+            std::string fields_concatenated = fields_stream.str();
+            if (!fields_concatenated.empty())
+            {
+                fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+            }
+            else
+            {
+                throw QueryException(
+                    "No valid searchable fields defined for the table.",
+                    db_err::INVALID_DATA);
+            }
+
+            // Build the trigram query
+            std::ostringstream pattern_stream;
+            for (const auto& pattern : similarity_conditions)
+            {
+                pattern_stream << pattern.get_pattern() << " | ";
+            }
+            std::string combined_pattern = pattern_stream.str();
+            if (!combined_pattern.empty())
+            {
+                combined_pattern.erase(combined_pattern.size() - 3); // Remove last " | "
+            }
+            else
+            {
+                throw QueryException("Pattern conditions are empty or invalid.", db_err::INVALID_DATA);
+            }
+
+            // WHERE clause for trigram search
+            params.append(combined_pattern);
+
+            // ORDER BY clause for ranking based on similarity
+            order_by_clause_stream << "(" << fields_concatenated << ") <-> $" << param_index++ << ", ";
+            res = order_by_clause_stream.str();
+            // Return WHERE and ORDER BY clauses
+            return res;
+        };
+        auto order_by_similarity_clause = process_similarity_clause(conditions.similarity_conditions());
         if (const std::optional<std::string> patterns_clause = process_patterns_clause(conditions.pattern_conditions()),
                                              fields_clause = process_fields_clause(conditions.fields_conditions());
-            fields_clause.has_value() && patterns_clause.has_value())
+            fields_clause.has_value() || patterns_clause.has_value())
         {
-            query_stream << " WHERE ";
-            query_stream << fields_clause.value() << " " << patterns_clause.value() << " ";
+            std::ostringstream where_stream;
+            where_stream << " WHERE ";
+            if (fields_clause.has_value())
+            {
+                where_stream << fields_clause.value();
+            }
+            if (patterns_clause.has_value())
+            {
+                where_stream << patterns_clause.value();
+            }
+            std::string tmp = where_stream.str();
+            tmp.erase(tmp.size() - 5);
+            query_stream << tmp;
         }
-        else if (fields_clause.has_value() && !patterns_clause.has_value())
+        if (std::optional<std::string> order_by_clause = process_order_by_clause(conditions.order_by_conditions());
+            order_by_clause.has_value() || order_by_similarity_clause.has_value())
         {
-            query_stream << " WHERE ";
-            std::string fields_clause_val = fields_clause.value();
-            fields_clause_val.erase(fields_clause_val.size() - 5);
-            query_stream << fields_clause_val;
+            std::ostringstream order_by;
+            order_by << " ORDER BY ";
+            if (order_by_clause.has_value())
+            {
+                order_by << order_by_clause.value();
+            }
+            if (order_by_similarity_clause.has_value())
+            {
+                order_by << order_by_similarity_clause.value();
+            }
+            std::string tmp = order_by.str();
+            tmp.erase(tmp.size() - 2);
+            query_stream << tmp;
         }
-        else if (!fields_clause.has_value() && patterns_clause.has_value())
-        {
-            query_stream << " WHERE ";
-            query_stream << patterns_clause.value() << " ";
-        }
-
-        query_stream << process_order_by_clause(conditions.order_by_conditions()) << " ";
         if (conditions.page_condition().has_value())
         {
             query_stream << process_paging_clause(conditions.page_condition().value());
@@ -529,7 +619,7 @@ namespace drug_lib::common::database
             return field_ptr;
         }
 
-        // Handle timestamp types (with or without timezone)
+        // Handle timestamp types (with or without a timezone)
         if (type_oid->second == "timestamptz" || type_oid->second == "timestamp") // Timestamp type
         {
             const auto value = field.as<std::string>();
@@ -671,6 +761,14 @@ namespace drug_lib::common::database
         return res[0][0].as<bool>();
     }
 
+    void PqxxClient::truncate_table(const std::string_view table_name)
+    {
+        const std::string table = escape_identifier(table_name);
+        std::ostringstream query_stream;
+        query_stream << "TRUNCATE TABLE " << table << ";";
+        execute_query(query_stream.str());
+    }
+
     // Data Manipulation Implementation
     void PqxxClient::insert_implementation(const std::string_view table_name, const std::vector<Record>& rows)
     {
@@ -714,7 +812,7 @@ namespace drug_lib::common::database
             std::lock_guard lock(this->conn_mutex_);
             try
             {
-                fts_fields = this->fts_fields_.at(table_name.data());
+                fts_fields = this->search_fields_.at(table_name.data());
             }
             catch (std::out_of_range&)
             {
@@ -734,7 +832,39 @@ namespace drug_lib::common::database
             << " USING gin (to_tsvector('simple', " << fields_concatenated << "));";
     }
 
-    void PqxxClient::setup_fts_index(
+    void PqxxClient::create_trgm_index_query(const std::string_view table_name, std::ostringstream& index_query) const
+    {
+        const std::string table = escape_identifier(table_name);
+
+        // Build the concatenated fields expression
+        std::ostringstream fields_stream;
+        std::vector<std::shared_ptr<FieldBase>> trgm_fields;
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            try
+            {
+                trgm_fields = this->search_fields_.at(table_name.data());
+            }
+            catch (std::out_of_range&)
+            {
+                throw QueryException(
+                    "For this table trigram index is not set up or disabled. Or invalid table name credentials",
+                    db_err::INVALID_DATA);
+            }
+        }
+        for (const auto& field : trgm_fields)
+        {
+            fields_stream << "coalesce(" << escape_identifier(field->get_name()) << "::text, '') || ' ' || ";
+        }
+        std::string fields_concatenated = fields_stream.str();
+        fields_concatenated.erase(fields_concatenated.size() - 11); // Remove last " || ' ' || "
+
+        index_query << "CREATE INDEX IF NOT EXISTS " << make_trgm_index_name(table_name) << " ON " << table
+            << " USING gin ((" << fields_concatenated << ") gin_trgm_ops);";
+    }
+
+
+    void PqxxClient::setup_search_index(
         const std::string_view table_name,
         std::vector<std::shared_ptr<FieldBase>> fields)
     {
@@ -745,13 +875,16 @@ namespace drug_lib::common::database
         }
         {
             std::lock_guard lock(this->conn_mutex_);
-            this->fts_fields_[table_name.data()] = std::move(fields);
+            this->search_fields_[table_name.data()] = std::move(fields);
         }
         try
         {
-            std::ostringstream index_query;
-            create_fts_index_query(table_name, index_query);
-            execute_query(index_query.str());
+            std::ostringstream fts_index_query;
+            create_fts_index_query(table_name, fts_index_query);
+            execute_query(fts_index_query.str());
+            std::ostringstream trgm_index_query;
+            create_trgm_index_query(table_name, trgm_index_query);
+            execute_query(trgm_index_query.str());
         }
         catch (const std::exception& e)
         {
@@ -759,13 +892,15 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::drop_fts_index(const std::string_view table_name) const
+    void PqxxClient::drop_search_index(const std::string_view table_name) const
     {
         try
         {
-            std::ostringstream index_query;
-            index_query << "DROP INDEX IF EXISTS " << make_fts_index_name(table_name) << ";";
-            execute_query(index_query.str());
+            std::ostringstream fts_index_query;
+            fts_index_query << "DROP INDEX IF EXISTS " << make_fts_index_name(table_name) << ";";
+            execute_query(fts_index_query.str());
+            std::ostringstream trgm_index_query;
+            trgm_index_query << "DROP INDEX IF EXISTS " << make_trgm_index_name(table_name) << ";";
         }
         catch (const std::exception& e)
         {
@@ -773,22 +908,25 @@ namespace drug_lib::common::database
         }
     }
 
-    void PqxxClient::remove_fts_index(const std::string_view table_name)
+    void PqxxClient::remove_search_index(const std::string_view table_name)
     {
         {
             std::lock_guard lock(this->conn_mutex_);
-            this->fts_fields_[std::string(table_name)].clear();
+            this->search_fields_[std::string(table_name)].clear();
         }
-        drop_fts_index(table_name);
+        drop_search_index(table_name);
     }
 
-    void PqxxClient::restore_fts_index(const std::string_view table_name) const
+    void PqxxClient::restore_search_index(const std::string_view table_name) const
     {
         try
         {
             std::ostringstream index_query;
             create_fts_index_query(table_name, index_query);
             execute_query(index_query.str());
+            std::ostringstream trgm_index_query;
+            create_trgm_index_query(table_name, trgm_index_query);
+            execute_query(trgm_index_query.str());
         }
         catch (const QueryException& e)
         {
@@ -825,7 +963,6 @@ namespace drug_lib::common::database
 
         uint32_t param_index = 1;
         conditions_to_query(table_name, query_stream, params, param_index, conditions);
-
         const pqxx::result res = execute_query_with_result(query_stream.str(), params);
         results.reserve(res.size());
         for (const auto& row : res)
@@ -906,13 +1043,6 @@ namespace drug_lib::common::database
         return results;
     }
 
-    void PqxxClient::truncate_table(const std::string_view table_name)
-    {
-        const std::string table = escape_identifier(table_name);
-        std::ostringstream query_stream;
-        query_stream << "TRUNCATE TABLE " << table << ";";
-        execute_query(query_stream.str());
-    }
 
     void PqxxClient::remove(const std::string_view table_name, const Conditions& conditions)
     {
@@ -962,11 +1092,35 @@ namespace drug_lib::common::database
         return res[0][0].as<uint32_t>();
     }
 
+    void PqxxClient::set_search_fields(const std::string_view table_name,
+                                       std::vector<std::shared_ptr<FieldBase>> fields)
+    {
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->search_fields_[std::string(table_name)] = std::move(fields);
+        }
+    }
+
+    void PqxxClient::set_conflict_fields(const std::string_view table_name,
+                                         std::vector<std::shared_ptr<FieldBase>> fields)
+    {
+        {
+            std::lock_guard lock(this->conn_mutex_);
+            this->conflict_fields_[std::string(table_name)] = std::move(fields);
+        }
+    }
 
     std::string PqxxClient::make_fts_index_name(const std::string_view table_name)
     {
         std::ostringstream fts_ind;
         fts_ind << "fts_" << table_name << "_idx";
+        return fts_ind.str();
+    }
+
+    std::string PqxxClient::make_trgm_index_name(const std::string_view table_name)
+    {
+        std::ostringstream fts_ind;
+        fts_ind << "trgm_" << table_name << "_idx";
         return fts_ind.str();
     }
 }

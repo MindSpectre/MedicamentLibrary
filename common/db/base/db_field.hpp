@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -36,7 +37,7 @@ namespace drug_lib::common::database
         template <typename T>
         T as() const
         {
-            // Ensure that T is a valid type, e.g., int, std::string, etc.
+            // Ensure that T is a valid type, for example, int, std::string, etc.
             static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
 
             // Attempt to dynamic cast this object to a Field<T> type
