@@ -1,4 +1,25 @@
 ##############################################################################
+# DAO CRUD INTERFACE
+##############################################################################
+add_library(DrugLib_Dao_Handbook_Base
+        INTERFACE
+        interface/handbook_base.hpp
+)
+
+target_link_libraries(DrugLib_Dao_Handbook_Base
+        INTERFACE
+        DrugLib_Data_Objects
+        ${DbNecessaryLibs}
+
+)
+target_include_directories(DrugLib_Dao_Handbook_Base
+        INTERFACE
+        interface/
+)
+##############################################################################
+
+
+##############################################################################
 # Handbook: Medicament
 ##############################################################################
 
@@ -69,5 +90,23 @@ target_link_libraries(DrugLib_Dao_Handbook_Diseases
 target_include_directories(DrugLib_Dao_Handbook_Diseases
         PUBLIC
         diseases/include
+)
+##############################################################################
+
+
+##############################################################################
+add_library(DrugLib_Dao_SuperHandbook STATIC
+        super_handbook.hpp)
+
+target_link_libraries(DrugLib_Dao_SuperHandbook
+        PUBLIC
+        DrugLib_Dao_Handbook_Diseases
+        DrugLib_Dao_Handbook_Patients
+        DrugLib_Dao_Handbook_Organizations
+        DrugLib_Dao_Handbook_Medicaments
+)
+target_include_directories(DrugLib_Dao_SuperHandbook
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 ##############################################################################

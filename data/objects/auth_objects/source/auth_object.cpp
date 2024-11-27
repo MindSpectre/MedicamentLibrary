@@ -3,7 +3,7 @@
 drug_lib::common::database::Record drug_lib::data::objects::AuthObject::to_record() const
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+    record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::user_id, user_id_));
     record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::login, login_));
     record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::password, password_hash_));
     record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::role, role_));
@@ -15,9 +15,9 @@ void drug_lib::data::objects::AuthObject::from_record(const common::database::Re
     for (const auto& field : record.fields())
     {
         if (const auto& field_name = field->get_name();
-            field_name == field_name::id)
+            field_name == field_name::user_id)
         {
-            id_ = field->as<int32_t>();
+            user_id_ = field->as<int32_t>();
         }
         else if (field_name == field_name::login)
         {

@@ -28,6 +28,7 @@ namespace drug_lib::dao
             { a.from_record(record) } -> std::same_as<void>;
             { T::field_name::id };
             { T::field_name::name };
+            { T::field_name::properties };
         };
 
     template <RecordTypeConcept RecordType>
@@ -48,11 +49,11 @@ namespace drug_lib::dao
             }
             //creating fields
             const auto id_field = common::database::make_field_shared_by_default<int32_t>(
-                data::objects::ObjectBase::common_fields_names::id);
+                RecordType::field_name::id);
             const auto name_field = common::database::make_field_shared_by_default<std::string>(
                 RecordType::field_name::name);
             const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
-                data::objects::ObjectBase::common_fields_names::properties);
+                RecordType::field_name::properties);
             fts_fields_.push_back(name_field);
             fts_fields_.push_back(properties_field);
 
