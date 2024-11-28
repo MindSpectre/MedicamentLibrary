@@ -30,68 +30,50 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Install system dependencies
-      - name: Install system dependencies
+      # 2. Cache vcpkg
+      - name: Cache vcpkg
+        uses: actions/cache@v3
+        with:
+          path: /opt/vcpkg
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      # 3. Install dependencies using install.sh script (only if cache isn't restored)
+      - name: Install dependencies
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y \
-            build-essential \
-            pkg-config \
-            curl \
-            libicu-dev \
-            uuid-dev \
-            mesa-common-dev \
-            libglu1-mesa-dev \
-            libxkbcommon-x11-0 \
-            libssl-dev \
-            openssl \
-            zlib1g-dev \
-            zip \
-            unzip \
-            ninja-build
-      - name: Setup Clang
-        uses: llvm/llvm-project@gha
-        with:
-          install-flavor: apt
-          llvm-version: 14  # Replace with your desired version
+          if [ ! -d /opt/vcpkg ]; then
+            chmod +x tools/installer/install.sh
+            tools/installer/install.sh
+          fi
 
-      # 3. Setup vcpkg with required packages
-      - name: Setup vcpkg
-        uses: lukka/setup-vcpkg@v1
-        with:
-          vcpkgTriplet: x64-linux
-          # List your required vcpkg packages here
-          vcpkgArguments: |
-            install boost-system boost-filesystem boost-log boost-program-options
-            install grpc
-            install jsoncpp
-            install valijson
-            install libpq
-            install libuuid
-            install gtest
-            install libpqxx
-            install drogon
-          cleanAfterBuild: true  # Cleans up to reduce cache size
+      # 4. Clean up vcpkg to reduce cache size
+      - name: Clean vcpkg cache
+        if: success()
+        run: |
+          rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
 
-      # 4. Create build directory
+      # 5. Create build directory
       - name: Create build directory
         run: mkdir -p build
 
-      # 5. Configure the project with CMake using vcpkg toolchain
+      # 6. Configure the project with CMake using vcpkg toolchain
       - name: Configure with CMake
-        working-directory: build
         run: |
+          cd build
           cmake .. -G Ninja \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+            -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      # 6. Build the project
+      # 7. Build the project
       - name: Build with CMake
-        working-directory: build
-        run: cmake --build .
+        run: |
+          cd build
+          cmake --build .
 
-      # 7. Run tests with CTest
+      # 8. Run tests with CTest
       - name: Run tests with CTest
-        working-directory: build
-        run: ctest --output-on-failure
+        run: |
+          cd build
+          ctest --output-on-failure
