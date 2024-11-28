@@ -2,7 +2,7 @@
 
 #include "db_field.hpp"
 #include "stopwatch.hpp"
-#include "jsoncpp/json/json.h"
+#include <json/json.h>
 #include <chrono>
 #include <drogon/HttpController.h>
 

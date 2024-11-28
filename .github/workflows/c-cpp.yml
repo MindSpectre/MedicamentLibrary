@@ -17,21 +17,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Install dependencies using install.sh script
-      - name: Install dependencies
-        run: |
-          chmod +x tools/installer/install.sh
-          tools/installer/install.sh
+      # 2. Cache vcpkg
       - name: Cache vcpkg
         uses: actions/cache@v3
         with:
           path: /opt/vcpkg
           key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
-      # 3. Create build directory
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      # 3. Install dependencies using install.sh script (only if cache isn't restored)
+      - name: Install dependencies
+        run: |
+          if [ ! -d /opt/vcpkg ]; then
+            chmod +x tools/installer/install.sh
+            tools/installer/install.sh
+          fi
+
+      # 4. Clean up vcpkg to reduce cache size
+      - name: Clean vcpkg cache
+        if: success()
+        run: |
+          rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
+
+      # 5. Create build directory
       - name: Create build directory
         run: mkdir -p build
 
-      # 4. Configure the project with CMake using vcpkg toolchain
+      # 6. Configure the project with CMake using vcpkg toolchain
       - name: Configure with CMake
         run: |
           cd build
@@ -40,15 +53,14 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      # 5. Build the project
+      # 7. Build the project
       - name: Build with CMake
         run: |
           cd build
           cmake --build .
 
-      # 6. Run tests with CTest
+      # 8. Run tests with CTest
       - name: Run tests with CTest
         run: |
           cd build
           ctest --output-on-failure
-
