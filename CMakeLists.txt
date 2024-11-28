@@ -29,7 +29,7 @@ find_package(OpenSSL 3.3.2 REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
-
+find_package(Drogon REQUIRED)
 # Conditionally find Boost if enabled
 if (USE_BOOST)
     # Boost settings (adjust as needed)

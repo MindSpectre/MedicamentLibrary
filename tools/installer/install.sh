@@ -13,7 +13,6 @@ sudo apt-get install -y \
     build-essential \
     pkg-config \
     curl \
-    haskell-platform \
     libicu-dev \
     uuid-dev \
     mesa-common-dev \
@@ -23,8 +22,8 @@ sudo apt-get install -y \
     openssl \
     zlib1g-dev \
     zip \
-    unzip
-
+    unzip \
+    ninja-build
 # Install and set up Vcpkg
 VCPKG_ROOT="/opt/vcpkg"
 
@@ -55,6 +54,6 @@ echo "Installing vcpkg packages..."
     libpq \
     libuuid \
     gtest \
-    libpqxx
-
+    libpqxx \
+    drogon
 echo "Installation complete for Ubuntu."

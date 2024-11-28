@@ -9,6 +9,8 @@ target_link_libraries(Sandbox
         DrugLib_Common_Database_PqxxClient
         DrugLib_Common_Database_Behavioral_OperationsStrategies
         DrugLib_Common_StopWatch
+        Drogon::Drogon
+        JsonCpp::JsonCpp
 )
 
 SET(UNIT_TESTING_TARGET "${PROJECT_NAME}_Tests_Unit")

@@ -2,22 +2,32 @@
 
 #include "db_field.hpp"
 #include "stopwatch.hpp"
+#include "jsoncpp/json/json.h"
 #include <chrono>
+#include <drogon/HttpController.h>
+
+class MyController : public drogon::HttpController<MyController>
+{
+public:
+    METHOD_LIST_BEGIN
+        // Bind your endpoint to a handler function
+        ADD_METHOD_TO(MyController::helloWorld, "/hello", drogon::Get);
+    METHOD_LIST_END
+
+    // Handler function
+    void helloWorld(const drogon::HttpRequestPtr& req,
+                    std::function<void(const drogon::HttpResponsePtr&)>&& callback)
+    {
+        Json::Value message = "Hello, World!";
+        auto resp = drogon::HttpResponse::newHttpJsonResponse(message);
+        callback(resp);
+    }
+
+};
 
 int main()
 {
-    drug_lib::common::Stopwatch<std::chrono::microseconds> timer;
-    timer.start();
-    timer.set_countdown_from_start(false);
-    timer.set_countdown_from_prev(true);
-    for (int i = 0; i < 1e7; i++)
-    {
-        if (i % 100000 == 0)
-        {
-            std::cout << i << std::endl;
-            ++timer;
-        }
-    }
-    timer.finish();
+    drogon::app().addListener("0.0.0.0", 8080); // Host on localhost:8080
+    drogon::app().run();
     return 0;
 }
