@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -52,7 +52,8 @@ jobs:
         if: success()
         run: |
           rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
-
+  configure:
+    steps:
       # 5. Create build directory
       - name: Create build directory
         run: mkdir -p build
@@ -65,13 +66,15 @@ jobs:
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
-
+  build:
+    steps:
       # 7. Build the project
       - name: Build with CMake
         run: |
           cd build
           cmake --build .
-
+  unit_tests:
+    steps:
       # 8. Run tests with CTest
       - name: Run tests with CTest
         run: |
