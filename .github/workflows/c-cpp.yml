@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  unit tests:
+  unit_testing:
     runs-on: ubuntu-latest
     services:
       postgres:
