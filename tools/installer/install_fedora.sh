@@ -7,7 +7,6 @@ echo "Installation starts for Fedora."
 
 # Update the package list
 sudo dnf update -y
-
 # Install necessary packages
 sudo dnf install -y \
     @development-tools \
@@ -28,6 +27,38 @@ sudo dnf install -y \
 sudo dnf install -y autoconf automake libtool
 
 echo "Base packages installation completed."
-./install_vcpkg.sh
+VCPKG_ROOT="/opt/vcpkg"
+
+if [ ! -d "$VCPKG_ROOT" ]; then
+    echo "Cloning vcpkg repository..."
+    sudo git clone https://github.com/Microsoft/vcpkg.git "$VCPKG_ROOT"
+    sudo chown -R "$USER":"$USER" "$VCPKG_ROOT"
+fi
+
+cd "$VCPKG_ROOT" || exit
+
+echo "Updating vcpkg..."
+git pull origin master
+
+echo "Bootstrapping vcpkg..."
+./bootstrap-vcpkg.sh
+
+# Install dependencies from Vcpkg
+echo "Installing vcpkg packages..."
+./vcpkg install \
+    boost-system \
+    boost-filesystem \
+    boost-log \
+    boost-program-options \
+    grpc \
+    jsoncpp \
+    valijson \
+    libpq \
+    libuuid \
+    gtest \
+    libpqxx \
+    drogon \
+    abseil \
+    libevent
 
 echo "Installation complete for Fedora."
