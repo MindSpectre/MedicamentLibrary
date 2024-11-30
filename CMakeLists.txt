@@ -29,7 +29,7 @@ find_package(OpenSSL REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
-find_package(Libevent CONFIG REQUIRED)
+#find_package(Libevent CONFIG REQUIRED)
 find_package(Drogon CONFIG REQUIRED)
 # Conditionally find Boost if enabled
 if (USE_BOOST)
