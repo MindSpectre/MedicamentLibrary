@@ -1,15 +1,42 @@
-name: C++ CI with CTest and vcpkg
+name: Medicament Library
 
 on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
 
 jobs:
-  integration_testing:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+
+      - name: Run Unit Tests
+        run: |
+          cd build
+          ctest --output-on-failure -L unit
+  functional-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+
+      - name: Run Unit Tests
+        run: |
+          cd build
+          ctest --output-on-failure -L functional
+  integration-testing:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -37,16 +64,4 @@ jobs:
           cd build
           ctest --output-on-failure -L integration
 
-  unit_testing:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
-
-      - name: Run Unit Tests
-        run: |
-          cd build
-          ctest --output-on-failure -L unit
