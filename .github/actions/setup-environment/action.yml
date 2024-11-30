@@ -1,7 +1,7 @@
 name: Setup Environment
 description: Set up the environment for vcpkg and CMake
 runs:
-  using: "bash"
+  using: "composite"
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -10,24 +10,27 @@ runs:
       uses: actions/cache@v3
       with:
         path: /opt/vcpkg
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install_vcpkg.sh') }}
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install_ubuntu.sh') }}
         restore-keys: |
           vcpkg-${{ runner.os }}-
 
     - name: Install dependencies
       run: |
         if [ ! -d /opt/vcpkg ]; then
-          chmod +x tools/installer/install.sh
-          tools/installer/install.sh
+          chmod +x tools/installer/install_ubuntu.sh
+          tools/installer/install_ubuntu.sh
         fi
+      shell: bash
 
     - name: Clean vcpkg cache
       if: success()
       run: |
         rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
+      shell: bash
 
     - name: Create build directory
       run: mkdir -p build
+      shell: bash
 
     - name: Configure with CMake
       run: |
@@ -36,8 +39,10 @@ runs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+      shell: bash
 
     - name: Build with CMake
       run: |
         cd build
         cmake --build .
+      shell: bash
