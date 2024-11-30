@@ -130,11 +130,8 @@ namespace drug_lib::common::database
                     << " WITH OWNER = " << login << " "
                     << "ENCODING = 'UTF8' "
                     << "TEMPLATE template0;"; // Use template0 for a clean database
-
-                // Execute the query
                 db_creating.exec(query.str());
                 db_creating.commit();
-
                 std::cout << "Database " << db_name << " created successfully!" << std::endl;
             }
             else
@@ -152,7 +149,7 @@ namespace drug_lib::common::database
 
     void PqxxClient::create_database(const PqxxConnectParams& pr)
     {
-        create_database(pr.get_host(), pr.get_port(), pr.get_login(), pr.get_password(), pr.get_db_name());
+        create_database(pr.get_host(), pr.get_port(), pr.get_db_name(), pr.get_login(), pr.get_password());
     }
 
     //
@@ -884,7 +881,19 @@ namespace drug_lib::common::database
             execute_query(fts_index_query.str());
             std::ostringstream trgm_index_query;
             create_trgm_index_query(table_name, trgm_index_query);
-            execute_query(trgm_index_query.str());
+            try
+            {
+                execute_query(trgm_index_query.str());
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << e.what() << std::endl;
+                std::cerr << "Error during install trgm index. Resolving....\n" << std::endl;
+                std::cerr << "Installing trgm_extension..." << std::endl;
+                install_trgm_extension();
+                std::cerr << "Second try..." << std::endl;
+                execute_query(trgm_index_query.str());
+            }
         }
         catch (const std::exception& e)
         {
@@ -1122,5 +1131,12 @@ namespace drug_lib::common::database
         std::ostringstream fts_ind;
         fts_ind << "trgm_" << table_name << "_idx";
         return fts_ind.str();
+    }
+
+    void PqxxClient::install_trgm_extension() const
+    {
+        std::ostringstream setup_extensions;
+        setup_extensions << "CREATE EXTENSION IF NOT EXISTS pg_trgm;";
+        this->execute_query(setup_extensions.str());
     }
 }

@@ -219,5 +219,6 @@ namespace drug_lib::common::database
         void create_trgm_index_query(std::string_view table_name, std::ostringstream& index_query) const;
         static std::string make_fts_index_name(std::string_view table_name);
         static std::string make_trgm_index_name(std::string_view table_name);
+        void install_trgm_extension() const;
     };
 }

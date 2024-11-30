@@ -12,6 +12,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Base
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_DiseaseBase ${UNIT_TESTING_TARGET}_Objects_Disease_Base)
+set_tests_properties(${UnitTestObject}_DiseaseBase PROPERTIES LABELS "unit")
 ##############################################################################
 
 ##############################################################################
@@ -31,6 +32,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_DiseaseProperties ${UNIT_TESTING_TARGET}_Objects_Disease_Properties)
+set_tests_properties(${UnitTestObject}_DiseaseProperties PROPERTIES LABELS "unit")
 ##############################################################################
 
 
@@ -46,6 +48,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Base
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_MedicamentBase ${UNIT_TESTING_TARGET}_Objects_Medicament_Base)
+set_tests_properties(${UnitTestObject}_MedicamentBase PROPERTIES LABELS "unit")
 ##############################################################################
 
 ##############################################################################
@@ -66,6 +69,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_MedicamentProperties ${UNIT_TESTING_TARGET}_Objects_Medicament_Properties)
+set_tests_properties(${UnitTestObject}_MedicamentProperties PROPERTIES LABELS "unit")
 ##############################################################################
 
 
@@ -81,6 +85,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Base
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_PatientBase ${UNIT_TESTING_TARGET}_Objects_Patient_Base)
+set_tests_properties(${UnitTestObject}_PatientBase PROPERTIES LABELS "unit")
 ##############################################################################
 
 ##############################################################################
@@ -98,6 +103,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_PatientProperties ${UNIT_TESTING_TARGET}_Objects_Patient_Properties)
+set_tests_properties(${UnitTestObject}_PatientProperties PROPERTIES LABELS "unit")
 ##############################################################################
 
 
@@ -113,6 +119,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Organization_Base
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_OrganizationBase ${UNIT_TESTING_TARGET}_Objects_Organization_Base)
+set_tests_properties(${UnitTestObject}_OrganizationBase PROPERTIES LABELS "unit")
 ##############################################################################
 
 ##############################################################################
@@ -127,6 +134,7 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Organization_Properties
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_OrganizationProperties ${UNIT_TESTING_TARGET}_Objects_Organization_Properties)
+set_tests_properties(${UnitTestObject}_OrganizationProperties PROPERTIES LABELS "unit")
 ##############################################################################
 
 
@@ -142,4 +150,5 @@ target_link_libraries(${UNIT_TESTING_TARGET}_Objects_PropertyCollection
         ${TEST_NECESSARY_LIBS}
 )
 add_test(${UnitTestObject}_PropertyCollection ${UNIT_TESTING_TARGET}_Objects_PropertyCollection)
+set_tests_properties(${UnitTestObject}_PropertyCollection PROPERTIES LABELS "unit")
 ##############################################################################

@@ -1,53 +1,67 @@
-name: C++ CI with CTest and vcpkg
+name: Medicament Library
 
 on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
 
 jobs:
-  build:
+  unit-testing:
     runs-on: ubuntu-latest
-
     steps:
-    # 1. Checkout the repository
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 2. Install dependencies using install.sh script
-    - name: Install dependencies
-      run: |
-        chmod +x tools/installer/install.sh
-        tools/installer/install.sh
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
 
-    # 3. Create build directory
-    - name: Create build directory
-      run: mkdir -p build
+      - name: Run Unit Tests
+        run: |
+          cd build
+          ctest --output-on-failure -L unit
+  functional-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 4. Configure the project with CMake using vcpkg toolchain
-    - name: Configure with CMake
-      run: |
-        cd build
-        cmake .. -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
 
-    # 5. Build the project
-    - name: Build with CMake
-      run: |
-        cd build
-        cmake --build .
+      - name: Run Unit Tests
+        run: |
+          cd build
+          ctest --output-on-failure -L functional
+  integration-testing:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 6. Run tests with CTest
-    - name: Run tests with CTest
-      run: |
-        cd build
-        ctest --output-on-failure
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
 
-    # 7. Cache vcpkg for faster builds (optional)
-    - name: Cache vcpkg
-      uses: actions/cache@v3
-      with:
-        path: /opt/vcpkg
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
+      - name: Run Integration Tests
+        run: |
+          cd build
+          ctest --output-on-failure -L integration
+
+

@@ -21,6 +21,7 @@ namespace drug_lib::common::database::creational
             }
             catch (const exceptions::ConnectionException& e)
             {
+                std::cerr << "Cannot connect to database. Trying to resolve problem and create DB...." << std::endl;
                 std::cerr << e.what() << std::endl;
 
                 try
