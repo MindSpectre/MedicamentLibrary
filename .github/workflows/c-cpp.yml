@@ -7,9 +7,55 @@ on:
   pull_request:
     branches:
       - main
+# Reusable YAML Anchors
+anchors:
+  setup_environment: &setup_environment
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: /opt/vcpkg
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install_vcpkg.sh') }}
+        restore-keys: |
+          vcpkg-${{ runner.os }}-
+
+    - name: Install dependencies
+      run: |
+        if [ ! -d /opt/vcpkg ]; then
+          chmod +x tools/installer/install.sh
+          tools/installer/install.sh
+        fi
+
+    - name: Clean vcpkg cache
+      if: success()
+      run: |
+        rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
+
+    - name: Create build directory
+      run: mkdir -p build
+
+    - name: Configure with CMake
+      run: |
+        cd build
+        cmake .. \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+    - name: Build with CMake
+      run: |
+        cd build
+        cmake --build .
+
+  run_ctest: &run_ctest
+    - name: Run tests with CTest
+      run: |
+        cd build
+        ctest --output-on-failure -L ${{ inputs.label }}
 jobs:
-  unit_testing:
+  integration_testing:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -26,54 +72,17 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
     steps:
-      # 1. Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. Cache vcpkg
-      - name: Cache vcpkg
-        uses: actions/cache@v3
+      - <<: *setup_environment
+      - <<: *run_ctest
         with:
-          path: /opt/vcpkg
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install.sh') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-
+          label: integration
 
-      # 3. Install dependencies using install.sh script (only if cache isn't restored)
-      - name: Install dependencies
-        run: |
-          if [ ! -d /opt/vcpkg ]; then
-            chmod +x tools/installer/install.sh
-            tools/installer/install.sh
-          fi
+  unit_testing:
+    runs-on: ubuntu-latest
+    steps:
+      - <<: *setup_environment
+      - <<: *run_ctest
+        with:
+          label: unit
 
-      # 4. Clean up vcpkg to reduce cache size
-      - name: Clean vcpkg cache
-        if: success()
-        run: |
-          rm -rf /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
 
-      # 5. Create build directory
-      - name: Create build directory
-        run: mkdir -p build
-
-      # 6. Configure the project with CMake using vcpkg toolchain
-      - name: Configure with CMake
-        run: |
-          cd build
-          cmake .. \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-      # 7. Build the project
-      - name: Build with CMake
-        run: |
-          cd build
-          cmake --build .
-
-      # 8. Run tests with CTest
-      - name: Run tests with CTest
-        run: |
-          cd build
-          ctest --output-on-failure
