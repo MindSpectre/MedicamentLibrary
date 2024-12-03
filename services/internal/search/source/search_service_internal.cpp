@@ -1,9 +1,9 @@
-#include "lookup_service_internal.hpp"
+#include "search_service_internal.hpp"
 
 namespace drug_lib::services
 {
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::search_through_all(const std::string& pattern)
+    SearchServiceInternal::search_through_all(const std::string& pattern)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         std::vector<data::objects::Medicament> meds = handbook_.medicaments().search_paged(pattern, this->page_limit_);
@@ -32,7 +32,7 @@ namespace drug_lib::services
     }
 
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::open_search(const std::string& pattern)
+    SearchServiceInternal::open_search(const std::string& pattern)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         std::vector<data::objects::Medicament> meds =
@@ -51,7 +51,7 @@ namespace drug_lib::services
         return result;
     }
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::direct_search_medicaments(const std::string& pattern, const std::size_t page_number)
+    SearchServiceInternal::direct_search_medicaments(const std::string& pattern, const std::size_t page_number)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         if (std::vector<data::objects::Medicament> meds =
@@ -71,7 +71,7 @@ namespace drug_lib::services
         return result;
     }
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::direct_search_diseases(const std::string& pattern, const std::size_t page_number)
+    SearchServiceInternal::direct_search_diseases(const std::string& pattern, const std::size_t page_number)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         if (std::vector<data::objects::Disease> diseases =
@@ -98,7 +98,7 @@ namespace drug_lib::services
         return result;
     }
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::direct_search_organizations(const std::string& pattern, const std::size_t page_number)
+    SearchServiceInternal::direct_search_organizations(const std::string& pattern, const std::size_t page_number)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         if (std::vector<data::objects::Organization> organizations =
@@ -119,7 +119,7 @@ namespace drug_lib::services
     }
 
     std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    LookUpServiceInternal::direct_search_patients(const std::string& pattern, const std::size_t page_number)
+    SearchServiceInternal::direct_search_patients(const std::string& pattern, const std::size_t page_number)
     {
         std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
         if (std::vector<data::objects::Patient> patients =
@@ -138,14 +138,14 @@ namespace drug_lib::services
         }
         return result;
     }
-    std::vector<std::string> LookUpServiceInternal::suggest(const std::string& pattern)
+    std::vector<std::string> SearchServiceInternal::suggest(const std::string& pattern)
     {
         this->suggest_temperature_ = 0;
         throw std::logic_error("not implemented");
     }
 
 
-    uint32_t LookUpServiceInternal::editor_distance(const std::string& suggest, const std::string& pattern)
+    uint32_t SearchServiceInternal::editor_distance(const std::string& suggest, const std::string& pattern)
     {
         // Get lengths of both strings
         const std::size_t m = suggest.size();

@@ -43,7 +43,7 @@ void drug_lib::services::drogon::Librarian::remove_patient(const ::drogon::HttpR
 void drug_lib::services::drogon::Librarian::get_disease(const ::drogon::HttpRequestPtr &req,
 	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
 {
-	LOG_DEBUG << "E";
+	LOG_DEBUG << "Get disease by id: " << id;
 	handle_get(callback, [&]()
 	{
 		return service_.get_disease(id);

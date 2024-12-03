@@ -10,7 +10,7 @@ namespace drug_lib::services
             std::is_same_v<T, data::objects::Organization> || std::is_same_v<T, data::objects::Patient>;
 
 
-    class LookUpServiceInternal
+    class SearchServiceInternal
     {
     public:
         std::vector<std::unique_ptr<data::objects::ObjectBase> > search_through_all(const std::string &pattern);
@@ -63,12 +63,12 @@ namespace drug_lib::services
             handbook_.establish_from_pool(pool);
         }
 
-        explicit LookUpServiceInternal(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
+        explicit SearchServiceInternal(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
         {
             setup_from_one(connect);
         }
 
-        LookUpServiceInternal() = default;
+        SearchServiceInternal() = default;
 
     private:
         static uint32_t editor_distance(const std::string &suggest, const std::string &pattern);

@@ -1,6 +1,6 @@
-#include "look_up_service.hpp"
-#include "look_up_service_utils.hpp"
-void drug_lib::services::drogon::LookUp::disease_search(
+#include "search_service.hpp"
+#include "search_service_utils.hpp"
+void drug_lib::services::drogon::Search::disease_search(
     const ::drogon::HttpRequestPtr& req, std::function<void(const ::drogon::HttpResponsePtr&)>&& callback)
 {
     execute_search(req, std::move(callback),
@@ -12,7 +12,7 @@ void drug_lib::services::drogon::LookUp::disease_search(
                   });
 }
 
-void drug_lib::services::drogon::LookUp::medicament_search(
+void drug_lib::services::drogon::Search::medicament_search(
     const ::drogon::HttpRequestPtr& req, std::function<void(const ::drogon::HttpResponsePtr&)>&& callback)
 {
     execute_search(req, std::move(callback),
@@ -24,7 +24,7 @@ void drug_lib::services::drogon::LookUp::medicament_search(
                   });
 }
 
-void drug_lib::services::drogon::LookUp::patient_search(
+void drug_lib::services::drogon::Search::patient_search(
     const ::drogon::HttpRequestPtr& req, std::function<void(const ::drogon::HttpResponsePtr&)>&& callback)
 {
     execute_search(req, std::move(callback),
@@ -36,7 +36,7 @@ void drug_lib::services::drogon::LookUp::patient_search(
                   });
 }
 
-void drug_lib::services::drogon::LookUp::organization_search(
+void drug_lib::services::drogon::Search::organization_search(
     const ::drogon::HttpRequestPtr& req, std::function<void(const ::drogon::HttpResponsePtr&)>&& callback)
 {
     execute_search(req, std::move(callback),
@@ -47,7 +47,7 @@ void drug_lib::services::drogon::LookUp::organization_search(
                           std::stoi(req->getParameter(constants::page_number_parameter)));
                   });
 }
-void drug_lib::services::drogon::LookUp::search_through_all(
+void drug_lib::services::drogon::Search::search_through_all(
     const ::drogon::HttpRequestPtr& req, std::function<void(const ::drogon::HttpResponsePtr&)>&& callback)
 {
     try

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <drogon/HttpController.h>
-#include "lookup_service_internal.hpp"
-#include "look_up_service_utils.hpp"
+#include "search_service_internal.hpp"
+#include "search_service_utils.hpp"
 namespace drug_lib::services::drogon
 {
-	class LookUp final : public ::drogon::HttpController<LookUp>
+	class Search final : public ::drogon::HttpController<Search>
 	{
 	public:
 		struct constants
@@ -20,21 +20,21 @@ namespace drug_lib::services::drogon
 		};
 
 		METHOD_LIST_BEGIN
-			ADD_METHOD_TO(LookUp::disease_search, constants::disease_search_endpoint, ::drogon::Get);
-			ADD_METHOD_TO(LookUp::medicament_search, constants::medicament_search_endpoint, ::drogon::Get);
-			ADD_METHOD_TO(LookUp::patient_search, constants::patient_search_endpoint, ::drogon::Get);
-			ADD_METHOD_TO(LookUp::organization_search, constants::organization_search_endpoint, ::drogon::Get);
-			ADD_METHOD_TO(LookUp::search_through_all, constants::open_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(Search::disease_search, constants::disease_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(Search::medicament_search, constants::medicament_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(Search::patient_search, constants::patient_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(Search::organization_search, constants::organization_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(Search::search_through_all, constants::open_search_endpoint, ::drogon::Get);
 		METHOD_LIST_END
 
 		static constexpr bool isAutoCreation = false;
 
-		explicit LookUp(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
+		explicit Search(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
 			set_up_db(connect);
 		}
 
-		explicit LookUp(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
+		explicit Search(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
 		{
 			set_up_db(connect);
 		}
@@ -104,6 +104,6 @@ namespace drug_lib::services::drogon
 			}
 		}
 
-		LookUpServiceInternal service_;
+		SearchServiceInternal service_;
 	};
 } // namespace drug_lib::services::drogon

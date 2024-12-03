@@ -11,10 +11,10 @@ target_link_libraries(Sandbox
         Drogon::Drogon
         JsonCpp::JsonCpp
 )
-add_executable(HTest_LookUpService non_automate/lookup_service.cpp)
+add_executable(HTest_SearchService non_automate/search_service.cpp)
 
-target_link_libraries(HTest_LookUpService
-        DrugLib_Services_Internal_LookUp
+target_link_libraries(HTest_SearchService
+        DrugLib_Services_Internal_Search
 )
 
 

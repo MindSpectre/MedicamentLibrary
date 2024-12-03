@@ -1,5 +1,5 @@
 ##############################################################################
-# Services Internal: Look up service
+# Services Internal: Search service
 ##############################################################################
 add_library(DrugLib_Services_Internal_Librarian
         source/librarian_service_internal.cpp

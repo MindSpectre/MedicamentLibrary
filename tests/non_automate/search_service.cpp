@@ -1,6 +1,6 @@
 #include <db_interface_factory.hpp>
 
-#include "lookup_service_internal.hpp"
+#include "search_service_internal.hpp"
 
 #include <iostream>
 #include <string>
@@ -10,7 +10,7 @@
 
 void print_menu()
 {
-    std::cout << "\n--- LookUp Service Interactive Tester ---\n";
+    std::cout << "\n--- Search Service Interactive Tester ---\n";
     std::cout << "1. Search Through All\n";
     std::cout << "2. Open Search\n";
     std::cout << "3. Direct Search (by Type)\n";
@@ -57,9 +57,9 @@ int main()
         host, port, db_name, username, password
     };
     auto n_connect = drug_lib::common::database::creational::DbInterfaceFactory::create_pqxx_client(connect_params);
-    drug_lib::services::LookUpServiceInternal lookup_service(std::move(n_connect));
+    drug_lib::services::SearchServiceInternal search_service(std::move(n_connect));
 
-    std::cout << "Initializing LookUpServiceInternal...\n";
+    std::cout << "Initializing SearchServiceInternal...\n";
 
     bool running = true;
     while (running)
@@ -75,14 +75,14 @@ int main()
             case 1: // Search Through All
                 std::cout << "Enter search pattern: ";
                 std::getline(std::cin, pattern); {
-                    auto results = lookup_service.search_through_all(pattern);
+                    auto results = search_service.search_through_all(pattern);
                     print_results(results);
                 }
                 break;
             case 2: // Open Search
                 std::cout << "Enter search pattern: ";
                 std::getline(std::cin, pattern); {
-                    auto results = lookup_service.open_search(pattern);
+                    auto results = search_service.open_search(pattern);
                     print_results(results);
                 }
                 break;
@@ -90,14 +90,14 @@ int main()
                 std::cout << "Enter search pattern: ";
                 std::getline(std::cin, pattern); {
                     // Replace ` YourType` with the appropriate type you want to test
-                    auto results = lookup_service.direct_search_diseases(pattern);
+                    auto results = search_service.direct_search_diseases(pattern);
                     print_results(results);
                 }
                 break;
             case 4: // Suggest
                 std::cout << "Enter search pattern for suggestions: ";
                 std::getline(std::cin, pattern); {
-                    auto suggestions = lookup_service.suggest(pattern);
+                    auto suggestions = search_service.suggest(pattern);
                     print_suggestions(suggestions);
                 }
                 break;
