@@ -1,0 +1,3 @@
+[submodule "MedicamentLibraryFrontend"]
+	path = MedicamentLibraryFrontend
+	url = https://github.com/MindSpectre/MedicamentLibraryFrontend.git

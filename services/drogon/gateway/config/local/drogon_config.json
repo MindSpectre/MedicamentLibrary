@@ -8,7 +8,7 @@
   "app": {
     "enable_cross_origin_resource_sharing": true,
     "threads_num": 4,
-    "document_root": "/home/neo/MedicamentLibraryFrontend",
+    "document_root": "/home/neo/MedicamentLibrary/MedicamentLibraryFrontend",
     "index": "index.html"
   }
 }
