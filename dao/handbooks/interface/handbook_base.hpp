@@ -98,7 +98,8 @@ namespace drug_lib::dao
 
         void insert(const RecordType& record)
         {
-            std::vector db_record = {record.to_record()};
+            std::vector<common::database::Record> db_record;
+            db_record.push_back(record.to_record());
             connect_->insert(table_name_, std::move(db_record));
         }
 
@@ -155,7 +156,10 @@ namespace drug_lib::dao
             );
             connect_->remove(table_name_, removed_conditions);
         }
-
+        [[nodiscard]] uint32_t count_all() const
+        {
+            return connect_->count(table_name_);
+        }
         void remove_all() const
         {
             connect_->truncate_table(table_name_);

@@ -19,27 +19,27 @@ void print_menu()
     std::cout << "Enter your choice: ";
 }
 
-void print_results(const std::vector<std::unique_ptr<drug_lib::dao::objects::ObjectBase>>& results)
+void print_results(const std::vector<std::unique_ptr<drug_lib::dao::objects::ObjectBase> > &results)
 {
     if (results.empty())
     {
         std::cout << "No results found.\n";
         return;
     }
-    for (const auto& obj : results)
+    for (const auto &obj: results)
     {
         std::cout << obj->to_json().toStyledString() << "\n"; // Assuming ObjectBase has a `to_string` method
     }
 }
 
-void print_suggestions(const std::vector<std::string>& suggestions)
+void print_suggestions(const std::vector<std::string> &suggestions)
 {
     if (suggestions.empty())
     {
         std::cout << "No suggestions available.\n";
         return;
     }
-    for (const auto& suggestion : suggestions)
+    for (const auto &suggestion: suggestions)
     {
         std::cout << suggestion << "\n";
     }
@@ -49,10 +49,10 @@ void print_suggestions(const std::vector<std::string>& suggestions)
 int main()
 {
     constexpr uint32_t port = 5432;
-    constexpr std::string_view host = "localhost";
-    constexpr std::string_view db_name = "test_db";
-    constexpr std::string_view username = "postgres";
-    constexpr std::string_view password = "postgres";
+    constexpr auto host = "localhost";
+    constexpr auto db_name = "test_db";
+    constexpr auto username = "postgres";
+    constexpr auto password = "postgres";
     const drug_lib::common::database::PqxxConnectParams connect_params{
         host, port, db_name, username, password
     };
@@ -72,47 +72,42 @@ int main()
         std::string pattern;
         switch (choice)
         {
-        case 1: // Search Through All
-            std::cout << "Enter search pattern: ";
-            std::getline(std::cin, pattern);
-            {
-                auto results = lookup_service.search_through_all(pattern);
-                print_results(results);
-            }
-            break;
-        case 2: // Open Search
-            std::cout << "Enter search pattern: ";
-            std::getline(std::cin, pattern);
-            {
-                auto results = lookup_service.open_search(pattern);
-                print_results(results);
-            }
-            break;
-        case 3: // Direct Search (by Type)
-            std::cout << "Enter search pattern: ";
-            std::getline(std::cin, pattern);
-            {
-                // Replace ` YourType` with the appropriate type you want to test
-                auto results = lookup_service.direct_search<drug_lib::data::objects::Medicament>(pattern);
-                print_results(results);
-            }
-            break;
-        case 4: // Suggest
-            std::cout << "Enter search pattern for suggestions: ";
-            std::getline(std::cin, pattern);
-            {
-                auto suggestions = lookup_service.suggest(pattern);
-                print_suggestions(suggestions);
-            }
-            break;
-        case 5: // Exit
-            running = false;
-            std::cout << "Exiting tester. Goodbye!\n";
-            break;
-        default:
-            std::cout << "Invalid choice. Please try again.\n";
-            break;
+            case 1: // Search Through All
+                std::cout << "Enter search pattern: ";
+                std::getline(std::cin, pattern); {
+                    auto results = lookup_service.search_through_all(pattern);
+                    print_results(results);
+                }
+                break;
+            case 2: // Open Search
+                std::cout << "Enter search pattern: ";
+                std::getline(std::cin, pattern); {
+                    auto results = lookup_service.open_search(pattern);
+                    print_results(results);
+                }
+                break;
+            case 3: // Direct Search (by Type)
+                std::cout << "Enter search pattern: ";
+                std::getline(std::cin, pattern); {
+                    // Replace ` YourType` with the appropriate type you want to test
+                    auto results = lookup_service.direct_search_diseases(pattern);
+                    print_results(results);
+                }
+                break;
+            case 4: // Suggest
+                std::cout << "Enter search pattern for suggestions: ";
+                std::getline(std::cin, pattern); {
+                    auto suggestions = lookup_service.suggest(pattern);
+                    print_suggestions(suggestions);
+                }
+                break;
+            case 5: // Exit
+                running = false;
+                std::cout << "Exiting tester. Goodbye!\n";
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again.\n";
+                break;
         }
     }
-
 }

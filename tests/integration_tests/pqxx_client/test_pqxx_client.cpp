@@ -19,10 +19,10 @@ protected:
     // Database connection parameters
     //
     const uint32_t port = 5432;
-    const std::string_view host = "localhost";
-    const std::string_view db_name = "test_db";
-    const std::string_view username = "postgres";
-    const std::string_view password = "postgres"; // Replace it with your actual password
+    static constexpr auto host = "localhost";
+    static constexpr auto db_name = "test_db";
+    static constexpr auto username = "postgres";
+   static constexpr auto password = "postgres"; // Replace it with your actual password
 
     // Pointer to the PqxxClient
     std::shared_ptr<interfaces::DbInterface> db_client;
@@ -234,11 +234,8 @@ TEST_F(PqxxClientTest, RemoveTest)
 
     // Remove data
     Conditions conditions;
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        "=",
-        std::make_unique<Field<int32_t>>("", 1)
-    ));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=", std::make_unique<Field<int32_t>>("", 1)));
 
     EXPECT_NO_THROW(db_client->remove(test_table, conditions));
 
@@ -264,11 +261,8 @@ TEST_F(PqxxClientTest, CountTest)
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     Conditions conditions;
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int>>("id", 0),
-        "=",
-        std::make_unique<Field<int>>("", 1)
-    ));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int>>("id", 0), "=", std::make_unique<Field<int>>("", 1)));
     const uint32_t count = db_client->count(test_table, conditions);
     EXPECT_EQ(count, 1);
 }
@@ -415,11 +409,8 @@ TEST_F(PqxxClientTest, TruncateTableTest)
 
     // Remove data
     Conditions conditions;
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        "=",
-        std::make_unique<Field<int32_t>>("", 1)
-    ));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=", std::make_unique<Field<int32_t>>("", 1)));
 
     EXPECT_NO_THROW(db_client->truncate_table(test_table));
 
@@ -526,7 +517,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
 
                 // Non-transactional fetch shouldn't throw an error
                 // Optionally, you can log or validate the number of records fetched
-                });
+            });
             EXPECT_FALSE(emp);
         }
     };
@@ -540,8 +531,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
         }
         while (inserting2.load())
         {
-            EXPECT_THROW(db_client->start_transaction(),
-                         drug_lib::common::database::exceptions::TransactionException);
+            EXPECT_THROW(db_client->start_transaction(), drug_lib::common::database::exceptions::TransactionException);
         }
         barrier.arrive_and_wait(); // Wait for all threads to reach the barrier
 
@@ -589,8 +579,7 @@ TEST_F(PqxxClientTest, OrderByTest)
     EXPECT_NO_THROW(db_client->insert(test_table, records));
 
     Conditions conditions;
-    conditions.add_order_by_condition(
-        OrderCondition("id", order_type::ascending));
+    conditions.add_order_by_condition(OrderCondition("id", order_type::ascending));
     const auto res = db_client->select(test_table, conditions);
     int32_t prev = INT_MIN;
     for (const auto& record : res)
@@ -755,7 +744,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     conditions.add_pattern_condition(PatternCondition("Pers2"));
     const auto fts_res = db_client->select(test_table, conditions);
     stopwatch.finish();
-    EXPECT_EQ(fts_res.size(), limit_/3);
+    EXPECT_EQ(fts_res.size(), limit_ / 3);
 }
 
 TEST_F(PqxxClientTest, SelectSpeedTest)
@@ -788,20 +777,14 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
     stopwatch.flag("Select all: " + std::to_string(limit_));
     Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        ">=",
-        std::make_unique<Field<int32_t>>("", a)
-    ));
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        "<",
-        std::make_unique<Field<int32_t>>("", b)
-    ));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=", std::make_unique<Field<int32_t>>("", a)));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<", std::make_unique<Field<int32_t>>("", b)));
 
     results = db_client->select(test_table, conditions);
     stopwatch.flag("Select with conditions: " + std::to_string(b - a));
-    EXPECT_EQ(results.size(), b-a);
+    EXPECT_EQ(results.size(), b - a);
 
     Conditions conditions_page;
     constexpr uint32_t page_sz = 1000;
@@ -853,21 +836,15 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
     stopwatch.flag("View all + transformed: " + std::to_string(limit_));
     Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        ">=",
-        std::make_unique<Field<int32_t>>("", a)
-    ));
-    conditions.add_field_condition(FieldCondition(
-        std::make_unique<Field<int32_t>>("id", 0),
-        "<",
-        std::make_unique<Field<int32_t>>("", b)
-    ));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=", std::make_unique<Field<int32_t>>("", a)));
+    conditions.add_field_condition(
+        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<", std::make_unique<Field<int32_t>>("", b)));
 
     const auto res2 = db_client->view(test_table, conditions);
 
     stopwatch.flag("View with conditions: " + std::to_string(b - a));
-    EXPECT_EQ(res2.size(), b-a);
+    EXPECT_EQ(res2.size(), b - a);
     Record x2;
     x2.reserve(limit_);
     for (const auto& record : res2)
@@ -930,7 +907,7 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
     conditions.add_pattern_condition(PatternCondition(search_query));
     const auto results = db_client->view(test_table, conditions);
     stopwatch.finish();
-    EXPECT_EQ(results.size(), limit_/3);
+    EXPECT_EQ(results.size(), limit_ / 3);
 }
 
 

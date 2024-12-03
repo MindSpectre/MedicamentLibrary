@@ -1,0 +1,109 @@
+#pragma once
+
+#include <drogon/HttpController.h>
+#include "lookup_service_internal.hpp"
+#include "look_up_service_utils.hpp"
+namespace drug_lib::services::drogon
+{
+	class LookUp final : public ::drogon::HttpController<LookUp>
+	{
+	public:
+		struct constants
+		{
+			static constexpr auto query_parameter = "query";
+			static constexpr auto page_number_parameter = "page";
+			static constexpr auto disease_search_endpoint = "/search/diseases?query={pattern}&page={page}";
+			static constexpr auto medicament_search_endpoint = "/search/medicaments?query={pattern}&page={page}";
+			static constexpr auto patient_search_endpoint = "/search/patients?query={pattern}&page={page}";
+			static constexpr auto organization_search_endpoint = "/search/organizations?query={pattern}&page={page}";
+			static constexpr auto open_search_endpoint = "/search/open?query={pattern}";
+		};
+
+		METHOD_LIST_BEGIN
+			ADD_METHOD_TO(LookUp::disease_search, constants::disease_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(LookUp::medicament_search, constants::medicament_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(LookUp::patient_search, constants::patient_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(LookUp::organization_search, constants::organization_search_endpoint, ::drogon::Get);
+			ADD_METHOD_TO(LookUp::search_through_all, constants::open_search_endpoint, ::drogon::Get);
+		METHOD_LIST_END
+
+		static constexpr bool isAutoCreation = false;
+
+		explicit LookUp(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
+		{
+			set_up_db(connect);
+		}
+
+		explicit LookUp(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
+		{
+			set_up_db(connect);
+		}
+
+		// Declare functions for endpoints
+
+		void disease_search(const ::drogon::HttpRequestPtr &req,
+		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+
+		void medicament_search(const ::drogon::HttpRequestPtr &req,
+		                       std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+
+		void patient_search(const ::drogon::HttpRequestPtr &req,
+		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+
+		void organization_search(const ::drogon::HttpRequestPtr &req,
+		                         std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+
+		void search_through_all(const ::drogon::HttpRequestPtr &req,
+		                        std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+
+		void set_up_db(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
+		{
+			service_.setup_from_one(connect);
+		}
+
+	private:
+		template<typename Func>
+		static std::vector<std::unique_ptr<data::objects::ObjectBase> > handle_search(Func &&search_function)
+		{
+			try
+			{
+				return search_function();
+			} catch (const common::database::exceptions::DatabaseException &db_ex)
+			{
+				LOG_ERROR << "Database exception: " << db_ex.what() << " " << decode_error(db_ex.get_error());
+				throw std::runtime_error(db_ex.what());
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR << e.what();
+				throw;
+			}
+		}
+
+
+
+		template<typename Func>
+		void execute_search(
+			const ::drogon::HttpRequestPtr &req, std::function<void(const ::drogon::HttpResponsePtr &)> &&callback,
+			Func &&search_function)
+		{
+			try
+			{
+				LOG_INFO << "Searching for " << req->getPath() << "...";
+				LOG_INFO << "Where param is: " << req->getParameter(constants::query_parameter);
+				LOG_INFO << "Where page is: " << req->getParameter(constants::page_number_parameter);
+				auto internalResult = handle_search(std::forward<Func>(search_function));
+				auto response = create_json_response_from_objects(internalResult);
+				callback(response);
+			} catch (const std::exception &e)
+			{
+				const auto resp = ::drogon::HttpResponse::newHttpResponse();
+				resp->setStatusCode(::drogon::kUnknown);
+				resp->setBody(e.what());
+				callback(resp);
+			}
+		}
+
+		LookUpServiceInternal service_;
+	};
+} // namespace drug_lib::services::drogon

@@ -15,7 +15,7 @@ std::mutex pool_mutex;
 using namespace drug_lib::data::objects;
 
 template <typename T>
-void write_to_csv(std::string_view path)
+void write_to_csv(auto path)
 {
     // Implementation to write T objects to CSV (if needed later).
 }
@@ -259,10 +259,10 @@ void create_orgs(drug_lib::common::database::creational::DbInterfacePool& db_poo
 int main()
 {
     constexpr uint32_t port = 5432;
-    constexpr std::string_view host = "localhost";
-    constexpr std::string_view db_name = "test_db";
-    constexpr std::string_view username = "postgres";
-    constexpr std::string_view password = "postgres";
+    constexpr auto host = "localhost";
+    constexpr auto db_name = "test_db";
+    constexpr auto username = "postgres";
+    constexpr auto password = "postgres";
     drug_lib::common::database::creational::DbInterfacePool db_pool;
     drug_lib::common::database::PqxxConnectParams connect_params{host, port, db_name, username, password};
     db_pool.fill(4, drug_lib::common::database::creational::DbInterfaceFactory::create_pqxx_client, connect_params);
