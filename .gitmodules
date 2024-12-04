@@ -1,3 +1,3 @@
-[submodule "MedicamentLibraryFrontend"]
-	path = MedicamentLibraryFrontend
-	url = https://github.com/MindSpectre/MedicamentLibraryFrontend.git
+[submodule "frontend"]
+    path = frontend
+    url = https://github.com/MindSpectre/MedicamentLibraryFrontend.git
