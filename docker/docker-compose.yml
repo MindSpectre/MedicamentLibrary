@@ -3,7 +3,8 @@ version: '3.8'
 services:
   postgres:
     build:
-      dockerfile: database/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: docker/database/Dockerfile
     container_name: postgres-container
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,7 +14,49 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  gateway:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/services/drogon/gateway/Dockerfile
+    container_name: gateway-container
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    networks:
+      - app_network
+
+  librarian_service:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/services/drogon/librarian_service/Dockerfile
+    container_name: librarian-service-container
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+  search_service:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/services/drogon/search_service/Dockerfile
+    container_name: search-service-container
+    depends_on:
+      - postgres
+    ports:
+      - "8001:8001"
+    networks:
+      - app_network
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  app_network:
+    driver: bridge

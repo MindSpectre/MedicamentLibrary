@@ -3,7 +3,7 @@
 
 #include "common_object.hpp"
 #include "properties_controller.hpp"
-
+#include <iostream>
 namespace drug_lib::data::objects
 {
     class Disease final : public ObjectBase, public PropertiesHolder
@@ -105,11 +105,24 @@ namespace drug_lib::data::objects
 
         void from_json(const Json::Value& val) override
         {
-            id_ = val[field_name::id].asInt();
-            name_ = val[field_name::name].asString();
-            type_ = val[field_name::type].asString();
-            is_infectious_ = val[field_name::is_infectious].asBool();
-            create_collection(val[field_name::properties]);
+            try
+            {
+                id_ = val[field_name::id].asInt();
+                name_ = val[field_name::name].asString();
+                type_ = val[field_name::type].asString();
+                is_infectious_ = val[field_name::is_infectious].asBool();
+            } catch (const std::exception& e)
+            {
+                std::cout << e.what() << "Basic\n";
+            }
+            try
+            {
+                create_collection(val[field_name::properties]);
+            } catch (const std::exception& e)
+            {
+                std::cout << e.what() << "Collection\n";
+            }
+
         }
 
         Disease() = default;

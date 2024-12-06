@@ -18,10 +18,10 @@ void drop(Args&... args)
 int main()
 {
     constexpr uint32_t port = 5432;
-    constexpr std::string_view host = "localhost";
-    constexpr std::string_view db_name = "test_db";
-    constexpr std::string_view username = "postgres";
-    constexpr std::string_view password = "postgres";
+    constexpr auto host = "localhost";
+    constexpr auto db_name = "test_db";
+    constexpr auto username = "postgres";
+    constexpr auto password = "postgres";
     const drug_lib::common::database::PqxxConnectParams connect_params{
         host, port, db_name, username, password
     };

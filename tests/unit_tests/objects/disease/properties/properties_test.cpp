@@ -35,7 +35,7 @@ TEST(DiseasePropertiesTest, GetPropertyInfo)
 {
     Disease disease;
     std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", "oo", "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
@@ -49,7 +49,7 @@ TEST(DiseasePropertiesTest, ValidationJson)
 {
     Disease disease(3, "Chickenpox", "Viral", true);
     std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", "r", "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
@@ -84,7 +84,7 @@ TEST(DiseasePropertiesTest, ValidationJson)
                 [diseases::Symptom::names_of_json_fields::type].asString(), "Respiratory");
             EXPECT_EQ(
                 info[diseases::properties::symptoms][0]
-                [diseases::Symptom::names_of_json_fields::severity].asInt(), 3);
+                [diseases::Symptom::names_of_json_fields::severity].asString(), "r");
         }
     }
 }
