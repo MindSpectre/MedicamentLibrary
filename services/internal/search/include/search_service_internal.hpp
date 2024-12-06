@@ -73,7 +73,7 @@ namespace drug_lib::services
     private:
         static uint32_t editor_distance(const std::string &suggest, const std::string &pattern);
 
-        uint8_t page_limit_ = 10;
+        uint8_t page_limit_ = 100;
         uint8_t suggest_temperature_ = 12; // 0 - 100
         dao::SuperHandbook handbook_;
     };

@@ -15,7 +15,7 @@ void drug_lib::services::drogon::Librarian::update_patient(const ::drogon::HttpR
 	handle_update(req, callback, [&]()
 	{
 		data::objects::Patient patient;
-		patient.from_json(req->getJsonObject().get());
+		patient.from_json(*req->getJsonObject());
 		return service_.update_patient(patient);
 	});
 }
@@ -26,7 +26,7 @@ void drug_lib::services::drogon::Librarian::add_patient(const ::drogon::HttpRequ
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Patient patient;
-		patient.from_json(req->getJsonObject().get());
+		patient.from_json(*req->getJsonObject());
 		return service_.add_patient(patient);
 	});
 }
@@ -53,10 +53,11 @@ void drug_lib::services::drogon::Librarian::get_disease(const ::drogon::HttpRequ
 void drug_lib::services::drogon::Librarian::update_disease(const ::drogon::HttpRequestPtr &req,
 	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
 {
+	LOG_DEBUG << "Update disease by id: " << id;
 	handle_update(req, callback, [&]()
 	{
 		data::objects::Disease disease;
-		disease.from_json(req->getJsonObject().get());
+		disease.from_json(*(req->getJsonObject()));
 		return service_.update_disease(disease);
 	});
 }
@@ -67,7 +68,7 @@ void drug_lib::services::drogon::Librarian::add_disease(const ::drogon::HttpRequ
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Disease disease;
-		disease.from_json(req->getJsonObject().get());
+		disease.from_json(*req->getJsonObject());
 		return service_.add_disease(disease);
 	});
 }
@@ -96,7 +97,7 @@ void drug_lib::services::drogon::Librarian::update_medicament(const ::drogon::Ht
 	handle_update(req, callback, [&]()
 	{
 		data::objects::Medicament drug;
-		drug.from_json(req->getJsonObject().get());
+		drug.from_json(*req->getJsonObject());
 		return service_.update_medicament(drug);
 	});
 }
@@ -107,7 +108,7 @@ void drug_lib::services::drogon::Librarian::add_medicament(const ::drogon::HttpR
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Medicament drug;
-		drug.from_json(req->getJsonObject().get());
+		drug.from_json(*req->getJsonObject());
 		return service_.add_medicament(drug);
 	});
 }
@@ -136,7 +137,7 @@ void drug_lib::services::drogon::Librarian::update_organization(const ::drogon::
 	handle_update(req, callback, [&]()
 	{
 		data::objects::Organization org;
-		org.from_json(req->getJsonObject().get());
+		org.from_json(*req->getJsonObject());
 		return service_.update_organization(org);
 	});
 }
@@ -147,7 +148,7 @@ void drug_lib::services::drogon::Librarian::add_organization(const ::drogon::Htt
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Organization organization;
-		organization.from_json(req->getJsonObject().get());
+		organization.from_json(*req->getJsonObject());
 		return service_.add_organization(organization);
 	});
 }

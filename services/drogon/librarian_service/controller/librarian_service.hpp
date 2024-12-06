@@ -139,6 +139,7 @@ namespace drug_lib::services::drogon
 			LOG_INFO << "Update element";
 			if (const auto json = req->getJsonObject(); !json)
 			{
+				LOG_ERROR << "Unobtainable json";
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k400BadRequest);
 				response->setBody("Invalid JSON payload");
@@ -154,6 +155,7 @@ namespace drug_lib::services::drogon
 				callback(response);
 			} catch (const std::exception &e)
 			{
+				LOG_ERROR << "Error During conversion" << e.what();
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k500InternalServerError);
 				response->setBody(e.what());

@@ -114,14 +114,14 @@ Json::Value createDiseaseJson()
     symptom1["description"] = "Persistent cough";
     symptom1["duration"] = "2 weeks";
     symptom1["name"] = "Cough";
-    symptom1["severity"] = 3;
+    symptom1["severity"] = "low";
     symptom1["type"] = "Respiratory";
 
     Json::Value symptom2;
     symptom2["description"] = "High body temperature";
     symptom2["duration"] = "1 week";
     symptom2["name"] = "Fever";
-    symptom2["severity"] = 5;
+    symptom2["severity"] = "med";
     symptom2["type"] = "General";
 
     properties["symptoms"].append(symptom1);
@@ -141,9 +141,9 @@ Disease createDisease()
     constexpr bool is_infectious = (i % 2 == 0);
     std::string type = "infectious";
     const std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
+        diseases::Symptom("Cough", "low", "2 weeks", "Respiratory",
                           "Persistent cough"),
-        diseases::Symptom("Fever", 5, "1 week", "General",
+        diseases::Symptom("Fever", "med", "1 week", "General",
                           "High body temperature")
     };
     diseases::Symptoms symptoms(symptoms_list);

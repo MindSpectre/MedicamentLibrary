@@ -60,13 +60,13 @@ void drug_lib::services::drogon::Gateway::proxy_to_librarian_service(const ::dro
                                                                      const std::string &type, const std::string &id) const
 {
 	const auto fullPath = append_query_params(req, constants::endpoint_librarian_service + type + "/" + id);
-	const auto request = ::drogon::HttpRequest::newHttpRequest();
 	LOG_INFO << fullPath << " redirected to librarianService";
-	request->setPath(fullPath);
-	request->setMethod(req->getMethod());
-
+	auto clonedRequest = ::drogon::HttpRequest::newHttpRequest();
+	clonedRequest->setPath(fullPath);
+	req->setPath(fullPath);
+	req->setContentTypeCode(::drogon::ContentType::CT_APPLICATION_JSON);
 	librarian_service_client_->sendRequest(
-		request, [callback](const ::drogon::ReqResult result, const ::drogon::HttpResponsePtr &resp)
+		req, [callback](const ::drogon::ReqResult result, const ::drogon::HttpResponsePtr &resp)
 		{
 			if (result == ::drogon::ReqResult::Ok)
 			{

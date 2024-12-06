@@ -111,9 +111,9 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool& db
             const bool is_infectious = (i % 2 == 0);
             std::string type = is_infectious ? "infectious" : "non-infectious";
             const std::vector symptoms_list = {
-                diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
+                diseases::Symptom("Cough", "r", "2 weeks", "Respiratory",
                                   "Persistent cough"),
-                diseases::Symptom("Fever", 5, "1 week", "General",
+                diseases::Symptom("Fever", "r", "1 week", "General",
                                   "High body temperature")
             };
             diseases::Symptoms symptoms(symptoms_list);
