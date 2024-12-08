@@ -20,9 +20,7 @@ target_link_libraries(HTest_SearchService
 
 SET(UNIT_TESTING_TARGET ${PROJECT_NAME}_Tests_Unit)
 SET(INTEGRATION_TESTING_TARGET ${PROJECT_NAME}_Tests_Integration)
-SET(TEST_NECESSARY_LIBS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-
-
+SET(TEST_NECESSARY_LIBS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main Drogon::Drogon)
 
 
 add_subdirectory(unit_tests)

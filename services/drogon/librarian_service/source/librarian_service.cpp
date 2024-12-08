@@ -1,16 +1,16 @@
 #include "librarian_service.hpp"
 
 void drug_lib::services::drogon::Librarian::get_patient(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                        std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_get(callback, [&]()
 	{
-		return service_.get_patient(id);
+		return service_.get_patient(std::move(id));
 	});
 }
 
 void drug_lib::services::drogon::Librarian::update_patient(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_update(req, callback, [&]()
 	{
@@ -27,12 +27,13 @@ void drug_lib::services::drogon::Librarian::add_patient(const ::drogon::HttpRequ
 	{
 		data::objects::Patient patient;
 		patient.from_json(*req->getJsonObject());
-		return service_.add_patient(patient);
+		service_.add_patient(patient);
+		return patient.to_json();
 	});
 }
 
 void drug_lib::services::drogon::Librarian::remove_patient(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
 {
 	handle_remove(callback, [&]()
 	{
@@ -41,19 +42,19 @@ void drug_lib::services::drogon::Librarian::remove_patient(const ::drogon::HttpR
 }
 
 void drug_lib::services::drogon::Librarian::get_disease(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                        std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
-	LOG_DEBUG << "Get disease by id: " << id;
+	LOG_DEBUG << "Get disease by id: " << id.get_id();
 	handle_get(callback, [&]()
 	{
-		return service_.get_disease(id);
+		return service_.get_disease(std::move(id));
 	});
 }
 
 void drug_lib::services::drogon::Librarian::update_disease(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
-	LOG_DEBUG << "Update disease by id: " << id;
+	LOG_DEBUG << "Update disease by id: " << id.get_id();
 	handle_update(req, callback, [&]()
 	{
 		data::objects::Disease disease;
@@ -63,18 +64,19 @@ void drug_lib::services::drogon::Librarian::update_disease(const ::drogon::HttpR
 }
 
 void drug_lib::services::drogon::Librarian::add_disease(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
+                                                        std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
 {
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Disease disease;
 		disease.from_json(*req->getJsonObject());
-		return service_.add_disease(disease);
+		service_.add_disease(disease);
+		return disease.to_json();
 	});
 }
 
 void drug_lib::services::drogon::Librarian::remove_disease(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_remove(callback, [&]()
 	{
@@ -83,7 +85,7 @@ void drug_lib::services::drogon::Librarian::remove_disease(const ::drogon::HttpR
 }
 
 void drug_lib::services::drogon::Librarian::get_medicament(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
 {
 	handle_get(callback, [&]()
 	{
@@ -92,7 +94,7 @@ void drug_lib::services::drogon::Librarian::get_medicament(const ::drogon::HttpR
 }
 
 void drug_lib::services::drogon::Librarian::update_medicament(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
+                                                              std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_update(req, callback, [&]()
 	{
@@ -103,18 +105,19 @@ void drug_lib::services::drogon::Librarian::update_medicament(const ::drogon::Ht
 }
 
 void drug_lib::services::drogon::Librarian::add_medicament(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
 {
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Medicament drug;
 		drug.from_json(*req->getJsonObject());
-		return service_.add_medicament(drug);
+		service_.add_medicament(drug);
+		return drug.to_json();
 	});
 }
 
 void drug_lib::services::drogon::Librarian::remove_medicament(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                              std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
 {
 	handle_remove(callback, [&]()
 	{
@@ -123,7 +126,7 @@ void drug_lib::services::drogon::Librarian::remove_medicament(const ::drogon::Ht
 }
 
 void drug_lib::services::drogon::Librarian::get_organization(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                             std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
 {
 	handle_get(callback, [&]()
 	{
@@ -132,7 +135,7 @@ void drug_lib::services::drogon::Librarian::get_organization(const ::drogon::Htt
 }
 
 void drug_lib::services::drogon::Librarian::update_organization(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, int32_t id)
+                                                                std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_update(req, callback, [&]()
 	{
@@ -143,18 +146,19 @@ void drug_lib::services::drogon::Librarian::update_organization(const ::drogon::
 }
 
 void drug_lib::services::drogon::Librarian::add_organization(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
+                                                             std::function<void(const ::drogon::HttpResponsePtr &)> &&callback)
 {
 	handle_add(req, callback, [&]()
 	{
 		data::objects::Organization organization;
 		organization.from_json(*req->getJsonObject());
-		return service_.add_organization(organization);
+		service_.add_organization(organization);
+		return organization.to_json();
 	});
 }
 
 void drug_lib::services::drogon::Librarian::remove_organization(const ::drogon::HttpRequestPtr &req,
-	std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const int32_t id)
+                                                                std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
 {
 	handle_remove(callback, [&]()
 	{

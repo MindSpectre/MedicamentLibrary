@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.25)
 project("DrugLib" LANGUAGES CXX)
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 23)
+SET(CMAKE_C_COMPILER)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
@@ -41,7 +42,7 @@ if (USE_BOOST)
     set(Boost_NO_SYSTEM_PATHS ON)
     # set(BOOST_ROOT /opt/vcpkg/installed/x64-linux) # Adjust if necessary
 
-    find_package(Boost CONFIG COMPONENTS container)
+    find_package(Boost CONFIG COMPONENTS container log)
     if (NOT Boost_FOUND)
         message(FATAL_ERROR "Boost libraries not found, but USE_BOOST is ON.")
     endif ()

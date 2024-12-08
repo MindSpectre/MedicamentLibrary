@@ -1,8 +1,6 @@
 #pragma once
-#include <drogon/HttpController.h>
-#include <drogon/HttpClient.h>
 #include <memory> // For shared_ptr
-
+#include <drogon/HttpClient.h>
 #include <drogon/HttpController.h>
 
 namespace drug_lib::services::drogon

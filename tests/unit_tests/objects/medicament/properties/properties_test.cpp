@@ -47,7 +47,7 @@ TEST(MedicamentPropertiesTest, GetPropertyInfo)
 
 TEST(MedicamentPropertiesTest, ValidationJson)
 {
-    Medicament Medicament(3, "Aspirin", "Painkiller", false, 120, "ABUIT123", "accepted", "AV13");
+    Medicament Medicament(common::database::Uuid("3"), "Aspirin", "Painkiller", false, "ABUIT123", "accepted", "AV13");
     medicaments::Prescription prescription("Test descriptionInfo");
     const auto prescription_ = data::PropertyFactory::create<medicaments::Prescription>(std::move(prescription));
 

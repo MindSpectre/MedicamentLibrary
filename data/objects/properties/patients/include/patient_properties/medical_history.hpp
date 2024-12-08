@@ -9,17 +9,17 @@ namespace drug_lib::data::objects::patients
     class HealthRecord final
     {
     public:
-        HealthRecord(const int32_t disease_id, const std::chrono::year_month& start_date,
+        HealthRecord(common::database::Uuid disease_id, const std::chrono::year_month& start_date,
                      const std::chrono::year_month& end_date) :
-            disease_id_(disease_id),
+            disease_id_(std::move(disease_id)),
             start_date_(start_date),
             end_date_(end_date)
         {
             current = false;
         }
 
-        HealthRecord(const int32_t disease_id, const std::chrono::year_month& start_date) :
-            disease_id_(disease_id),
+        HealthRecord(common::database::Uuid disease_id, const std::chrono::year_month& start_date) :
+            disease_id_(std::move(disease_id)),
             start_date_(start_date)
         {
             current = true;
@@ -28,16 +28,19 @@ namespace drug_lib::data::objects::patients
         HealthRecord() = default;
         ~HealthRecord() = default;
 
-        [[nodiscard]] int32_t get_disease_id() const
+        [[nodiscard]] const common::database::Uuid& get_disease_id() const
         {
             return disease_id_;
         }
 
-        void set_disease_id(const int32_t disease_id)
+        void set_disease_id(common::database::Uuid disease_id)
         {
-            disease_id_ = disease_id;
+            disease_id_ = std::move(disease_id);
         }
-
+        void set_disease_id(std::string disease_id)
+        {
+            disease_id_.set_id(std::move(disease_id));
+        }
         [[nodiscard]] const std::chrono::year_month& get_start_date() const
         {
             return start_date_;
@@ -120,7 +123,7 @@ namespace drug_lib::data::objects::patients
         };
 
     private:
-        int32_t disease_id_{-1};
+        common::database::Uuid disease_id_;
         std::chrono::year_month start_date_{};
         std::chrono::year_month end_date_{};
         bool current = true;
@@ -154,7 +157,7 @@ namespace drug_lib::data::objects::patients
             for (const auto& ids : data_)
             {
                 Json::Value med_record;
-                med_record[HealthRecord::names_of_json_fields::disease_id] = ids.get_disease_id();
+                med_record[HealthRecord::names_of_json_fields::disease_id] = ids.get_disease_id().get_id();
                 med_record[HealthRecord::names_of_json_fields::start_date] = ids.get_string_start_date();
                 if (ids.is_current())
                     med_record[HealthRecord::names_of_json_fields::end_date] = "N/A";
@@ -177,13 +180,15 @@ namespace drug_lib::data::objects::patients
                 if (it.isObject())
                 {
                     HealthRecord med_record;
-                    med_record.set_disease_id(it[HealthRecord::names_of_json_fields::disease_id].asInt());
+                    med_record.set_disease_id(
+                        it[HealthRecord::names_of_json_fields::disease_id].asString()
+                    );
                     med_record.set_start_date(it[HealthRecord::names_of_json_fields::start_date].asString());
                     try
                     {
                         med_record.set_end_date(it[HealthRecord::names_of_json_fields::end_date].asString());
                     }
-                    catch (const std::invalid_argument& e)
+                    catch (const std::invalid_argument&)
                     {
                         med_record.set_current(true);
                     }

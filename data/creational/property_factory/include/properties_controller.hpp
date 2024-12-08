@@ -2,10 +2,10 @@
 
 #include <iostream>
 
+#include "diseases_properties.hpp"
 #include "medicament_properties.hpp"
 #include "organization_properties.hpp"
 #include "patient_properties.hpp"
-#include "diseases_properties.hpp"
 
 namespace drug_lib::data
 {

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <db_interface_factory.hpp>
 #include <gtest/gtest.h>
+#include <trantor/utils/Logger.h>
 
 #include "db_conditions.hpp"
 #include "db_field.hpp"
@@ -18,28 +19,28 @@ class PqxxClientTest : public testing::Test
 protected:
     // Database connection parameters
     //
-    const uint32_t port = 5432;
+    static constexpr auto port = 5432;
     static constexpr auto host = "localhost";
     static constexpr auto db_name = "test_db";
     static constexpr auto username = "postgres";
-   static constexpr auto password = "postgres"; // Replace it with your actual password
+    static constexpr auto password = "postgres"; // Replace it with your actual password
 
     // Pointer to the PqxxClient
-    std::shared_ptr<interfaces::DbInterface> db_client;
+    std::shared_ptr<interfaces::DbInterface> db_client_;
 
     // Test table name
-    std::string test_table = "test_table";
+    std::string test_table_ = "test_table";
 
     // SetUp and TearDown methods
     void SetUp() override
     {
         // Initialize the database client
-        db_client = creational::DbInterfaceFactory::create_pqxx_client({host, port, db_name, username, password});
+        db_client_ = creational::DbInterfaceFactory::create_pqxx_client({host, port, db_name, username, password});
 
         // Ensure the test table does not exist before starting
-        if (db_client->check_table(test_table))
+        if (db_client_->check_table(test_table_))
         {
-            db_client->remove_table(test_table);
+            db_client_->remove_table(test_table_);
         }
 
         // Create a test table
@@ -47,27 +48,27 @@ protected:
         fields.push_back(std::make_unique<Field<int>>("id", 0));
         fields.push_back(std::make_unique<Field<std::string>>("name", ""));
         fields.push_back(std::make_unique<Field<std::string>>("description", ""));
-        db_client->create_table(test_table, fields);
+        db_client_->create_table(test_table_, fields);
 
-        db_client->make_unique_constraint(test_table, {std::make_shared<Field<int>>("id", 0)});
+        db_client_->make_unique_constraint(test_table_, {std::make_shared<Field<int>>("id", 0)});
         // Set up full-text search on 'name' and 'description' fields
         std::vector<std::shared_ptr<FieldBase>> fts_fields;
         fts_fields.emplace_back(std::make_shared<Field<std::string>>("name", ""));
         fts_fields.emplace_back(std::make_shared<Field<std::string>>("description", ""));
 
 
-        db_client->setup_search_index(test_table, std::move(fts_fields));
+        db_client_->setup_search_index(test_table_, std::move(fts_fields));
     }
 
     void TearDown() override
     {
         // Remove the test table after each test
-        if (db_client->check_table(test_table))
+        if (db_client_->check_table(test_table_))
         {
-            db_client->remove_table(test_table);
+            db_client_->remove_table(test_table_);
         }
 
-        db_client.reset();
+        db_client_.reset();
     }
 };
 
@@ -75,11 +76,11 @@ protected:
 TEST_F(PqxxClientTest, TableManagementTest)
 {
     // Check if the table exists
-    EXPECT_TRUE(db_client->check_table(test_table));
+    EXPECT_TRUE(db_client_->check_table(test_table_));
 
     // Remove the table
-    EXPECT_NO_THROW(db_client->remove_table(test_table));
-    EXPECT_FALSE(db_client->check_table(test_table));
+    EXPECT_NO_THROW(db_client_->remove_table(test_table_));
+    EXPECT_FALSE(db_client_->check_table(test_table_));
 
     // Create the table again
     Record fields;
@@ -87,8 +88,8 @@ TEST_F(PqxxClientTest, TableManagementTest)
     fields.push_back(std::make_unique<Field<std::string>>("name", ""));
     fields.push_back(std::make_unique<Field<std::string>>("description", ""));
 
-    EXPECT_NO_THROW(db_client->create_table(test_table, fields));
-    EXPECT_TRUE(db_client->check_table(test_table));
+    EXPECT_NO_THROW(db_client_->create_table(test_table_, fields));
+    EXPECT_TRUE(db_client_->check_table(test_table_));
 }
 
 TEST_F(PqxxClientTest, InsertTest)
@@ -109,15 +110,15 @@ TEST_F(PqxxClientTest, InsertTest)
     records.push_back(std::move(record2));
 
     // Add data to the table
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     // Retrieve data and verify
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
 
     EXPECT_EQ(results.size(), 2);
 
     // Check content
-    for (const auto& rec : results)
+    for (const auto &rec: results)
     {
         const auto id = rec[0]->as<int32_t>();
         const auto name = rec[1]->as<std::string>();
@@ -125,19 +126,76 @@ TEST_F(PqxxClientTest, InsertTest)
         if (id == 1)
         {
             EXPECT_EQ(name, "Alice");
-        }
-        else if (id == 2)
+        } else if (id == 2)
         {
             EXPECT_EQ(name, "Bob");
-        }
-        else
+        } else
         {
             FAIL() << "Unexpected record with id: " << id;
         }
     }
 }
 
+TEST_F(PqxxClientTest, InsertTestWithReturn)
+{
+    // Create sample data
+    std::vector<Record> records;
 
+    Record record1;
+    record1.push_back(std::make_unique<Field<int>>("id", 1));
+    record1.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
+    record1.push_back(std::make_unique<Field<std::string>>("description", "P"));
+    records.push_back(std::move(record1));
+
+    Record record2;
+    record2.push_back(std::make_unique<Field<int>>("id", 2));
+    record2.push_back(std::make_unique<Field<std::string>>("name", "Bob"));
+    record2.push_back(std::make_unique<Field<std::string>>("description", "L"));
+    records.push_back(std::move(record2));
+
+    const std::vector<std::shared_ptr<FieldBase>> return_fields = {std::make_shared<Field<int>>("id", 0)};
+    // Add data to the table
+    std::vector<Record> results;
+    EXPECT_NO_THROW(results = db_client_->insert_with_returning(test_table_, records, return_fields));
+
+    // Retrieve data and verify
+    EXPECT_EQ(results.size(), 2);
+    EXPECT_TRUE(results[0].size() == 1);
+    EXPECT_TRUE( results[1].size() == 1);
+    EXPECT_TRUE(results[0][0]->as<int>() == 1);
+    EXPECT_TRUE(results[1][0]->as<int>() == 2);
+}
+TEST_F(PqxxClientTest, InsertTestWithUuidGenerate)
+{
+    std::vector<Record> records;
+
+    Record record1;
+    record1.push_back(std::make_unique<Field<Uuid>>("id", Uuid()));
+    record1.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
+    record1.push_back(std::make_unique<Field<std::string>>("description", "P"));
+    // Create sample data
+    db_client_->remove_table(test_table_);
+    db_client_->create_table(test_table_, record1);
+    records.push_back(std::move(record1));
+    Record record2;
+    record2.push_back(std::make_unique<Field<Uuid>>("id", Uuid("550e8400-e29b-41d4-a716-446655440001")));
+    record2.push_back(std::make_unique<Field<std::string>>("name", "Bob"));
+    record2.push_back(std::make_unique<Field<std::string>>("description", "L"));
+    records.push_back(std::move(record2));
+
+    const std::vector<std::shared_ptr<FieldBase>> return_fields = {std::make_shared<Field<Uuid>>("id", Uuid())};
+    // Add data to the table
+    std::vector<Record> results;
+    EXPECT_NO_THROW(results = db_client_->insert_with_returning(test_table_, records, return_fields));
+
+    // Retrieve data and verify
+
+    EXPECT_EQ(results.size(), 2);
+    EXPECT_TRUE(results[0].size() == 1);
+    EXPECT_TRUE( results[1].size() == 1);
+    EXPECT_FALSE(results[0][0]->as<Uuid>().get_id().empty());
+    EXPECT_TRUE(results[1][0]->as<Uuid>().get_id() == "550e8400-e29b-41d4-a716-446655440001");
+}
 TEST_F(PqxxClientTest, UpsertTestFullRecord)
 {
     // Initial data
@@ -150,7 +208,7 @@ TEST_F(PqxxClientTest, UpsertTestFullRecord)
     records.push_back(std::move(record1));
 
     // Add initial data
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     // Upsert data
     std::vector<Record> upsert_records;
@@ -162,14 +220,54 @@ TEST_F(PqxxClientTest, UpsertTestFullRecord)
     upsert_records.push_back(std::move(record_upsert));
 
     EXPECT_NO_THROW(
-        db_client->upsert(test_table, upsert_records, {std::make_unique<Field<std::string>>("description", "")}));
+            db_client_->upsert(test_table_, upsert_records, {std::make_unique<Field<std::string>>("description", "")}));
 
     // Retrieve data and verify
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
 
     EXPECT_EQ(results.size(), 1);
 
-    auto& rec = results.front();
+    auto &rec = results.front();
+    const auto id = rec[0]->as<int32_t>();
+    const auto name = rec[1]->as<std::string>();
+    const auto description = rec[2]->as<std::string>();
+    EXPECT_EQ(id, 1);
+    EXPECT_EQ(name, "Alice");
+    EXPECT_EQ(description, "Alice Updated");
+}
+
+TEST_F(PqxxClientTest, UpsertTestWithReturn)
+{
+    // Initial data
+    std::vector<Record> records;
+
+    Record record1;
+    record1.push_back(std::make_unique<Field<int>>("id", 1));
+    record1.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
+    record1.push_back(std::make_unique<Field<std::string>>("description", ""));
+    records.push_back(std::move(record1));
+
+    // Add initial data
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
+
+    // Upsert data
+    std::vector<Record> upsert_records;
+
+    Record record_upsert;
+    record_upsert.push_back(std::make_unique<Field<int>>("id", 1));
+    record_upsert.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
+    record_upsert.push_back(std::make_unique<Field<std::string>>("description", "Alice Updated"));
+    upsert_records.push_back(std::move(record_upsert));
+
+    EXPECT_NO_THROW(
+            db_client_->upsert(test_table_, upsert_records, {std::make_unique<Field<std::string>>("description", "")}));
+
+    // Retrieve data and verify
+    const auto results = db_client_->select(test_table_);
+
+    EXPECT_EQ(results.size(), 1);
+
+    auto &rec = results.front();
     const auto id = rec[0]->as<int32_t>();
     const auto name = rec[1]->as<std::string>();
     const auto description = rec[2]->as<std::string>();
@@ -190,7 +288,7 @@ TEST_F(PqxxClientTest, UpsertTestPartial)
     records.push_back(std::move(record1));
 
     // Add initial data
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     // Upsert data
     std::vector<Record> upsert_records;
@@ -204,13 +302,13 @@ TEST_F(PqxxClientTest, UpsertTestPartial)
     // Conflict and replace fields
 
     EXPECT_NO_THROW(
-        db_client->upsert(test_table, upsert_records, {std::make_unique<Field<std::string>>("description", "")}));
+            db_client_->upsert(test_table_, upsert_records, {std::make_unique<Field<std::string>>("description", "")}));
 
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
 
     EXPECT_EQ(results.size(), 1);
 
-    auto& rec = results.front();
+    auto &rec = results.front();
     const auto id = rec[0]->as<int32_t>();
     const auto name = rec[1]->as<std::string>();
     const auto description = rec[2]->as<std::string>();
@@ -230,17 +328,17 @@ TEST_F(PqxxClientTest, RemoveTest)
     record1.push_back(std::make_unique<Field<std::string>>("description", ""));
     records.push_back(std::move(record1));
 
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     // Remove data
     Conditions conditions;
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=", std::make_unique<Field<int32_t>>("", 1)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=",
+                                                  std::make_unique<Field<int32_t>>("", 1)));
 
-    EXPECT_NO_THROW(db_client->remove(test_table, conditions));
+    EXPECT_NO_THROW(db_client_->remove(test_table_, conditions));
 
     // Verify removal
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
     EXPECT_TRUE(results.empty());
 }
 
@@ -258,12 +356,12 @@ TEST_F(PqxxClientTest, CountTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     Conditions conditions;
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int>>("id", 0), "=", std::make_unique<Field<int>>("", 1)));
-    const uint32_t count = db_client->count(test_table, conditions);
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int>>("id", 0), "=",
+                                                  std::make_unique<Field<int>>("", 1)));
+    const uint32_t count = db_client_->count(test_table_, conditions);
     EXPECT_EQ(count, 1);
 }
 
@@ -281,8 +379,8 @@ TEST_F(PqxxClientTest, CountAllTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
-    const uint32_t count_all = db_client->count(test_table);
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
+    const uint32_t count_all = db_client_->count(test_table_);
     EXPECT_EQ(count_all, 5);
 }
 
@@ -310,19 +408,19 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     records.push_back(std::move(record3));
 
     // Insert records into the database
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     std::string search_query = "fruit";
     Conditions conditions;
     conditions.add_pattern_condition(PatternCondition(search_query));
-    auto results = db_client->select(test_table, conditions);
+    auto results = db_client_->select(test_table_, conditions);
 
     // Verify the results
     EXPECT_EQ(results.size(), 2);
 
     std::set expected_ids = {1, 2};
     std::set<int> result_ids;
-    for (const auto& rec : results)
+    for (const auto &rec: results)
     {
         int id = rec[0]->as<int32_t>();
         result_ids.insert(id);
@@ -333,21 +431,21 @@ TEST_F(PqxxClientTest, FullTextSearchTest)
     // Search for 'yellow'
     search_query = "yellow";
     conditions.add_pattern_condition(PatternCondition(search_query));
-    results = db_client->select(test_table, conditions);
+    results = db_client_->select(test_table_, conditions);
     EXPECT_EQ(results.size(), 1);
     EXPECT_EQ(results.front()[1]->as<std::string>(), "Banana");
     conditions.pop_pattern_condition();
     // Search for 'vegetable'
     search_query = "vegetable";
     conditions.add_pattern_condition(PatternCondition(search_query));
-    results = db_client->select(test_table, conditions);
+    results = db_client_->select(test_table_, conditions);
     EXPECT_EQ(results.size(), 1);
     EXPECT_EQ(results.front()[1]->as<std::string>(), "Carrot");
     conditions.pop_pattern_condition();
     // Search for a term not present
     search_query = "berry";
     conditions.add_pattern_condition(PatternCondition(search_query));
-    results = db_client->select(test_table, conditions);
+    results = db_client_->select(test_table_, conditions);
 
     EXPECT_TRUE(results.empty());
 }
@@ -376,12 +474,12 @@ TEST_F(PqxxClientTest, SimilaritySearchTest)
     records.push_back(std::move(record3));
 
     // Insert records into the database
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     std::string search_query = "An sweet";
     Conditions conditions;
     conditions.add_similarity_condition(search_query);
-    const auto results = db_client->select(test_table, conditions);
+    const auto results = db_client_->select(test_table_, conditions);
 
     // // Verify the results
     EXPECT_EQ(results.size(), 3);
@@ -405,17 +503,17 @@ TEST_F(PqxxClientTest, TruncateTableTest)
     record2.push_back(std::make_unique<Field<std::string>>("name", "Alice"));
     record2.push_back(std::make_unique<Field<std::string>>("description", ""));
     records.push_back(std::move(record2));
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     // Remove data
     Conditions conditions;
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=", std::make_unique<Field<int32_t>>("", 1)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "=",
+                                                  std::make_unique<Field<int32_t>>("", 1)));
 
-    EXPECT_NO_THROW(db_client->truncate_table(test_table));
+    EXPECT_NO_THROW(db_client_->truncate_table(test_table_));
 
     // Verify removal
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
     EXPECT_TRUE(results.empty());
 }
 
@@ -423,7 +521,7 @@ TEST_F(PqxxClientTest, TruncateTableTest)
 
 TEST_F(PqxxClientTest, TransactionSimpleTest)
 {
-    EXPECT_NO_THROW(db_client->start_transaction());
+    EXPECT_NO_THROW(db_client_->start_transaction());
     std::vector<Record> records;
 
     Record record1;
@@ -439,29 +537,29 @@ TEST_F(PqxxClientTest, TransactionSimpleTest)
     records.push_back(std::move(record2));
 
     // Add data to the table
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
-    EXPECT_NO_THROW(db_client->commit_transaction());
-    auto results = db_client->select(test_table);
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
+    EXPECT_NO_THROW(db_client_->commit_transaction());
+    auto results = db_client_->select(test_table_);
     EXPECT_EQ(results.size(), 2);
 
-    EXPECT_NO_THROW(db_client->truncate_table(test_table));
+    EXPECT_NO_THROW(db_client_->truncate_table(test_table_));
 
-    EXPECT_EQ(db_client->select(test_table).size(), 0);
+    EXPECT_EQ(db_client_->select(test_table_).size(), 0);
     // Test rollback
-    EXPECT_NO_THROW(db_client->start_transaction());
+    EXPECT_NO_THROW(db_client_->start_transaction());
 
     // Add data to the table
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
-    EXPECT_NO_THROW(db_client->rollback_transaction());
-    EXPECT_EQ(db_client->select(test_table).size(), 0);
+    EXPECT_NO_THROW(db_client_->rollback_transaction());
+    EXPECT_EQ(db_client_->select(test_table_).size(), 0);
 }
 
 TEST_F(PqxxClientTest, TransactionConquerenteTest)
 {
-    EXPECT_NO_THROW(db_client->start_transaction());
-    EXPECT_THROW(db_client->start_transaction(), drug_lib::common::database::exceptions::TransactionException);
-    EXPECT_NO_THROW(db_client->commit_transaction());
+    EXPECT_NO_THROW(db_client_->start_transaction());
+    EXPECT_THROW(db_client_->start_transaction(), drug_lib::common::database::exceptions::TransactionException);
+    EXPECT_NO_THROW(db_client_->commit_transaction());
 }
 
 TEST_F(PqxxClientTest, TransactionMultithreadTest)
@@ -476,8 +574,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     // First thread - poster: inserts records within a transaction
     auto poster_worker = [&]
     {
-        EXPECT_NO_THROW(db_client->start_transaction());
-        {
+        EXPECT_NO_THROW(db_client_->start_transaction()); {
             std::unique_lock lock(mtx);
             ready_to_listen = true;
         }
@@ -489,7 +586,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
             records[0].push_back(std::make_unique<Field<std::string>>("name", "Alice"));
             records[0].push_back(std::make_unique<Field<std::string>>("description", "Here will be something"));
 
-            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
         }
 
 
@@ -497,7 +594,7 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
         inserting1.store(false);
         inserting2.store(false);
         barrier.arrive_and_wait();
-        EXPECT_NO_THROW(db_client->commit_transaction());
+        EXPECT_NO_THROW(db_client_->commit_transaction());
         transaction_committed.store(true); // Set the flag to indicate commit is done
     };
 
@@ -506,18 +603,20 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     {
         {
             std::unique_lock lock(mtx);
-            cv.wait(lock, [&] { return ready_to_listen.load(); });
+            cv.wait(lock, [&]
+            {
+                return ready_to_listen.load();
+            });
         }
         while (inserting1.load())
         {
             bool emp = true;
             // This thread should always successfully retrieve data, even if incomplete
-            EXPECT_NO_THROW({
-                emp = db_client->view(test_table).empty(); // Replace it with actual retrieval logic
+            EXPECT_NO_THROW({ emp = db_client_->view(test_table_).empty(); // Replace it with actual retrieval logic
 
-                // Non-transactional fetch shouldn't throw an error
-                // Optionally, you can log or validate the number of records fetched
-            });
+                    // Non-transactional fetch shouldn't throw an error
+                    // Optionally, you can log or validate the number of records fetched
+                    });
             EXPECT_FALSE(emp);
         }
     };
@@ -527,11 +626,14 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
     {
         {
             std::unique_lock<std::mutex> lock(mtx);
-            cv.wait(lock, [&] { return ready_to_listen.load(); });
+            cv.wait(lock, [&]
+            {
+                return ready_to_listen.load();
+            });
         }
         while (inserting2.load())
         {
-            EXPECT_THROW(db_client->start_transaction(), drug_lib::common::database::exceptions::TransactionException);
+            EXPECT_THROW(db_client_->start_transaction(), drug_lib::common::database::exceptions::TransactionException);
         }
         barrier.arrive_and_wait(); // Wait for all threads to reach the barrier
 
@@ -542,13 +644,13 @@ TEST_F(PqxxClientTest, TransactionMultithreadTest)
         }
 
         // Now proceed with the transaction check
-        EXPECT_NO_THROW(db_client->start_transaction());
+        EXPECT_NO_THROW(db_client_->start_transaction());
 
         // Fetch all rows inserted by the poster thread
-        auto records = db_client->view(test_table);
+        auto records = db_client_->view(test_table_);
         EXPECT_EQ(records.size(), expected_record_count);
 
-        EXPECT_NO_THROW(db_client->commit_transaction());
+        EXPECT_NO_THROW(db_client_->commit_transaction());
     };
 
     // Create and launch the threads
@@ -576,13 +678,13 @@ TEST_F(PqxxClientTest, OrderByTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     Conditions conditions;
     conditions.add_order_by_condition(OrderCondition("id", order_type::ascending));
-    const auto res = db_client->select(test_table, conditions);
+    const auto res = db_client_->select(test_table_, conditions);
     int32_t prev = INT_MIN;
-    for (const auto& record : res)
+    for (const auto &record: res)
     {
         EXPECT_TRUE(prev <= record[0]->as<int32_t>());
         prev = record[0]->as<int32_t>();
@@ -604,17 +706,17 @@ TEST_F(PqxxClientTest, PagingTest)
         records.push_back(std::move(record));
     }
 
-    EXPECT_NO_THROW(db_client->insert(test_table, records));
+    EXPECT_NO_THROW(db_client_->insert(test_table_, records));
 
     Conditions conditions;
     PageCondition page_condition(150);
 
     conditions.set_page_condition(page_condition);
-    auto res = db_client->view(test_table, conditions);
+    auto res = db_client_->view(test_table_, conditions);
     EXPECT_EQ(res.size(), 150);
     page_condition.set_page_number(500 / 150 + 1);
     conditions.set_page_condition(page_condition);
-    res = db_client->view(test_table, conditions);
+    res = db_client_->view(test_table_, conditions);
     EXPECT_EQ(res.size(), 50);
 }
 
@@ -625,12 +727,12 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
     // Create sample data
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
-    constexpr uint32_t limit_ = flush * 8;
+    constexpr uint32_t limit = flush * 8;
     records.reserve(flush);
     drug_lib::common::Stopwatch<> stopwatch;
     stopwatch.start();
     stopwatch.set_countdown_from_prev(true);
-    for (uint32_t i = 1; i <= limit_; i++)
+    for (uint32_t i = 1; i <= limit; i++)
     {
         Record record1;
         record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -639,22 +741,22 @@ TEST_F(PqxxClientTest, InsertSpeedTest)
         records.push_back(std::move(record1));
         if (records.size() >= flush)
         {
-            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
             ++stopwatch;
             records.clear();
         }
     }
     stopwatch.finish();
-    const auto results = db_client->select(test_table);
+    const auto results = db_client_->select(test_table_);
 
-    EXPECT_EQ(results.size(), limit_);
+    EXPECT_EQ(results.size(), limit);
 }
 
 TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
 {
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
-    constexpr uint32_t limit_ = flush * 2; // The Total number of records each thread should handle
+    constexpr uint32_t limit = flush * 2; // The Total number of records each thread should handle
     constexpr uint32_t thread_count = 4; // Number of threads to use
 
     // Worker function to insert records in parallel
@@ -666,7 +768,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
         // stopwatch.flag("Thread " + std::to_string + " started");
 
         // Each thread inserts records with step `thread_count` (to avoid overlapping IDs)
-        for (uint32_t i = s; i <= limit_ * thread_count; i += thread_count)
+        for (uint32_t i = s; i <= limit * thread_count; i += thread_count)
         {
             Record record1;
             record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -677,7 +779,7 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
             // Insert the records into the database in batches when the flush limit is reached
             if (records.size() >= flush)
             {
-                EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+                EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
                 records.clear();
             }
         }
@@ -695,17 +797,17 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTest)
     }
 
     // Join threads
-    for (auto& thread : threads)
+    for (auto &thread: threads)
     {
         thread.join();
     }
     stopwatch.flag("Threading finished: 4 threads");
     // Fetch the records from the database
-    const auto results = db_client->view(test_table);
+    const auto results = db_client_->view(test_table_);
     stopwatch.finish();
 
     // Check that the correct number of records was inserted
-    EXPECT_EQ(results.size(), limit_ * thread_count);
+    EXPECT_EQ(results.size(), limit * thread_count);
 }
 
 TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
@@ -717,11 +819,11 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
 
     drug_lib::common::Stopwatch<> stopwatch;
     constexpr uint32_t flush = 1 << 14; // Number of records per flush
-    constexpr uint32_t limit_ = flush * 8; // The Total number of records each thread should handle
-    db_client->drop_search_index(test_table);
+    constexpr uint32_t limit = flush * 8; // The Total number of records each thread should handle
+    db_client_->drop_search_index(test_table_);
     std::vector<Record> records;
-    records.reserve(limit_); // Reserve space for records to avoid reallocations
-    for (uint32_t i = 0; i < limit_; i++)
+    records.reserve(limit); // Reserve space for records to avoid reallocations
+    for (uint32_t i = 0; i < limit; i++)
     {
         Record record1;
         record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -732,19 +834,19 @@ TEST_F(PqxxClientTest, InsertMultithreadSpeedTestWithDropppingFts)
     stopwatch.start("Multithreading insert with dropping fts");
     stopwatch.flag("Threading launch: 6 threads");
     // stopwatch.flag("Thread " + std::to_string + " finished");
-    const std::shared_ptr<PqxxClient> db_client_n = std::dynamic_pointer_cast<PqxxClient>(db_client);
-    utilities::bulk_insertion(db_client_n, test_table, std::move(records), flush, 6);
+    const std::shared_ptr<PqxxClient> db_client_n = std::dynamic_pointer_cast<PqxxClient>(db_client_);
+    utilities::bulk_insertion(db_client_n, test_table_, std::move(records), flush, 6);
     stopwatch.flag("Threading finished: 6 threads");
     // Fetch the records from the database
-    const auto results = db_client->view(test_table);
+    const auto results = db_client_->view(test_table_);
     stopwatch.flag("Viewed");
     // Check that the correct number of records was inserted
-    EXPECT_EQ(results.size(), limit_);
+    EXPECT_EQ(results.size(), limit);
     Conditions conditions;
     conditions.add_pattern_condition(PatternCondition("Pers2"));
-    const auto fts_res = db_client->select(test_table, conditions);
+    const auto fts_res = db_client_->select(test_table_, conditions);
     stopwatch.finish();
-    EXPECT_EQ(fts_res.size(), limit_ / 3);
+    EXPECT_EQ(fts_res.size(), limit / 3);
 }
 
 TEST_F(PqxxClientTest, SelectSpeedTest)
@@ -752,10 +854,10 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
     // Create sample data
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
-    constexpr uint32_t limit_ = flush * 8;
+    constexpr uint32_t limit = flush * 8;
     records.reserve(flush);
 
-    for (uint32_t i = 1; i <= limit_; i++)
+    for (uint32_t i = 1; i <= limit; i++)
     {
         Record record1;
         record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -764,7 +866,7 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
         records.push_back(std::move(record1));
         if (records.size() >= flush)
         {
-            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
             records.clear();
         }
     }
@@ -772,24 +874,24 @@ TEST_F(PqxxClientTest, SelectSpeedTest)
     stopwatch.start("Selecting with ready fields");
     stopwatch.set_countdown_from_prev(true);
 
-    auto results = db_client->select(test_table);
-    EXPECT_EQ(results.size(), limit_);
-    stopwatch.flag("Select all: " + std::to_string(limit_));
+    auto results = db_client_->select(test_table_);
+    EXPECT_EQ(results.size(), limit);
+    stopwatch.flag("Select all: " + std::to_string(limit));
     Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=", std::make_unique<Field<int32_t>>("", a)));
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<", std::make_unique<Field<int32_t>>("", b)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=",
+                                                  std::make_unique<Field<int32_t>>("", a)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<",
+                                                  std::make_unique<Field<int32_t>>("", b)));
 
-    results = db_client->select(test_table, conditions);
+    results = db_client_->select(test_table_, conditions);
     stopwatch.flag("Select with conditions: " + std::to_string(b - a));
     EXPECT_EQ(results.size(), b - a);
 
     Conditions conditions_page;
     constexpr uint32_t page_sz = 1000;
     conditions_page.set_page_condition(PageCondition(page_sz));
-    auto page_res = db_client->select(test_table, conditions_page);
+    auto page_res = db_client_->select(test_table_, conditions_page);
     stopwatch.flag("View with paging");
     EXPECT_EQ(page_res.size(), page_sz);
 }
@@ -800,10 +902,10 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
     // Create sample data
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
-    constexpr uint32_t limit_ = flush * 8;
+    constexpr uint32_t limit = flush * 8;
     records.reserve(flush);
 
-    for (uint32_t i = 1; i <= limit_; i++)
+    for (uint32_t i = 1; i <= limit; i++)
     {
         Record record1;
         record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -812,18 +914,18 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
         records.push_back(std::move(record1));
         if (records.size() >= flush)
         {
-            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
             records.clear();
         }
     }
     drug_lib::common::Stopwatch<> stopwatch;
     stopwatch.start("View speed with transforming");
 
-    const auto results = db_client->view(test_table);
-    stopwatch.flag("View all: " + std::to_string(limit_));
+    const auto results = db_client_->view(test_table_);
+    stopwatch.flag("View all: " + std::to_string(limit));
     Record x;
-    x.reserve(limit_);
-    for (const auto& record : results)
+    x.reserve(limit);
+    for (const auto &record: results)
     {
         auto f = record->extract(0);
         auto f1 = record->extract(1);
@@ -832,22 +934,22 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
         x.push_back(std::make_unique<Field<std::string>>("name", f1));
         x.push_back(std::make_unique<Field<std::string>>("description", f2));
     }
-    EXPECT_EQ(results.size(), limit_);
-    stopwatch.flag("View all + transformed: " + std::to_string(limit_));
+    EXPECT_EQ(results.size(), limit);
+    stopwatch.flag("View all + transformed: " + std::to_string(limit));
     Conditions conditions;
     constexpr int32_t a = 1, b = 30;
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=", std::make_unique<Field<int32_t>>("", a)));
-    conditions.add_field_condition(
-        FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<", std::make_unique<Field<int32_t>>("", b)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), ">=",
+                                                  std::make_unique<Field<int32_t>>("", a)));
+    conditions.add_field_condition(FieldCondition(std::make_unique<Field<int32_t>>("id", 0), "<",
+                                                  std::make_unique<Field<int32_t>>("", b)));
 
-    const auto res2 = db_client->view(test_table, conditions);
+    const auto res2 = db_client_->view(test_table_, conditions);
 
     stopwatch.flag("View with conditions: " + std::to_string(b - a));
     EXPECT_EQ(res2.size(), b - a);
     Record x2;
-    x2.reserve(limit_);
-    for (const auto& record : res2)
+    x2.reserve(limit);
+    for (const auto &record: res2)
     {
         auto f = record->extract(0);
         auto f1 = record->extract(1);
@@ -861,12 +963,12 @@ TEST_F(PqxxClientTest, ViewSpeedTest)
     Conditions conditions_page;
     constexpr uint32_t page_sz = 1000;
     conditions_page.set_page_condition(PageCondition(page_sz));
-    auto page_res = db_client->view(test_table, conditions_page);
+    auto page_res = db_client_->view(test_table_, conditions_page);
     stopwatch.flag("View with paging");
     EXPECT_EQ(page_res.size(), page_sz);
     x2.clear();
-    x2.reserve(limit_);
-    for (const auto& record : page_res)
+    x2.reserve(limit);
+    for (const auto &record: page_res)
     {
         auto f = record->extract(0);
         auto f1 = record->extract(1);
@@ -883,10 +985,10 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
     // Create sample data
     std::vector<Record> records;
     constexpr uint32_t flush = 1 << 14;
-    constexpr uint32_t limit_ = flush * 8;
+    constexpr uint32_t limit = flush * 8;
     records.reserve(flush);
 
-    for (uint32_t i = 0; i < limit_; i++)
+    for (uint32_t i = 0; i < limit; i++)
     {
         Record record1;
         record1.push_back(std::make_unique<Field<int32_t>>("id", i));
@@ -895,7 +997,7 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
         records.push_back(std::move(record1));
         if (records.size() >= flush)
         {
-            EXPECT_NO_THROW(db_client->insert(test_table, std::move(records)));
+            EXPECT_NO_THROW(db_client_->insert(test_table_, std::move(records)));
             records.clear();
         }
     }
@@ -905,9 +1007,9 @@ TEST_F(PqxxClientTest, FtsSpeedTest)
     const std::string search_query = "Pers2";
     Conditions conditions;
     conditions.add_pattern_condition(PatternCondition(search_query));
-    const auto results = db_client->view(test_table, conditions);
+    const auto results = db_client_->view(test_table_, conditions);
     stopwatch.finish();
-    EXPECT_EQ(results.size(), limit_ / 3);
+    EXPECT_EQ(results.size(), limit / 3);
 }
 
 
