@@ -7,7 +7,7 @@ using namespace drug_lib::data::objects;
 TEST(DiseaseTest, DefaultConstructor)
 {
     const Disease disease;
-    EXPECT_EQ(disease.get_id(), -1);
+    EXPECT_EQ(disease.get_id(), common::database::Uuid::default_value);
     EXPECT_EQ(disease.get_name(), "");
     EXPECT_EQ(disease.get_type(), "");
     EXPECT_FALSE(disease.is_infectious());
@@ -15,8 +15,8 @@ TEST(DiseaseTest, DefaultConstructor)
 
 TEST(DiseaseTest, ParameterizedConstructor)
 {
-    const Disease disease(1, "Flu", "Viral", true);
-    EXPECT_EQ(disease.get_id(), 1);
+    const Disease disease(common::database::Uuid(), "Flu", "Viral", true);
+    EXPECT_EQ(disease.get_id(), common::database::Uuid::default_value);
     EXPECT_EQ(disease.get_name(), "Flu");
     EXPECT_EQ(disease.get_type(), "Viral");
     EXPECT_TRUE(disease.is_infectious());
@@ -25,12 +25,12 @@ TEST(DiseaseTest, ParameterizedConstructor)
 TEST(DiseaseTest, SettersAndGetters)
 {
     Disease disease;
-    disease.set_id(2);
+    disease.set_uuid(common::database::Uuid());
     disease.set_name("Cold");
     disease.set_type("Viral");
     disease.set_infectious(false);
 
-    EXPECT_EQ(disease.get_id(), 2);
+    EXPECT_EQ(disease.get_id(), common::database::Uuid::default_value);
     EXPECT_EQ(disease.get_name(), "Cold");
     EXPECT_EQ(disease.get_type(), "Viral");
     EXPECT_FALSE(disease.is_infectious());
@@ -38,7 +38,7 @@ TEST(DiseaseTest, SettersAndGetters)
 
 TEST(DiseaseTest, ToRecord)
 {
-    const Disease disease(3, "Chickenpox", "Viral", true);
+    const Disease disease(common::database::Uuid(), "Chickenpox", "Viral", true);
     for (const auto record = disease.to_record().fields(); const auto& field : record)
     {
         if (field->get_name() == Disease::field_name::name)
@@ -55,7 +55,7 @@ TEST(DiseaseTest, ToRecord)
         }
         else if (field->get_name() == Disease::field_name::id)
         {
-            EXPECT_EQ(3, field->as<int>());
+            EXPECT_EQ(common::database::Uuid(), field->as<common::database::Uuid>());
         }
     }
 }
@@ -63,7 +63,7 @@ TEST(DiseaseTest, ToRecord)
 TEST(DiseaseTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<int32_t>>(Disease::field_name::id, 4));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(Disease::field_name::id, common::database::Uuid()));
     record.push_back(std::make_unique<common::database::Field<std::string>>(Disease::field_name::name, "Measles"));
     record.push_back(std::make_unique<common::database::Field<std::string>>(Disease::field_name::type, "Viral"));
     record.push_back(std::make_unique<common::database::Field<bool>>(Disease::field_name::is_infectious, true));
@@ -71,7 +71,7 @@ TEST(DiseaseTest, FromRecord)
     Disease disease;
     disease.from_record(record);
 
-    EXPECT_EQ(disease.get_id(), 4);
+    EXPECT_EQ(disease.get_id(), common::database::Uuid::default_value);
     EXPECT_EQ(disease.get_name(), "Measles");
     EXPECT_EQ(disease.get_type(), "Viral");
     EXPECT_TRUE(disease.is_infectious());
@@ -81,7 +81,7 @@ Json::Value createDiseaseJson()
 {
     Json::Value disease;
 
-    disease["id"] = 3;
+    disease["id"] = common::database::Uuid().get_id();
     disease["is_infectious"] = true;
     disease["name"] = "disease3";
     disease["type"] = "infectious";
@@ -114,14 +114,14 @@ Json::Value createDiseaseJson()
     symptom1["description"] = "Persistent cough";
     symptom1["duration"] = "2 weeks";
     symptom1["name"] = "Cough";
-    symptom1["severity"] = 3;
+    symptom1["severity"] = "low";
     symptom1["type"] = "Respiratory";
 
     Json::Value symptom2;
     symptom2["description"] = "High body temperature";
     symptom2["duration"] = "1 week";
     symptom2["name"] = "Fever";
-    symptom2["severity"] = 5;
+    symptom2["severity"] = "med";
     symptom2["type"] = "General";
 
     properties["symptoms"].append(symptom1);
@@ -141,13 +141,13 @@ Disease createDisease()
     constexpr bool is_infectious = (i % 2 == 0);
     std::string type = "infectious";
     const std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory",
+        diseases::Symptom("Cough", "low", "2 weeks", "Respiratory",
                           "Persistent cough"),
-        diseases::Symptom("Fever", 5, "1 week", "General",
+        diseases::Symptom("Fever", "med", "1 week", "General",
                           "High body temperature")
     };
     diseases::Symptoms symptoms(symptoms_list);
-    Disease disease(index, std::move(name), std::move(type), is_infectious);
+    Disease disease(common::database::Uuid(), std::move(name), std::move(type), is_infectious);
     disease.add_property(
         drug_lib::data::PropertyFactory::create<diseases::Symptoms>(
             std::move(symptoms)));

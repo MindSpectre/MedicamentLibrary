@@ -1,64 +1,65 @@
 #include "treatment_manager_service_internal.hpp"
 
 #include <algorithm>
+#include <utility>
 
 
 void drug_lib::services::TreatmentManagerServiceInternal::assign_disease(
-    const int32_t patient_id, const int32_t disease_id)
+    common::database::Uuid patient_id, common::database::Uuid disease_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
     const std::shared_ptr<data::objects::patients::CurrentDiseases> cur_diseases = std::dynamic_pointer_cast<
         data::objects::patients::CurrentDiseases>(
         persona.get_property(data::objects::patients::properties::current_diseases));
-    cur_diseases->push_back(disease_id);
+    cur_diseases->push_back(std::move(disease_id));
     handbook_.patients().force_insert(persona);
 }
 
-void drug_lib::services::TreatmentManagerServiceInternal::assign_drug(const int32_t patient_id, const int32_t drug_id)
+void drug_lib::services::TreatmentManagerServiceInternal::assign_drug(common::database::Uuid patient_id, common::database::Uuid drug_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
     const std::shared_ptr<data::objects::patients::CurrentMedicaments> cur_drugs = std::dynamic_pointer_cast<
         data::objects::patients::CurrentMedicaments>(
         persona.get_property(data::objects::patients::properties::current_medicaments));
-    cur_drugs->push_back(drug_id);
+    cur_drugs->push_back(std::move(drug_id));
     handbook_.patients().force_insert(persona);
 }
 
 void drug_lib::services::TreatmentManagerServiceInternal::remove_disease(
-    const int32_t patient_id, const int32_t disease_id)
+    common::database::Uuid patient_id, const common::database::Uuid &disease_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
     const std::shared_ptr<data::objects::patients::CurrentDiseases> cur_diseases = std::dynamic_pointer_cast<
         data::objects::patients::CurrentDiseases>(
         persona.get_property(data::objects::patients::properties::current_diseases));
-    std::vector<int32_t>& diseases = cur_diseases->get_data();
-    std::erase_if(diseases, [&](const int32_t it) { return it == disease_id; });
+    std::vector<common::database::Uuid>& diseases = cur_diseases->get_data();
+    std::erase_if(diseases, [&](const common::database::Uuid &it) { return it == disease_id; });
     handbook_.patients().force_insert(persona);
 }
 
-void drug_lib::services::TreatmentManagerServiceInternal::remove_drug(const int32_t patient_id, const int32_t drug_id)
+void drug_lib::services::TreatmentManagerServiceInternal::remove_drug(common::database::Uuid patient_id, const common::database::Uuid &drug_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
     const std::shared_ptr<data::objects::patients::CurrentMedicaments> cur_drugs = std::dynamic_pointer_cast<
         data::objects::patients::CurrentMedicaments>(
         persona.get_property(data::objects::patients::properties::current_medicaments));
-    std::vector<int32_t>& meds = cur_drugs->get_data();
-    std::erase_if(meds, [&](const int32_t it) { return it == drug_id; });
+    std::vector<common::database::Uuid>& meds = cur_drugs->get_data();
+    std::erase_if(meds, [&](const common::database::Uuid &it) { return it == drug_id; });
     handbook_.patients().force_insert(persona);
 }
 
-void drug_lib::services::TreatmentManagerServiceInternal::cure_disease(const int32_t patient_id,
-                                                                       const int32_t disease_id)
+void drug_lib::services::TreatmentManagerServiceInternal::cure_disease(common::database::Uuid patient_id,
+                                                                       const common::database::Uuid &disease_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
     const std::shared_ptr<data::objects::patients::CurrentDiseases> cur_diseases = std::dynamic_pointer_cast<
         data::objects::patients::CurrentDiseases>(
         persona.get_property(data::objects::patients::properties::current_diseases));
     const std::shared_ptr<data::objects::patients::MedicalHistory> medical_history = std::dynamic_pointer_cast<
         data::objects::patients::MedicalHistory>(
         persona.get_property(data::objects::patients::properties::medical_history));
-    std::vector<int32_t>& diseases = cur_diseases->get_data();
-    std::erase_if(diseases, [&](const int32_t it) { return it == disease_id; });
+    std::vector<common::database::Uuid>& diseases = cur_diseases->get_data();
+    std::erase_if(diseases, [&](const common::database::Uuid &it) { return it == disease_id; });
 
     std::vector<data::objects::patients::HealthRecord>& health_records = medical_history->get_data();
     const auto it = std::ranges::find_if(health_records,
@@ -90,44 +91,44 @@ void drug_lib::services::TreatmentManagerServiceInternal::cure_disease(const int
 }
 
 std::vector<drug_lib::data::objects::Medicament> drug_lib::services::TreatmentManagerServiceInternal::current_drugs(
-    const int32_t patient_id)
+    common::database::Uuid patient_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
-    const std::vector medicament_indexes = std::dynamic_pointer_cast<
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
+    std::vector medicament_indexes = std::dynamic_pointer_cast<
         data::objects::patients::CurrentMedicaments>(
         persona.get_property(data::objects::patients::properties::current_medicaments))->get_data();
     std::vector<data::objects::Medicament> result;
     result.reserve(medicament_indexes.size());
-    for (const int32_t ids : medicament_indexes)
+    for (auto&& ids : medicament_indexes)
     {
-        result.emplace_back(std::move(handbook_.medicaments().get_by_id(ids)));
+        result.emplace_back(std::move(handbook_.medicaments().get_by_id(std::move(ids))));
     }
     return result;
 }
 
 std::vector<drug_lib::data::objects::Disease> drug_lib::services::TreatmentManagerServiceInternal::current_diseases(
-    const int32_t patient_id)
+    common::database::Uuid patient_id)
 {
-    const data::objects::Patient persona = handbook_.patients().get_by_id(patient_id);
-    const std::vector<int32_t>& disease_indexes = std::dynamic_pointer_cast<
+    const data::objects::Patient persona = handbook_.patients().get_by_id(std::move(patient_id));
+    std::vector<common::database::Uuid> disease_indexes = std::dynamic_pointer_cast<
         data::objects::patients::CurrentDiseases>(
         persona.get_property(data::objects::patients::properties::current_diseases))->get_data();
     std::vector<data::objects::Disease> result;
     result.reserve(disease_indexes.size());
-    for (const int32_t ids : disease_indexes)
+    for (auto &&ids : disease_indexes)
     {
-        result.emplace_back(std::move(handbook_.diseases().get_by_id(ids)));
+        result.emplace_back(std::move(handbook_.diseases().get_by_id(std::move(ids))));
     }
     return result;
 }
 
 drug_lib::data::objects::Patient drug_lib::services::TreatmentManagerServiceInternal::patient_profile(
-    const int32_t patient_id)
+    common::database::Uuid patient_id)
 {
-    return handbook_.patients().get_by_id(patient_id);
+    return handbook_.patients().get_by_id(std::move(patient_id));
 }
 
-bool drug_lib::services::TreatmentManagerServiceInternal::is_dangerous(const int32_t patient_id)
+bool drug_lib::services::TreatmentManagerServiceInternal::is_dangerous(common::database::Uuid patient_id)
 {
-    return handbook_.patients().get_by_id(patient_id).get_gender() == "Female";
+    return handbook_.patients().get_by_id(std::move(patient_id)).get_gender() == "Female";
 }
