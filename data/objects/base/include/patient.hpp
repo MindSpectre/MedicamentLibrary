@@ -10,6 +10,7 @@ namespace drug_lib::data::objects
     class Patient final : public ObjectBase, public PropertiesHolder
     {
     public:
+        // ReSharper disable once CppInconsistentNaming
         struct field_name : common_fields_names
         {
             static constexpr auto name = "name";

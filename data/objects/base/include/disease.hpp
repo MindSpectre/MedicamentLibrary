@@ -109,7 +109,14 @@ namespace drug_lib::data::objects
             ObjectBase::from_json(val);
             name_ = val[field_name::name].asString();
             type_ = val[field_name::type].asString();
-            is_infectious_ = val[field_name::is_infectious].asBool();
+            try
+            {
+                is_infectious_ = val[field_name::is_infectious].asBool();
+            } catch (const Json::LogicError& e)
+            {
+                is_infectious_ = val[field_name::is_infectious].asString() == "true" ||
+                    val[field_name::is_infectious].asString() == "True";
+            }
             create_collection(val[field_name::properties]);
 
         }

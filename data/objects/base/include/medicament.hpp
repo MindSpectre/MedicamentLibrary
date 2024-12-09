@@ -225,7 +225,14 @@ namespace drug_lib::data::objects
             ObjectBase::from_json(val);
             name_ = val[field_name::name].asString();
             type_ = val[field_name::type].asString();
-            requires_prescription_ = val[field_name::requires_prescription].asBool();
+            try
+            {
+                requires_prescription_ = val[field_name::requires_prescription].asBool();
+            } catch (const Json::LogicError& e)
+            {
+                requires_prescription_ = val[field_name::requires_prescription].asString() == "true" ||
+                    val[field_name::requires_prescription].asString() == "True";
+            }
             approval_number_ = val[field_name::approval_number].asString();
             approval_status_ = val[field_name::approval_status].asString();
             atc_code_ = val[field_name::atc_code].asString();
