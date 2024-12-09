@@ -1,6 +1,8 @@
 #pragma once
 
 #include <drogon/HttpController.h>
+
+#include "compile_time_utils.hpp"
 #include "librarian_service_internal.hpp"
 
 namespace drug_lib::services::drogon
@@ -11,14 +13,14 @@ namespace drug_lib::services::drogon
 		struct constants
 		{
 			static constexpr auto query_parameter = "query";
-			static constexpr auto disease_wiki_endpoint = "/wiki/diseases/";
-			static constexpr auto disease_wiki_endpoint_n = "/wiki/diseases/{1}";
-			static constexpr auto medicament_wiki_endpoint = "/wiki/medicaments/";
-			static constexpr auto medicament_wiki_endpoint_n = "/wiki/medicaments/{1}";
-			static constexpr auto patient_wiki_endpoint = "/wiki/patients/";
-			static constexpr auto patient_wiki_endpoint_n = "/wiki/patients/{1}";
-			static constexpr auto organization_wiki_endpoint = "/wiki/organizations/";
-			static constexpr auto organization_wiki_endpoint_n = "/wiki/organizations/{1}";
+			static constexpr auto disease_wiki_endpoint = "/api/wiki/diseases/";
+			static constexpr auto disease_wiki_endpoint_n = "/api/wiki/diseases/{1}";
+			static constexpr auto medicament_wiki_endpoint = "/api/wiki/medicaments/";
+			static constexpr auto medicament_wiki_endpoint_n = "/api/wiki/medicaments/{1}";
+			static constexpr auto patient_wiki_endpoint = "/api/wiki/patients/";
+			static constexpr auto patient_wiki_endpoint_n = "/api/wiki/patients/{1}";
+			static constexpr auto organization_wiki_endpoint = "/api/wiki/organizations/";
+			static constexpr auto organization_wiki_endpoint_n = "/api/wiki/organizations/{1}";
 		};
 
 		METHOD_LIST_BEGIN
@@ -45,12 +47,12 @@ namespace drug_lib::services::drogon
 
 		explicit Librarian(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
-			set_up_db(connect);
+			this->set_up_db(connect);
 		}
 
 		explicit Librarian(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
 		{
-			set_up_db(connect);
+			this->set_up_db(std::move(connect));
 		}
 
 		static constexpr bool isAutoCreation = false;
@@ -64,67 +66,84 @@ namespace drug_lib::services::drogon
 		LibrarianServiceInternal service_;
 
 		// Patient Methods
-		void get_patient(const ::drogon::HttpRequestPtr &req,
-		                 std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void get_patient(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void update_patient(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void update_patient(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void add_patient(const ::drogon::HttpRequestPtr &req,
-		                 std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+		void add_patient(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
 
-		void remove_patient(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void remove_patient(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
 		// Disease Methods
-		void get_disease(const ::drogon::HttpRequestPtr &req,
-		                 std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void get_disease(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void update_disease(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void update_disease(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void add_disease(const ::drogon::HttpRequestPtr &req,
-		                 std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+		void add_disease(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
 
-		void remove_disease(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void remove_disease(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void get_medicament(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void get_medicament(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void update_medicament(const ::drogon::HttpRequestPtr &req,
-		                       std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void update_medicament(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void add_medicament(const ::drogon::HttpRequestPtr &req,
-		                    std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+		void add_medicament(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
 
-		void remove_medicament(const ::drogon::HttpRequestPtr &req,
-		                       std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void remove_medicament(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
 
-		void get_organization(const ::drogon::HttpRequestPtr &req,
-		                      std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void get_organization(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void update_organization(const ::drogon::HttpRequestPtr &req,
-		                         std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void update_organization(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
-		void add_organization(const ::drogon::HttpRequestPtr &req,
-		                      std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
+		void add_organization(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback);
 
-		void remove_organization(const ::drogon::HttpRequestPtr &req,
-		                         std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+		void remove_organization(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
 
 		// Shared Handlers for CRUD Operations
-		template <typename GetFunction>
-		void handle_get(std::function<void(const ::drogon::HttpResponsePtr &)> &callback, GetFunction get_func)
+		static void handle_get(const std::function<void(const ::drogon::HttpResponsePtr &)> &callback, const std::function<Json::Value()> &get_func)
 		{
 			LOG_INFO << "Get element";
 			try
 			{
-				auto wiki = get_func();
-				auto response = ::drogon::HttpResponse::newHttpJsonResponse(wiki->to_json());
+				Json::Value wiki = get_func();
+				const auto response = ::drogon::HttpResponse::newHttpJsonResponse(std::move(wiki));
+				response->setStatusCode(::drogon::k200OK);
 				callback(response);
-			} catch (const std::exception &e)
+			}
+			catch (const std::exception &e)
 			{
 				LOG_ERROR << "Get exception: " << e.what();
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
@@ -135,8 +154,9 @@ namespace drug_lib::services::drogon
 		}
 
 		template <typename UpdateFunction>
-		static void handle_update(const ::drogon::HttpRequestPtr &req,
-		                          std::function<void(const ::drogon::HttpResponsePtr &)> &callback, UpdateFunction update_func)
+		static void handle_update(
+			const ::drogon::HttpRequestPtr &req,
+			std::function<void(const ::drogon::HttpResponsePtr &)> &callback, UpdateFunction update_func)
 		{
 			LOG_INFO << "Update element";
 			if (const auto json = req->getJsonObject();
@@ -156,7 +176,8 @@ namespace drug_lib::services::drogon
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k200OK);
 				callback(response);
-			} catch (const std::exception &e)
+			}
+			catch (const std::exception &e)
 			{
 				LOG_ERROR << "Error During conversion" << e.what();
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
@@ -166,9 +187,9 @@ namespace drug_lib::services::drogon
 			}
 		}
 
-		template <typename AddFunction>
-		static void handle_add(const ::drogon::HttpRequestPtr &req,
-		                       std::function<void(const ::drogon::HttpResponsePtr &)> &callback, AddFunction add_func)
+		static void handle_add(
+			const ::drogon::HttpRequestPtr &req,
+			const std::function<void(const ::drogon::HttpResponsePtr &)> &callback, const std::function<Json::Value()> &add_func)
 		{
 			LOG_INFO << "Add element";
 			if (const auto json = req->getJsonObject();
@@ -187,7 +208,8 @@ namespace drug_lib::services::drogon
 				const auto response = ::drogon::HttpResponse::newHttpJsonResponse(std::move(fetched));
 				response->setStatusCode(::drogon::k201Created);
 				callback(response);
-			} catch (const std::exception &e)
+			}
+			catch (const std::exception &e)
 			{
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k500InternalServerError);
@@ -206,7 +228,8 @@ namespace drug_lib::services::drogon
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k204NoContent);
 				callback(response);
-			} catch (const std::exception &e)
+			}
+			catch (const std::exception &e)
 			{
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k500InternalServerError);

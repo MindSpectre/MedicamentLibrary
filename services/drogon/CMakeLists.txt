@@ -1,6 +1,8 @@
 set(NecessaryDrogonLibs
         Drogon::Drogon
         DrugLib_Services_Drogon_Config_Utils
+        DrugLib_Common_Utilities
+        DrugLib_Common_Stopwatch
 )
 
 

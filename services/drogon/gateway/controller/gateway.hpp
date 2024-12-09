@@ -7,8 +7,8 @@ namespace drug_lib::services::drogon
 {
 	struct constants
 	{
-		static constexpr std::string endpoint_search_service = "/search/";
-		static constexpr std::string endpoint_librarian_service = "/wiki/";
+		static constexpr std::string endpoint_search_service = "/api/search/";
+		static constexpr std::string endpoint_librarian_service = "/api/wiki/";
 	};
 
 	class Gateway final : public ::drogon::HttpController<Gateway>

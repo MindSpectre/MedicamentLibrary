@@ -5,12 +5,12 @@ void drug_lib::services::drogon::Librarian::get_patient(const ::drogon::HttpRequ
 {
 	handle_get(callback, [&]()
 	{
-		return service_.get_patient(std::move(id));
+		return service_.get_patient(std::move(id))->to_json();
 	});
 }
 
 void drug_lib::services::drogon::Librarian::update_patient(const ::drogon::HttpRequestPtr &req,
-                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback,[[maybe_unused]] common::database::Uuid id)
 {
 	handle_update(req, callback, [&]()
 	{
@@ -33,11 +33,11 @@ void drug_lib::services::drogon::Librarian::add_patient(const ::drogon::HttpRequ
 }
 
 void drug_lib::services::drogon::Librarian::remove_patient(const ::drogon::HttpRequestPtr &req,
-                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_remove(callback, [&]()
 	{
-		return service_.remove_patient(id);
+		return service_.remove_patient(std::move(id));
 	});
 }
 
@@ -47,7 +47,7 @@ void drug_lib::services::drogon::Librarian::get_disease(const ::drogon::HttpRequ
 	LOG_DEBUG << "Get disease by id: " << id.get_id();
 	handle_get(callback, [&]()
 	{
-		return service_.get_disease(std::move(id));
+		return service_.get_disease(std::move(id))->to_json();
 	});
 }
 
@@ -89,7 +89,7 @@ void drug_lib::services::drogon::Librarian::get_medicament(const ::drogon::HttpR
 {
 	handle_get(callback, [&]()
 	{
-		return service_.get_medicament(id);
+		return service_.get_medicament(id)->to_json();
 	});
 }
 
@@ -130,7 +130,7 @@ void drug_lib::services::drogon::Librarian::get_organization(const ::drogon::Htt
 {
 	handle_get(callback, [&]()
 	{
-		return service_.get_organization(id);
+		return service_.get_organization(id)->to_json();
 	});
 }
 
