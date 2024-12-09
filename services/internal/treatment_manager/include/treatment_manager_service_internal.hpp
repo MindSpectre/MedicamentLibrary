@@ -28,15 +28,15 @@ namespace drug_lib::services
             Ok = 3
         };
 
-        void assign_disease(int32_t patient_id, int32_t disease_id);
-        void remove_disease(int32_t patient_id, int32_t disease_id);
-        void cure_disease(int32_t patient_id, int32_t disease_id);
-        void assign_drug(int32_t patient_id, int32_t drug_id);
-        void remove_drug(int32_t patient_id, int32_t drug_id);
-        std::vector<data::objects::Medicament> current_drugs(int32_t patient_id);
-        std::vector<data::objects::Disease> current_diseases(int32_t patient_id);
-        data::objects::Patient patient_profile(int32_t patient_id);
-        bool is_dangerous(int32_t patient_id);
+        void assign_disease(common::database::Uuid patient_id, common::database::Uuid disease_id);
+        void remove_disease(common::database::Uuid patient_id, const common::database::Uuid &disease_id);
+        void cure_disease(common::database::Uuid patient_id, const common::database::Uuid &disease_id);
+        void assign_drug(common::database::Uuid patient_id, common::database::Uuid drug_id);
+        void remove_drug(common::database::Uuid patient_id, const common::database::Uuid &drug_id);
+        std::vector<data::objects::Medicament> current_drugs(common::database::Uuid patient_id);
+        std::vector<data::objects::Disease> current_diseases(common::database::Uuid patient_id);
+        data::objects::Patient patient_profile(common::database::Uuid patient_id);
+        bool is_dangerous(common::database::Uuid patient_id);
 
         void setup_from_one(const std::shared_ptr<common::database::interfaces::DbInterface>& connect)
         {

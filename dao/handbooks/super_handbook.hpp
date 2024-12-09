@@ -2,10 +2,10 @@
 
 #include <db_interface_pool.hpp>
 
-#include "patients_handbook.hpp"
-#include "medicaments_handbook.hpp"
 #include "diseases_handbook.hpp"
+#include "medicaments_handbook.hpp"
 #include "organizations_handbook.hpp"
+#include "patients_handbook.hpp"
 
 
 namespace drug_lib::dao

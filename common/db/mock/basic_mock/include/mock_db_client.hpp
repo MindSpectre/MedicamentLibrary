@@ -209,6 +209,40 @@ namespace drug_lib::common::database
         }
 
     protected:
+        std::vector<Record>insert_with_returning_implementation(std::string_view table_name, const std::vector<Record> &rows,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &
+                                                  returning_fields) override
+        {
+            std::cout << "insert_with_returning_implementation" << std::endl;
+            return {};
+        }
+
+        std::vector<Record> insert_with_returning_implementation(std::string_view table_name, std::vector<Record> &&rows,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &
+                                                  returning_fields) override
+        {
+            std::cout << "insert_with_returning_implementation" << std::endl;
+            return {};
+        }
+
+        std::vector<Record> upsert_with_returning_implementation(std::string_view table_name, const std::vector<Record> &rows,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &replace_fields,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &
+                                                  returning_fields) override
+        {
+            std::cout << "upsert_with_returning_implementation" << std::endl;
+            return {};
+        }
+
+        std::vector<Record> upsert_with_returning_implementation(std::string_view table_name, std::vector<Record> &&rows,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &replace_fields,
+                                                  const std::vector<std::shared_ptr<FieldBase> > &
+                                                  returning_fields) override
+        {
+            std::cout << "upsert_with_returning_implementation" << std::endl;
+            return{};
+        }
+
         // Implementation Methods for Data Manipulation
         void insert_implementation(std::string_view table_name, const std::vector<Record>& rows) override
         {

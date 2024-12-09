@@ -26,6 +26,7 @@ namespace drug_lib::dao
 
     private:
         void tear_down() override;
+
         void setup() & override;
     };
 }

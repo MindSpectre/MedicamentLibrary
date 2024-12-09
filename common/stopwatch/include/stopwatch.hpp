@@ -83,13 +83,17 @@ namespace drug_lib::common
         * @brief Starts or resets the stopwatch.
         */
         // Start or reset the stopwatch
-        void start(std::string name = "") noexcept
+        void start(std::string name) noexcept
         {
             running_name_ = std::move(name);
             start_time_ = now();
             flags_.clear();
         }
-
+        void start() noexcept
+        {
+            start_time_ = now();
+            flags_.clear();
+        }
         /**
          * @brief Stops the stopwatch and prints the times.
          */

@@ -15,7 +15,7 @@ target_link_libraries(DrugLib_Common_Database_PqxxClient
         DrugLib_Common_Database_Interface
         DrugLib_Common_Database_Exceptions
         DrugLib_Common_Database_Behavioral_OperationsStrategies
-        DrugLib_Common_StopWatch
+        DrugLib_Common_Stopwatch
         libpqxx::pqxx
         Boost::container
 )

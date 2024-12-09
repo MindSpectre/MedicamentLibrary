@@ -40,7 +40,7 @@ TEST(OrganizationPropertiesTest, GetPropertyInfo)
 
 TEST(OrganizationPropertiesTest, ValidationJson)
 {
-    Organization organization(1, "SAM", "TYPE", "US", "111");
+    Organization organization(common::database::Uuid("1"), "SAM", "TYPE", "US", "111");
 
     const auto license = data::PropertyFactory::create<organizations::License>("1", "2");
     organization.add_property(license);

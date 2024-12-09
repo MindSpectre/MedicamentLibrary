@@ -1,0 +1,17 @@
+{
+  "name": "medicament-library",
+  "version": "0.1.0",
+  "description": "A project for drug suggestion and managing patient info",
+  "dependencies": [
+    "boost-algorithm",
+    "boost-container",
+    "boost-log",
+    "jsoncpp",
+    "valijson",
+    "libuuid",
+    "gtest",
+    "libpqxx",
+    "drogon",
+    "abseil"
+  ]
+}

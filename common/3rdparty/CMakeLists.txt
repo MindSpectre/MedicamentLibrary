@@ -1,0 +1,2 @@
+add_library(CSV_Parser INTERFACE csv_parser/csv.h)
+target_include_directories(CSV_Parser INTERFACE csv_parser)
