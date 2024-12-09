@@ -84,9 +84,13 @@ void create_meds(drug_lib::common::database::creational::DbInterfacePool &db_poo
             medicament.add_property(
                 drug_lib::data::PropertyFactory::create<::medicaments::Strength>("500 mg per tablet")
             );
+            if (i == 0 and batch_n == 0)
+            {
+                std::cout << medicament.to_json() << std::endl;
+            }
             medicaments.push_back(std::move(medicament));
         }
-        std::cout << "Insert medicament package: " << batch_n + 1 << std::endl;
+        // std::cout << "Insert medicament package: " << batch_n + 1 << std::endl;
         super_handbook.medicaments().force_insert(medicaments);
     }
     stopwatch.finish();
@@ -136,9 +140,13 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool &db
             disease.add_property(
                 drug_lib::data::PropertyFactory::create<diseases::RiskFactors>(
                     std::vector<std::string>{"Smoking", "Obesity", "High blood pressure"}));
+            if (i == 0 and batch_n == 1)
+            {
+                std::cout << disease.to_json() << std::endl;
+            }
             diseases.push_back(std::move(disease));
         }
-        std::cout << "Insert disease package: " << batch_n + 1 << std::endl;
+        // std::cout << "Insert disease package: " << batch_n + 1 << std::endl;
         super_handbook.diseases().force_insert(diseases);
     }
     stopwatch.finish();
@@ -212,9 +220,13 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool &db
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::Vaccines>(
                     std::vector<std::string>{"COVID-19", "Influenza", "Rabies"}));
+            if (i == 0 and batch_n == 2)
+            {
+                std::cout << patient.to_json() << std::endl;
+            }
             patients.push_back(std::move(patient));
         }
-        std::cout << "Insert patient package: " << batch_n + 1 << std::endl;
+        // std::cout << "Insert patient package: " << batch_n + 1 << std::endl;
         super_handbook.patients().force_insert(patients);
     }
     stopwatch.finish();
@@ -247,9 +259,13 @@ void create_organizations(drug_lib::common::database::creational::DbInterfacePoo
             organization.add_property(
                 drug_lib::data::PropertyFactory::create<organizations::License>(
                     std::move(license)));
+            if (i == 0 and batch_n == 4)
+            {
+                std::cout << organization.to_json() << std::endl;
+            }
             organizations.push_back(std::move(organization));
         }
-        std::cout << "Insert organization package: " << batch_n + 1 << std::endl;
+        // std::cout << "Insert organization package: " << batch_n + 1 << std::endl;
         super_handbook.organizations().force_insert(organizations);
     }
     stopwatch.finish();
@@ -265,11 +281,6 @@ int main()
     drug_lib::common::database::creational::DbInterfacePool db_pool;
     drug_lib::common::database::PqxxConnectParams connect_params{host, port, db_name, username, password};
     db_pool.fill(4, drug_lib::common::database::creational::DbInterfaceFactory::create_pqxx_client, connect_params);
-    // Paths for CSV files
-    std::string meds_csv = "meds.csv";
-    std::string diseases_csv = "diseases.csv";
-    std::string patients_csv = "patients.csv";
-    std::string organizations_csv = "organizations.csv";
 
     // Run threads
     std::jthread meds_thread(create_meds, std::ref(db_pool));
