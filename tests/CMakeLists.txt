@@ -7,7 +7,7 @@ target_link_libraries(Sandbox
         DrugLib_Dao_Handbook_Base
         DrugLib_Common_Database_PqxxClient
         DrugLib_Common_Database_Behavioral_OperationsStrategies
-        DrugLib_Common_StopWatch
+        DrugLib_Common_Stopwatch
         Drogon::Drogon
         JsonCpp::JsonCpp
 )

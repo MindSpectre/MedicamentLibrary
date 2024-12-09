@@ -8,7 +8,7 @@ target_link_libraries(${INTEGRATION_TESTING_TARGET}_PqxxClient
         PRIVATE
         DrugLib_Common_Database_PqxxClient
         DrugLib_Common_Database_Factory
-        DrugLib_Common_StopWatch
+        DrugLib_Common_Stopwatch
         ${TEST_NECESSARY_LIBS}
 
 )
