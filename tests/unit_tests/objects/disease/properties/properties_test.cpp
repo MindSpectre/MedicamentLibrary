@@ -3,9 +3,9 @@
 #include "disease.hpp"
 #include "properties_controller.hpp"
 #include "test_affected_age_groups.hpp"
+#include "test_complications.hpp"
 #include "test_curative_drugs.hpp"
 #include "test_risk_factors.hpp"
-#include "test_complications.hpp"
 #include "test_symptoms.hpp"
 
 using namespace drug_lib;
@@ -35,7 +35,7 @@ TEST(DiseasePropertiesTest, GetPropertyInfo)
 {
     Disease disease;
     std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", "oo", "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
@@ -47,13 +47,14 @@ TEST(DiseasePropertiesTest, GetPropertyInfo)
 
 TEST(DiseasePropertiesTest, ValidationJson)
 {
-    Disease disease(3, "Chickenpox", "Viral", true);
+    Disease disease(common::database::Uuid(), "Chickenpox", "Viral", true);
     std::vector symptoms_list = {
-        diseases::Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough")
+        diseases::Symptom("Cough", "r", "2 weeks", "Respiratory", "Persistent cough")
     };
     const auto symptoms = data::PropertyFactory::create<diseases::Symptoms>(std::move(symptoms_list));
     disease.add_property(symptoms);
-    for (const auto record = disease.to_record().fields(); const auto& field : record)
+    for (const auto record = disease.to_record().fields();
+         const auto &field: record)
     {
         if (field->get_name() == Disease::field_name::name)
         {
@@ -66,10 +67,6 @@ TEST(DiseasePropertiesTest, ValidationJson)
         else if (field->get_name() == Disease::field_name::is_infectious)
         {
             EXPECT_TRUE(field->as<bool>());
-        }
-        else if (field->get_name() == Disease::field_name::id)
-        {
-            EXPECT_EQ(3, field->as<int>());
         }
         else if (field->get_name() == Disease::field_name::properties)
         {
@@ -84,13 +81,13 @@ TEST(DiseasePropertiesTest, ValidationJson)
                 [diseases::Symptom::names_of_json_fields::type].asString(), "Respiratory");
             EXPECT_EQ(
                 info[diseases::properties::symptoms][0]
-                [diseases::Symptom::names_of_json_fields::severity].asInt(), 3);
+                [diseases::Symptom::names_of_json_fields::severity].asString(), "r");
         }
     }
 }
 
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

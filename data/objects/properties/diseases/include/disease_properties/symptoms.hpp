@@ -11,10 +11,10 @@ namespace drug_lib::data::objects::diseases
     public:
         Symptom() = default;
 
-        Symptom(std::string name, const uint8_t severity, std::string duration,
+        Symptom(std::string name, std::string severity, std::string duration,
                 std::string type, std::string description)
             : name_(std::move(name)),
-              severity_(severity),
+              severity_(std::move(severity)),
               duration_(std::move(duration)),
               type_(std::move(type)),
               description_(std::move(description))
@@ -25,7 +25,7 @@ namespace drug_lib::data::objects::diseases
 
         Symptom(Symptom&& other) noexcept
             : name_(std::move(other.name_)),
-              severity_(other.severity_),
+              severity_(std::move(other.severity_)),
               duration_(std::move(other.duration_)),
               type_(std::move(other.type_)),
               description_(std::move(other.description_))
@@ -68,12 +68,12 @@ namespace drug_lib::data::objects::diseases
             name_ = name;
         }
 
-        [[nodiscard]] uint8_t get_severity() const
+        [[nodiscard]] const std::string &get_severity() const
         {
             return severity_;
         }
 
-        void set_severity(const uint8_t severity)
+        void set_severity(const std::string& severity)
         {
             severity_ = severity;
         }
@@ -129,7 +129,7 @@ namespace drug_lib::data::objects::diseases
 
     private:
         std::string name_;
-        uint8_t severity_ = 0;
+        std::string severity_;
         std::string duration_;
         std::string type_;
         std::string description_;
@@ -185,7 +185,7 @@ namespace drug_lib::data::objects::diseases
                 {
                     Symptom symptom(
                         symptom_json[Symptom::names_of_json_fields::name].asString(),
-                        static_cast<uint8_t>(symptom_json[Symptom::names_of_json_fields::severity].asUInt()),
+                        symptom_json[Symptom::names_of_json_fields::severity].asString(),
                         symptom_json[Symptom::names_of_json_fields::duration].asString(),
                         symptom_json[Symptom::names_of_json_fields::type].asString(),
                         symptom_json[Symptom::names_of_json_fields::description].asString()

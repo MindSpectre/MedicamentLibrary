@@ -25,7 +25,9 @@ TEST(PatientPropertiesTest, AddProperty)
 TEST(PatientPropertiesTest, RemoveProperty)
 {
     Patient patient;
-    const auto current_diseases = data::PropertyFactory::create<patients::CurrentDiseases>(std::vector{1, 2, 3});
+    const auto current_diseases = data::PropertyFactory::create<CurrentDiseases>(std::vector<common::database::Uuid>{
+        common::database::Uuid("1"), common::database::Uuid("2"), common::database::Uuid("3")
+    });
     patient.add_property(current_diseases);
 
     patient.remove_property(patients::properties::current_diseases);
@@ -36,27 +38,26 @@ TEST(PatientPropertiesTest, RemoveProperty)
 TEST(PatientPropertiesTest, GetPropertyInfo)
 {
     Patient patient;
-    std::vector current_diseases_list = {1, 2, 3, 4, 5};
+    std::vector<common::database::Uuid> current_diseases_list = {common::database::Uuid("1"), common::database::Uuid("2")};
     const auto current_diseases = data::PropertyFactory::create<patients::CurrentDiseases>(
         current_diseases_list);
 
     patient.add_property(current_diseases);
     Json::Value info = patient.get_property(patients::properties::current_diseases)->get_info();
     ASSERT_TRUE(info.isArray());
-    EXPECT_EQ(info[0], current_diseases_list[0]);
+    EXPECT_EQ(info[0], current_diseases_list[0].get_id());
 }
 
 TEST(PatientPropertiesTest, ValidationJson)
 {
     Patient patient;
-    std::vector current_diseases_list = {
-        1, 2, 3, 4, 5
-    };
+    std::vector<common::database::Uuid> current_diseases_list = {common::database::Uuid("1"), common::database::Uuid("2")};
     const auto current_diseases = data::PropertyFactory::create<patients::CurrentDiseases>(
         current_diseases_list);
 
     patient.add_property(current_diseases);
-    for (const auto record = patient.to_record().fields(); const auto& field : record)
+    for (const auto record = patient.to_record().fields();
+         const auto &field: record)
     {
         if (field->get_name() == Patient::field_name::properties)
         {
@@ -66,13 +67,13 @@ TEST(PatientPropertiesTest, ValidationJson)
             EXPECT_TRUE(info[patients::properties::current_diseases].isArray());
             for (uint32_t i = 0; i < current_diseases_list.size(); ++i)
             {
-                EXPECT_EQ(info[patients::properties::current_diseases][i].asInt(), current_diseases_list[i]);
+                EXPECT_EQ(info[patients::properties::current_diseases][i].asString(), current_diseases_list[i].get_id());
             }
         }
     }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

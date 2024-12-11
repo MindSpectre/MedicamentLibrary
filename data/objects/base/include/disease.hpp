@@ -1,9 +1,11 @@
 #pragma once
 
 
+#include <iostream>
+#include <utility>
+
 #include "common_object.hpp"
 #include "properties_controller.hpp"
-
 namespace drug_lib::data::objects
 {
     class Disease final : public ObjectBase, public PropertiesHolder
@@ -19,7 +21,7 @@ namespace drug_lib::data::objects
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(field_name::id, id_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
             record.push_back(
@@ -35,7 +37,7 @@ namespace drug_lib::data::objects
                 if (const auto& field_name = field->get_name();
                     field_name == field_name::id)
                 {
-                    id_ = field->as<int32_t>();
+                    id_ = field->as<common::database::Uuid>();
                 }
                 else if (field_name == field_name::name)
                 {
@@ -67,7 +69,7 @@ namespace drug_lib::data::objects
                 if (const auto& field_name = viewed->name(i);
                     field_name == field_name::id)
                 {
-                    id_ = std::stoi(viewed->extract(i));
+                    id_ = viewed->extract(i);
                 }
                 else if (field_name == field_name::name)
                 {
@@ -79,7 +81,7 @@ namespace drug_lib::data::objects
                 }
                 else if (field_name == field_name::is_infectious)
                 {
-                    is_infectious_ = viewed->extract(i) == "true";
+                    is_infectious_ = viewed->extract(i) == "t";
                 }
                 else if (field_name == field_name::properties)
                 {
@@ -92,10 +94,9 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value to_json() override
+        [[nodiscard]] [[nodiscard]] Json::Value to_json() const  override
         {
-            Json::Value result;
-            result[field_name::id] = id_;
+            Json::Value result = ObjectBase::to_json();
             result[field_name::name] = name_;
             result[field_name::type] = type_;
             result[field_name::is_infectious] = is_infectious_;
@@ -105,17 +106,25 @@ namespace drug_lib::data::objects
 
         void from_json(const Json::Value& val) override
         {
-            id_ = val[field_name::id].asInt();
+            ObjectBase::from_json(val);
             name_ = val[field_name::name].asString();
             type_ = val[field_name::type].asString();
-            is_infectious_ = val[field_name::is_infectious].asBool();
+            try
+            {
+                is_infectious_ = val[field_name::is_infectious].asBool();
+            } catch (const Json::LogicError& e)
+            {
+                is_infectious_ = val[field_name::is_infectious].asString() == "true" ||
+                    val[field_name::is_infectious].asString() == "True";
+            }
             create_collection(val[field_name::properties]);
+
         }
 
         Disease() = default;
 
-        Disease(const int32_t id, std::string name, std::string type, const bool is_infectious) :
-            ObjectBase(id), name_(std::move(name)),
+        Disease(common::database::Uuid id, std::string name, std::string type, const bool is_infectious) :
+            ObjectBase(std::move(id)), name_(std::move(name)),
             type_(std::move(type)),
             is_infectious_(is_infectious)
         {

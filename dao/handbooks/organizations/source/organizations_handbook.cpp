@@ -8,7 +8,7 @@ namespace drug_lib::dao
 
     void OrganizationsHandbook::setup() &
     {
-        table_name_ = handbook_tables_name::Organizations;
+        table_name_ = handbook_tables_name::organizations;
         const auto country_field = common::database::make_field_shared_by_default<std::string>(
             objects::Organization::field_name::country);
         const auto type_field = common::database::make_field_shared_by_default<std::string>(
