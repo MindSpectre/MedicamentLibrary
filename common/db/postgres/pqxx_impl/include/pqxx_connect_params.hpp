@@ -1,4 +1,7 @@
 #pragma once
+#include <utility>
+
+#pragma once
 
 
 namespace drug_lib::common::database
@@ -6,24 +9,24 @@ namespace drug_lib::common::database
     class PqxxConnectParams
     {
     public:
-        PqxxConnectParams(const std::string_view host,
+        PqxxConnectParams(std::string  host,
                           const uint32_t port,
-                          const std::string_view db_name,
-                          const std::string_view login,
-                          const std::string_view password): host_(host), port_(port), db_name_(db_name),
-                                                            login_(login),
-                                                            password_(password)
+                          std::string  db_name,
+                          std::string  login,
+                          std::string  password): host_(std::move(host)), port_(port), db_name_(std::move(db_name)),
+                                                            login_(std::move(login)),
+                                                            password_(std::move(password))
         {
         }
 
         PqxxConnectParams() = default;
 
-        [[nodiscard]] const std::string_view& get_host() const
+        [[nodiscard]] const std::string& get_host() const
         {
             return host_;
         }
 
-        void set_host(const std::string_view& host)
+        void set_host(const std::string& host)
         {
             host_ = host;
         }
@@ -38,36 +41,35 @@ namespace drug_lib::common::database
             port_ = port;
         }
 
-        [[nodiscard]] const std::string_view& get_db_name() const
+        [[nodiscard]] const std::string& get_db_name() const
         {
             return db_name_;
         }
 
-        void set_db_name(const std::string_view& db_name)
+        void set_db_name(const std::string& db_name)
         {
             db_name_ = db_name;
         }
 
-        [[nodiscard]] const std::string_view& get_login() const
+        [[nodiscard]] const std::string& get_login() const
         {
             return login_;
         }
 
-        void set_login(const std::string_view& login)
+        void set_login(const std::string& login)
         {
             login_ = login;
         }
 
-        [[nodiscard]] const std::string_view& get_password() const
+        [[nodiscard]] const std::string& get_password() const
         {
             return password_;
         }
 
-        void set_password(const std::string_view& password)
+        void set_password(const std::string&& password)
         {
             password_ = password;
         }
-
         [[nodiscard]] std::string make_connect_string() const
         {
             std::ostringstream conn_str;
@@ -80,10 +82,10 @@ namespace drug_lib::common::database
         }
 
     private:
-        std::string_view host_;
+        std::string host_;
         uint32_t port_{};
-        std::string_view db_name_;
-        std::string_view login_;
-        std::string_view password_;
+        std::string db_name_;
+        std::string login_;
+        std::string password_;
     };
 }

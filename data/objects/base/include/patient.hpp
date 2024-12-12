@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "common_object.hpp"
 #include "properties_controller.hpp"
 
@@ -8,6 +10,7 @@ namespace drug_lib::data::objects
     class Patient final : public ObjectBase, public PropertiesHolder
     {
     public:
+        // ReSharper disable once CppInconsistentNaming
         struct field_name : common_fields_names
         {
             static constexpr auto name = "name";
@@ -19,9 +22,9 @@ namespace drug_lib::data::objects
         Patient() = default;
 
 
-        Patient(const int32_t id, std::string name, std::string gender, std::chrono::year_month_day const birth_date,
+        Patient(common::database::Uuid id, std::string name, std::string gender, std::chrono::year_month_day const birth_date,
                 std::string contact_information) :
-            ObjectBase(id), name_(std::move(name)),
+            ObjectBase(std::move(id)), name_(std::move(name)),
             gender_(std::move(gender)),
             birth_date_(birth_date),
             contact_information_(std::move(contact_information))
@@ -33,7 +36,7 @@ namespace drug_lib::data::objects
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(field_name::id, id_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::gender, gender_));
             record.push_back(
@@ -53,7 +56,7 @@ namespace drug_lib::data::objects
                 if (const auto& field_name = field->get_name();
                     field_name == field_name::id)
                 {
-                    id_ = field->as<int32_t>();
+                    id_ = field->as<common::database::Uuid>();
                 }
                 else if (field_name == field_name::name)
                 {
@@ -90,7 +93,7 @@ namespace drug_lib::data::objects
             {
                 if (const auto& field_name = viewed->name(i); field_name == field_name::id)
                 {
-                    id_ = std::stoi(viewed->extract(i));
+                    id_ = viewed->extract(i);
                 }
                 else if (field_name == field_name::name)
                 {
@@ -127,10 +130,9 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value to_json() override
+        [[nodiscard]] Json::Value to_json() const override
         {
-            Json::Value result;
-            result[field_name::id] = id_;
+            Json::Value result = ObjectBase::to_json();
             result[field_name::name] = name_;
             result[field_name::gender] = gender_;
             result[field_name::birth_date]["year"] = static_cast<int>(birth_date_.year());
@@ -143,16 +145,16 @@ namespace drug_lib::data::objects
 
         void from_json(const Json::Value& val) override
         {
-            id_ = val[field_name::id].asInt();
+            ObjectBase::from_json(val);
             name_ = val[field_name::name].asString();
             gender_ = val[field_name::gender].asString();
 
-            if (const Json::Value& birthDate = val[field_name::birth_date]; birthDate.isMember("year") && birthDate.
-                isMember("month") && birthDate.isMember("day"))
+            if (const Json::Value& birth_date = val[field_name::birth_date]; birth_date.isMember("year") && birth_date.
+                isMember("month") && birth_date.isMember("day"))
             {
-                const int32_t year = birthDate["year"].asInt();
-                const uint32_t month = birthDate["month"].asUInt();
-                const uint32_t day = birthDate["day"].asUInt();
+                const int32_t year = birth_date["year"].asInt();
+                const uint32_t month = birth_date["month"].asUInt();
+                const uint32_t day = birth_date["day"].asUInt();
                 birth_date_ = std::chrono::year_month_day{
                     std::chrono::year{year},
                     std::chrono::month{month},

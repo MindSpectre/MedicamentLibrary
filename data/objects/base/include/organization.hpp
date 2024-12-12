@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "common_object.hpp"
 #include "properties_controller.hpp"
 
@@ -19,7 +21,7 @@ namespace drug_lib::data::objects
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.push_back(std::make_unique<common::database::Field<int32_t>>(field_name::id, id_));
+            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(field_name::id, id_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
             record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::country, country_));
@@ -36,7 +38,7 @@ namespace drug_lib::data::objects
                 if (const auto& field_name = field->get_name();
                     field_name == field_name::id)
                 {
-                    id_ = field->as<int32_t>();
+                    id_ = field->as<common::database::Uuid>();
                 }
                 else if (field_name == field_name::name)
                 {
@@ -72,7 +74,7 @@ namespace drug_lib::data::objects
                 if (const auto& field_name = viewed->name(i);
                     field_name == field_name::id)
                 {
-                    id_ = std::stoi(viewed->extract(i));
+                    id_ = viewed->extract(i);
                 }
                 else if (field_name == field_name::name)
                 {
@@ -101,10 +103,9 @@ namespace drug_lib::data::objects
             }
         }
 
-        Json::Value to_json() override
+        [[nodiscard]] Json::Value to_json() const override
         {
-            Json::Value result;
-            result[field_name::id] = id_;
+            Json::Value result = ObjectBase::to_json();
             result[field_name::name] = name_;
             result[field_name::type] = type_;
             result[field_name::contact_details] = contact_details_;
@@ -115,7 +116,7 @@ namespace drug_lib::data::objects
 
         void from_json(const Json::Value& val) override
         {
-            id_ = val[field_name::id].asInt();
+            ObjectBase::from_json(val);
             name_ = val[field_name::name].asString();
             type_ = val[field_name::type].asString();
             contact_details_ = val[field_name::contact_details].asString();
@@ -126,9 +127,9 @@ namespace drug_lib::data::objects
         Organization() = default;
 
         // Конструктор с параметрами
-        Organization(const int32_t id, std::string name, std::string type, std::string country,
+        Organization(common::database::Uuid id, std::string name, std::string type, std::string country,
                      std::string contact_details) :
-            ObjectBase(id), name_(std::move(name)),
+            ObjectBase(std::move(id)), name_(std::move(name)),
             type_(std::move(type)),
             country_(std::move(country)),
             contact_details_(std::move(contact_details))

@@ -6,7 +6,7 @@ add_executable(${UNIT_TESTING_TARGET}_StopWatch
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_StopWatch
         PRIVATE
-        DrugLib_Common_StopWatch
+        DrugLib_Common_Stopwatch
         ${TEST_NECESSARY_LIBS}
 
 )

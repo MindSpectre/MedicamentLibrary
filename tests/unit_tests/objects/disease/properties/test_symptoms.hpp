@@ -14,8 +14,8 @@ TEST(SymptomsTest, DefaultConstructor)
 TEST(SymptomsTest, ParameterizedConstructor)
 {
     const std::vector<Symptom> symptoms_list = {
-        Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
-        Symptom("Fever", 5, "1 week", "General", "High body temperature")
+        Symptom("Cough", "low", "2 weeks", "Respiratory", "Persistent cough"),
+        Symptom("Fever", "med", "1 week", "General", "High body temperature")
     };
     const Symptoms symptoms(symptoms_list);
     EXPECT_EQ(symptoms.get_data().size(), 2);
@@ -27,7 +27,7 @@ TEST(SymptomsTest, SetSymptoms)
 {
     Symptoms symptoms;
     const std::vector symptoms_list = {
-        Symptom("Headache", 4, "3 days", "Neurological", "Throbbing pain")
+        Symptom("Headache", "low", "3 days", "Neurological", "Throbbing pain")
     };
     symptoms.set_data(symptoms_list);
     EXPECT_EQ(symptoms.get_data().size(), 1);
@@ -37,7 +37,7 @@ TEST(SymptomsTest, SetSymptoms)
 TEST(SymptomsTest, EmplaceBack)
 {
     Symptoms symptoms;
-    symptoms.emplace_back("Nausea", 2, "1 day", "Digestive", "Feeling of sickness");
+    symptoms.emplace_back("Nausea", "low", "1 day", "Digestive", "Feeling of sickness");
     EXPECT_EQ(symptoms.get_data().size(), 1);
     EXPECT_EQ(symptoms.get_data()[0].get_name(), "Nausea");
 }
@@ -45,8 +45,8 @@ TEST(SymptomsTest, EmplaceBack)
 TEST(SymptomsTest, GetInfo)
 {
     const std::vector symptoms_list = {
-        Symptom("Cough", 3, "2 weeks", "Respiratory", "Persistent cough"),
-        Symptom("Fever", 5, "1 week", "General", "High body temperature")
+        Symptom("Cough", "low", "2 weeks", "Respiratory", "Persistent cough"),
+        Symptom("Fever", "low", "1 week", "General", "High body temperature")
     };
     const Symptoms symptoms(symptoms_list);
 
@@ -62,7 +62,7 @@ TEST(SymptomsTest, SetInfo)
     Json::Value symptoms_json(Json::arrayValue);
     Json::Value symptom1;
     symptom1["name"] = "Dizziness";
-    symptom1["severity"] = 2;
+    symptom1["severity"] = "low";
     symptom1["duration"] = "3 days";
     symptom1["type"] = "Neurological";
     symptom1["description"] = "Feeling lightheaded";

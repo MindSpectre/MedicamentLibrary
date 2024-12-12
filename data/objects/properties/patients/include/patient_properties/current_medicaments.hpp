@@ -6,7 +6,7 @@
 
 namespace drug_lib::data::objects::patients
 {
-    class CurrentMedicaments final : public ArrayProperty<int32_t>
+    class CurrentMedicaments final : public ArrayProperty<common::database::Uuid>
     {
     public:
         CurrentMedicaments() = default;
@@ -16,7 +16,7 @@ namespace drug_lib::data::objects::patients
             this->set_info(properties);
         }
 
-        explicit CurrentMedicaments(std::vector<int32_t> current_medicaments)
+        explicit CurrentMedicaments(std::vector<common::database::Uuid> current_medicaments)
             : ArrayProperty(std::move(current_medicaments))
         {
         }
@@ -33,7 +33,7 @@ namespace drug_lib::data::objects::patients
             Json::Value result(Json::arrayValue);
             for (const auto& ids : data_)
             {
-                result.append(ids);
+                result.append(ids.get_id());
             }
             return result;
         }
@@ -47,7 +47,7 @@ namespace drug_lib::data::objects::patients
             data_.reserve(property.size());
             for (const auto& it : property)
             {
-                data_.push_back(it.asInt());
+                data_.emplace_back(it.asString());
             }
         }
     };
