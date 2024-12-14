@@ -152,7 +152,7 @@ Disease createDisease()
         drug_lib::data::PropertyFactory::create<diseases::Symptoms>(
             std::move(symptoms)));
     disease.add_property(
-        drug_lib::data::PropertyFactory::create<diseases::CurativeDrugs>(std::vector{1, 2, 3}));
+        drug_lib::data::PropertyFactory::create<diseases::CurativeDrugs>(std::vector{drug_lib::common::database::Uuid(), drug_lib::common::database::Uuid()}));
     // Adding AffectedAgeGroups property
     disease.add_property(
         drug_lib::data::PropertyFactory::create<diseases::AffectedAgeGroups>(

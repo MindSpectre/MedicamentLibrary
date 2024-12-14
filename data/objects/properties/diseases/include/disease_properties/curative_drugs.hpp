@@ -6,7 +6,7 @@
 
 namespace drug_lib::data::objects::diseases
 {
-    class CurativeDrugs final : public ArrayProperty<int32_t>
+    class CurativeDrugs final : public ArrayProperty<common::database::Uuid>
     {
     public:
         CurativeDrugs() = default;
@@ -16,7 +16,7 @@ namespace drug_lib::data::objects::diseases
             this->set_info(properties);
         }
 
-        explicit CurativeDrugs(std::vector<int32_t> curative_drugs)
+        explicit CurativeDrugs(std::vector<common::database::Uuid> curative_drugs)
             : ArrayProperty(std::move(curative_drugs))
         {
         }
@@ -33,7 +33,7 @@ namespace drug_lib::data::objects::diseases
             Json::Value result(Json::arrayValue);
             for (const auto& ids : data_)
             {
-                result.append(ids);
+                result.append(ids.get_id());
             }
             return result;
         }
@@ -47,7 +47,7 @@ namespace drug_lib::data::objects::diseases
             data_.reserve(property.size());
             for (const auto& it : property)
             {
-                data_.push_back(it.asInt());
+                data_.emplace_back(std::move(it.asString()));
             }
         }
     };

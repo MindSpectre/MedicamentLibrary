@@ -5,7 +5,7 @@
 
 namespace drug_lib::data::objects
 {
-    namespace Auth
+    namespace auth
     {
         enum Permissions
         {
@@ -51,15 +51,15 @@ namespace drug_lib::data::objects
 
         [[nodiscard]] common::database::Record to_record() const;
         void from_record(const common::database::Record& record);
-        void add_permission(Auth::Permissions permission);
-        void remove_permission(Auth::Permissions permission);
-        bool has_permission(Auth::Permissions permission) const;
+        void add_permission(auth::Permissions permission);
+        void remove_permission(auth::Permissions permission);
+        bool has_permission(auth::Permissions permission) const;
         void change_role(std::string role);
         AuthObject() = default;
 
-        AuthObject(const int32_t user_id, std::string role, std::string login, std::string password_hash,
-                   std::unordered_set<Auth::Permissions>&& permissions)
-            : user_id_(user_id),
+        AuthObject( common::database::Uuid user_id, std::string role, std::string login, std::string password_hash,
+                   std::unordered_set<auth::Permissions>&& permissions)
+            : user_id_(std::move(user_id)),
               role_(std::move(role)),
               login_(std::move(login)),
               password_hash_(std::move(password_hash)),
@@ -67,11 +67,83 @@ namespace drug_lib::data::objects
         {
         }
 
+        [[nodiscard]] const common::database::Uuid & get_user_id() const
+        {
+            return user_id_;
+        }
+
+        void set_user_id(common::database::Uuid user_id)
+        {
+            user_id_ = std::move(user_id);
+        }
+
+        [[nodiscard]] const std::string & get_role() const
+        {
+            return role_;
+        }
+
+        void set_role(std::string role)
+        {
+            role_ = std::move(role);
+        }
+
+        [[nodiscard]] const std::string & get_login() const
+        {
+            return login_;
+        }
+
+        void set_login(std::string login)
+        {
+            login_ = std::move(login);
+        }
+
+        [[nodiscard]] const std::string & get_password_hash() const
+        {
+            return password_hash_;
+        }
+
+        void set_password_hash(std::string password_hash)
+        {
+            password_hash_ = std::move(password_hash);
+        }
+
+        [[nodiscard]] const std::unordered_set<auth::Permissions> & get_permissions() const
+        {
+            return permissions_;
+        }
+
+        void set_permissions(std::unordered_set<auth::Permissions> permissions)
+        {
+            permissions_ = std::move(permissions);
+        }
+        [[nodiscard]] [[nodiscard]] Json::Value to_json() const
+        {
+            Json::Value result;
+            result[field_name::user_id] = user_id_.get_id();
+            result[field_name::login] = login_;
+            result[field_name::password] = password_hash_;
+            return result;
+        }
+
+        void from_json(const Json::Value& val)
+        {
+            if (val.isMember(field_name::user_id))
+            {
+                user_id_.set_id(val[field_name::user_id].asString()) ;
+            } else
+            {
+                user_id_.set_id(common::database::Uuid::default_value);
+            }
+            login_ = val[field_name::login].asString();
+            // Todo: crete hash calc because in json stores raw value
+            password_hash_ = val[field_name::password].asString();
+
+        }
     private:
-        int32_t user_id_{};
+        common::database::Uuid user_id_{};
         std::string role_;
         std::string login_;
         std::string password_hash_;
-        std::unordered_set<Auth::Permissions> permissions_;
+        std::unordered_set<auth::Permissions> permissions_;
     };
 }

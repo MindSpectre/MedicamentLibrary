@@ -47,7 +47,7 @@ namespace drug_lib::data::objects::patients
             data_.reserve(property.size());
             for (const auto& it : property)
             {
-                data_.emplace_back(it.asString());
+                data_.emplace_back(std::move(it.asString()));
             }
         }
     };

@@ -14,7 +14,7 @@ TEST(CurativeDrugsTest, DefaultConstructor)
 
 TEST(CurativeDrugsTest, ParameterizedConstructorWithVector)
 {
-    const std::vector diseases = {101, 202, 303};
+    const std::vector diseases = {drug_lib::common::database::Uuid(), drug_lib::common::database::Uuid()};
     const CurativeDrugs curative_drugs(diseases);
 
     Json::Value info = curative_drugs.get_info();
