@@ -3,12 +3,10 @@
 #include <string>
 #include <vector>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include <json/json.h> // For creating JSON objects
 #include "csv.h" // A CSV parser library like csv-parser or similar
 #include "db_interface_factory.hpp"
 #include "db_interface_pool.hpp"
-#include "medicament.hpp"
 #include "pqxx_connect_params.hpp"
 
 std::vector<Json::Value> csv_to_json(const std::string& csv_file) {
@@ -24,16 +22,16 @@ std::vector<Json::Value> csv_to_json(const std::string& csv_file) {
             if (csv_doc.GetColumnName(j) == "properties")
             {
                 boost::algorithm::replace_all(row[5], "\'", "\"");
-                Json::CharReaderBuilder readerBuilder;
                 std::string errs;
-                std::istringstream propertiesStream(row[5]);
+                std::istringstream properties_stream(row[5]);
 
-                Json::Value propertiesJson;
-                if (!parseFromStream(readerBuilder, propertiesStream, &propertiesJson, &errs)) {
+                Json::Value properties_json;
+                if (Json::CharReaderBuilder reader_builder;
+                    !parseFromStream(reader_builder, properties_stream, &properties_json, &errs)) {
                     std::cerr << "Failed to parse properties JSON: " << errs << std::endl;
                     continue;
                 }
-                record["properties"] = propertiesJson;
+                record["properties"] = properties_json;
                 continue;
             }
             record[csv_doc.GetColumnName(j)] = row[j];
@@ -49,15 +47,6 @@ std::vector<Json::Value> csv_to_json(const std::string& csv_file) {
 
 // Example usage
 int main() {
-    const std::string csv_file = "csv/medicaments.csv";
-
-    // Convert CSV to JSON
-    std::vector<Json::Value> json_records = csv_to_json(csv_file);
-
-    drug_lib::data::objects::Medicament test_medicament;
-    test_medicament.from_json(json_records[0]);
-    std::cout << test_medicament.to_json() << std::endl;
-    return 0;
     constexpr uint32_t port = 5432;
     constexpr auto host = "localhost";
     constexpr auto db_name = "test_db";
@@ -72,6 +61,6 @@ int main() {
     const std::string diseases_csv_file = "csv/medicaments.csv";
     // Convert CSV to JSON
     std::vector<Json::Value> meds = csv_to_json(drugs_csv_file);
-
+    std::cout << meds[0].toStyledString() << std::endl;
     return 0;
 }

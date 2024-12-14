@@ -125,7 +125,7 @@ void create_diseases(drug_lib::common::database::creational::DbInterfacePool &db
                 drug_lib::data::PropertyFactory::create<diseases::Symptoms>(
                     std::move(symptoms)));
             disease.add_property(
-                drug_lib::data::PropertyFactory::create<diseases::CurativeDrugs>(std::vector{1, 2, 3}));
+                drug_lib::data::PropertyFactory::create<diseases::CurativeDrugs>(std::vector{drug_lib::common::database::Uuid(), drug_lib::common::database::Uuid()}));
             // Adding AffectedAgeGroups property
             disease.add_property(
                 drug_lib::data::PropertyFactory::create<diseases::AffectedAgeGroups>(
@@ -220,9 +220,9 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool &db
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::Vaccines>(
                     std::vector<std::string>{"COVID-19", "Influenza", "Rabies"}));
-            if (i == 0 and batch_n == 2)
+            if (i == 0 and batch_n == 0)
             {
-                std::cout << patient.to_json() << std::endl;
+                std::cout << patient.to_json().toStyledString() << std::endl;
             }
             patients.push_back(std::move(patient));
         }
@@ -259,7 +259,7 @@ void create_organizations(drug_lib::common::database::creational::DbInterfacePoo
             organization.add_property(
                 drug_lib::data::PropertyFactory::create<organizations::License>(
                     std::move(license)));
-            if (i == 0 and batch_n == 4)
+            if (i == 0 and batch_n == 0)
             {
                 std::cout << organization.to_json() << std::endl;
             }
@@ -283,9 +283,9 @@ int main()
     db_pool.fill(4, drug_lib::common::database::creational::DbInterfaceFactory::create_pqxx_client, connect_params);
 
     // Run threads
-    std::jthread meds_thread(create_meds, std::ref(db_pool));
-    std::jthread diseases_thread(create_diseases, std::ref(db_pool));
-    std::jthread patients_thread(create_patients, std::ref(db_pool));
+    // std::jthread meds_thread(create_meds, std::ref(db_pool));
+    // std::jthread diseases_thread(create_diseases, std::ref(db_pool));
+    // std::jthread patients_thread(create_patients, std::ref(db_pool));
     std::jthread organizations_thread(create_organizations, std::ref(db_pool));
 
     return 0;

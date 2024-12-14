@@ -32,3 +32,5 @@ target_link_libraries(DrugLib_Tools_ImportFromCsv
 )
 
 file(COPY db_tools/filler/csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_subdirectory(db_tools/json_manipulator)
