@@ -25,7 +25,18 @@ sudo dnf install -y \
     git \
     perl-IPC-Cmd
 sudo dnf install -y autoconf automake libtool
+echo "Installing LLVM and Clang..."
+wget https://apt.llvm.org/llvm.sh && \
+    chmod +x llvm.sh && \
+    ./llvm.sh 19 && \
+    sudo apt-get install -y \
+        clang-19 \
+        clang++-19 && \
+    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100 && \
+    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100 && \
+    rm -f llvm.sh
 
+echo "LLVM and Clang installation completed. Current version" clang --version
 echo "Base packages installation completed."
 VCPKG_ROOT="/opt/vcpkg"
 
