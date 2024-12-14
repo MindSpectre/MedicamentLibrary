@@ -135,7 +135,6 @@ namespace drug_lib::data
 
             void create_collection(const Json::Value& json)
             {
-                std::cout << json.toStyledString() << std::endl;
                 for (auto it = json.begin(); it != json.end(); ++it)
                 {
                     collection_.add_property(PropertyFactory::create(it.name(), *it));
