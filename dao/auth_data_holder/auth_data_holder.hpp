@@ -97,7 +97,7 @@ namespace drug_lib::dao
             connect_->remove_table(table_name_);
         }
 
-        data::objects::AuthObject get_by_user_id(const int32_t id) const
+        [[nodiscard]] data::objects::AuthObject get_by_user_id(const int32_t id) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
@@ -123,7 +123,7 @@ namespace drug_lib::dao
             return record;
         }
 
-        data::objects::AuthObject get_by_login(const std::string& login) const
+        [[nodiscard]] data::objects::AuthObject get_by_login(const std::string& login) const
         {
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
@@ -141,7 +141,7 @@ namespace drug_lib::dao
             if (res.empty())
             {
                 throw common::database::exceptions::InvalidIdentifierException(
-                    "Record not found", common::database::errors::db_error_code::DUPLICATE_RECORD);
+                    "Record not found", common::database::errors::db_error_code::RECORD_NOT_FOUND);
             }
             data::objects::AuthObject record;
             record.from_record(res.front());

@@ -192,7 +192,7 @@ namespace drug_lib::dao
 			if (res.empty())
 			{
 				throw common::database::exceptions::InvalidIdentifierException(
-					"Record not found", common::database::errors::db_error_code::DUPLICATE_RECORD);
+					"Record not found", common::database::errors::db_error_code::RECORD_NOT_FOUND);
 			}
 			RecordType record;
 			record.from_record(res.front());

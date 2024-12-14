@@ -15,4 +15,7 @@ target_link_libraries(DrugLib_Dao_AuthDataHolder
         ${DbNecessaryLibs}
         DrugLib_Data_AuthObject
 )
-
+target_include_directories(DrugLib_Dao_AuthDataHolder
+    PUBLIC
+        auth_data_holder/
+)
