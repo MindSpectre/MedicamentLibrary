@@ -1,0 +1,52 @@
+{
+  "approval_number" : "AVB12SYSmedicament1",
+  "approval_status" : "accepted",
+  "atc_code" : "ATC2DEmedicament1",
+  "id" : "default",
+  "name" : "medicament12",
+  "prescription" : true,
+  "properties" : 
+  {
+    "active_ingredients" : 
+    [
+      {
+        "name" : "Paracetamol",
+        "risk_level" : 2
+      },
+      {
+        "name" : "Caffeine",
+        "risk_level" : 3
+      }
+    ],
+    "dosage_form" : 
+    {
+      "description" : "Tablet, film-coated"
+    },
+    "inactive_ingredients" : 
+    [
+      {
+        "name" : "Microcrystalline Cellulose",
+        "risk_level" : 1
+      },
+      {
+        "name" : "Magnesium Stearate",
+        "risk_level" : 1
+      }
+    ],
+    "prescription" : 
+    {
+      "description" : "required"
+    },
+    "side_effects" : 
+    [
+      "Nausea",
+      "Dizziness",
+      "Fatigue"
+    ],
+    "strength" : 
+    {
+      "description" : "500 mg per tablet"
+    }
+  },
+  "type" : "medicament1"
+}

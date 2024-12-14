@@ -1,0 +1,50 @@
+{
+  "id" : "default",
+  "is_infectious" : true,
+  "name" : "disease13",
+  "properties" : 
+  {
+    "affected_age_groups" : 
+    [
+      "Children",
+      "Adults",
+      "Elderly"
+    ],
+    "complications" : 
+    [
+      "Pneumonia",
+      "Organ failure",
+      "Sepsis"
+    ],
+    "curative_drugs" : 
+    [
+      1,
+      2,
+      3
+    ],
+    "risk_factors" : 
+    [
+      "Smoking",
+      "Obesity",
+      "High blood pressure"
+    ],
+    "symptoms" : 
+    [
+      {
+        "description" : "Persistent cough",
+        "duration" : "2 weeks",
+        "name" : "Cough",
+        "severity" : "r",
+        "type" : "Respiratory"
+      },
+      {
+        "description" : "High body temperature",
+        "duration" : "1 week",
+        "name" : "Fever",
+        "severity" : "r",
+        "type" : "General"
+      }
+    ]
+  },
+  "type" : "Bacterial"
+}

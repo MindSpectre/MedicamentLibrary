@@ -1,0 +1,55 @@
+{
+  "birth_date" : 
+  {
+    "day" : 23,
+    "month" : 11,
+    "year" : 1964
+  },
+  "gender" : "male",
+  "id" : "default",
+  "name" : "patient13",
+  "properties" : 
+  {
+    "allergies" : 
+    [
+      "Peanuts",
+      "Dust",
+      "Pollen"
+    ],
+    "blood_type" : 
+    {
+      "blood_type" : "O+"
+    },
+    "current_diseases" : 
+    [
+      "101"
+    ],
+    "current_medicaments" : 
+    [
+      "1"
+    ],
+    "insurance" : 
+    {
+      "insurance" : "PremiumCare"
+    },
+    "medical_history" : 
+    [
+      {
+        "disease_id" : "101",
+        "end_date" : "2023-02",
+        "start_date" : "2022-05"
+      },
+      {
+        "disease_id" : "102",
+        "end_date" : "N/A",
+        "start_date" : "2023-03"
+      }
+    ],
+    "vaccines" : 
+    [
+      "COVID-19",
+      "Influenza",
+      "Rabies"
+    ]
+  }
+}

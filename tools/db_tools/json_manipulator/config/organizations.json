@@ -1,0 +1,15 @@
+{
+  "contact_details" : "org13@example.com",
+  "country" : "USA",
+  "id" : "default",
+  "name" : "organization13",
+  "properties" : 
+  {
+    "license" : 
+    {
+      "license_key" : "SAMPLE123",
+      "license_name" : "Sample License"
+    }
+  },
+  "type" : "Clinic"
+}
