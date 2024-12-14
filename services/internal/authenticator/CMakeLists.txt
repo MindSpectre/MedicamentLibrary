@@ -8,6 +8,7 @@ add_library(DrugLib_Services_Internal_Authenticator
 target_link_libraries(DrugLib_Services_Internal_Authenticator
         PUBLIC
         ${InternalLibs}
+        DrugLib_Dao_AuthDataHolder
 )
 target_include_directories(DrugLib_Services_Internal_Authenticator
         PUBLIC
