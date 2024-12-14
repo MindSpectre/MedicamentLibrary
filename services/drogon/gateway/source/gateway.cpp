@@ -30,12 +30,12 @@ void drug_lib::services::drogon::Gateway::proxy_to_search_service(const ::drogon
 
 	// Include query parameters in the proxied path
 	const auto full_path = append_query_params(req, constants::endpoint_search_service + path);
-	common::Stopwatch<std::chrono::nanoseconds> sw(" Redirected to Search Service with path" + full_path);
+	common::Stopwatch<std::chrono::milliseconds> sw(" Redirected to Search Service with path" + full_path);
 	// Create and send the proxied request
 	const auto request = ::drogon::HttpRequest::newHttpRequest();
 	request->setPath(full_path);
 	request->setMethod(req->getMethod());
-
+	sw.start();
 	search_service_client_->sendRequest(
 		request, [callback](const ::drogon::ReqResult result, const ::drogon::HttpResponsePtr &resp)
 		{
