@@ -55,7 +55,8 @@ void drug_lib::services::drogon::Search::search_through_all(
         LOG_INFO << "Searching for " << req->getPath() << "...";
         LOG_INFO << "Where param is: " << req->getParameter(constants::query_parameter);
         const auto internalResult = this->service_.open_search(req->getParameter(constants::query_parameter));
-        const auto response = create_json_response_from_objects(internalResult);
+
+        const auto response = ::drogon::HttpResponse::newHttpJsonResponse(internalResult.to_json());
         callback(response);
     }
     catch (const std::exception& e)

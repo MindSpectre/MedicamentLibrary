@@ -19,14 +19,14 @@ void print_menu()
     std::cout << "Enter your choice: ";
 }
 
-void print_results(const std::vector<std::unique_ptr<drug_lib::dao::objects::ObjectBase> > &results)
+void print_results(drug_lib::services::SearchResponse &results)
 {
-    if (results.empty())
+    if (results.get().empty())
     {
         std::cout << "No results found.\n";
         return;
     }
-    for (const auto &obj: results)
+    for (const auto &[obj, match]: results)
     {
         std::cout << obj->to_json().toStyledString() << "\n"; // Assuming ObjectBase has a `to_string` method
     }

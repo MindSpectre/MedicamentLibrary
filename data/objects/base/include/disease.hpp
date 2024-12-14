@@ -1,7 +1,4 @@
 #pragma once
-
-
-#include <iostream>
 #include <utility>
 
 #include "common_object.hpp"
@@ -81,6 +78,7 @@ namespace drug_lib::data::objects
                 }
                 else if (field_name == field_name::is_infectious)
                 {
+                    //WARNING this is wierd stuff
                     is_infectious_ = viewed->extract(i) == "t";
                 }
                 else if (field_name == field_name::properties)
@@ -112,10 +110,15 @@ namespace drug_lib::data::objects
             try
             {
                 is_infectious_ = val[field_name::is_infectious].asBool();
-            } catch (const Json::LogicError& e)
+            } catch ([[maybe_unused]] const Json::LogicError& e)
             {
-                is_infectious_ = val[field_name::is_infectious].asString() == "true" ||
-                    val[field_name::is_infectious].asString() == "True";
+                std::string is_infectious_string = val[field_name::is_infectious].asString();
+                std::transform(is_infectious_string.begin(), is_infectious_string.end(), is_infectious_string.begin(), ::tolower);
+                if (is_infectious_string != "true" && is_infectious_string != "false")
+                {
+                    throw;
+                }
+                is_infectious_ = is_infectious_string == "true";
             }
             create_collection(val[field_name::properties]);
 

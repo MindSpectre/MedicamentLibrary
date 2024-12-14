@@ -2,139 +2,88 @@
 
 namespace drug_lib::services
 {
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
+    SearchResponse
     SearchServiceInternal::search_through_all(const std::string& pattern)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
+        SearchResponse result;
         std::vector<data::objects::Medicament> meds = handbook_.medicaments().search_paged(pattern, this->page_limit_);
         std::vector<data::objects::Disease> diseases = handbook_.diseases().search_paged(pattern, this->page_limit_);
         std::vector<data::objects::Organization> organizations =
             handbook_.organizations().search_paged(pattern, this->page_limit_);
         std::vector<data::objects::Patient> patients = handbook_.patients().search_paged(pattern, this->page_limit_);
-        result.reserve(4 * this->page_limit_);
-        for (auto&& it : meds)
-        {
-            result.push_back(std::make_unique<data::objects::Medicament>(std::move(it)));
-        }
-        for (auto&& it : diseases)
-        {
-            result.push_back(std::make_unique<data::objects::Disease>(std::move(it)));
-        }
-        for (auto&& it : organizations)
-        {
-            result.push_back(std::make_unique<data::objects::Organization>(std::move(it)));
-        }
-        for (auto&& it : patients)
-        {
-            result.push_back(std::make_unique<data::objects::Patient>(std::move(it)));
-        }
+        result.add(std::move(patients), SearchResponse::PERFECT_MATCH);
+        result.add(std::move(meds), SearchResponse::PERFECT_MATCH);
+        result.add(std::move(diseases), SearchResponse::PERFECT_MATCH);
+        result.add(std::move(organizations), SearchResponse::PERFECT_MATCH);
         return result;
     }
 
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
+    SearchResponse
     SearchServiceInternal::open_search(const std::string& pattern)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
+        SearchResponse result;
         std::vector<data::objects::Medicament> meds =
             handbook_.medicaments().fuzzy_search_paged(pattern, this->page_limit_);
         std::vector<data::objects::Disease> diseases =
             handbook_.diseases().fuzzy_search_paged(pattern, this->page_limit_);
-        result.reserve(4 * this->page_limit_);
-        for (auto&& it : meds)
-        {
-            result.push_back(std::make_unique<data::objects::Medicament>(std::move(it)));
-        }
-        for (auto&& it : diseases)
-        {
-            result.push_back(std::make_unique<data::objects::Disease>(std::move(it)));
-        }
+        result.add(std::move(meds), SearchResponse::PARTIAL_MATCH);
+        result.add(std::move(diseases), SearchResponse::PARTIAL_MATCH);
         return result;
     }
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
-    SearchServiceInternal::direct_search_medicaments(const std::string& pattern, const std::size_t page_number)
+
+    SearchResponse SearchServiceInternal::direct_search_medicaments(const std::string &pattern, const std::size_t page_number)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
-        if (std::vector<data::objects::Medicament> meds =
-                handbook_.medicaments().search_paged(pattern, this->page_limit_);
-            meds.size() < 5)
+        SearchResponse result;
+        std::vector<data::objects::Medicament> perfect_medicaments = handbook_.medicaments().search_paged(pattern, this->page_limit_, page_number);
+        result.add(std::move(perfect_medicaments), SearchResponse::PERFECT_MATCH);
+        if (result.get().size() < page_limit_)
         {
-            for (auto&& it : meds)
-            {
-                result.push_back(std::make_unique<data::objects::Medicament>(std::move(it)));
-            }
-            for (auto&& it :
-                 handbook_.medicaments().fuzzy_search_paged(pattern, page_limit_ - meds.size(), page_number))
-            {
-                result.push_back(std::make_unique<data::objects::Medicament>(std::move(it)));
-            }
+            std::vector<data::objects::Medicament> partial_medicaments =
+                    handbook_.medicaments().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+            result.add(std::move(partial_medicaments), SearchResponse::PARTIAL_MATCH);
         }
         return result;
     }
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
+    SearchResponse
     SearchServiceInternal::direct_search_diseases(const std::string& pattern, const std::size_t page_number)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
-        if (std::vector<data::objects::Disease> diseases =
-                handbook_.diseases().search_paged(pattern, this->page_limit_);
-            diseases.size() < 5)
+        SearchResponse result;
+        std::vector<data::objects::Disease> perfect_diseases = handbook_.diseases().search_paged(pattern, this->page_limit_, page_number);
+        result.add(std::move(perfect_diseases), SearchResponse::PERFECT_MATCH);
+        if (result.get().size() < page_limit_)
         {
-            for (auto&& it : diseases)
-            {
-                result.push_back(std::make_unique<data::objects::Disease>(std::move(it)));
-            }
-            for (auto&& it :
-                 handbook_.diseases().fuzzy_search_paged(pattern, page_limit_ - diseases.size(), page_number))
-            {
-                result.push_back(std::make_unique<data::objects::Disease>(std::move(it)));
-            }
-        }
-        else
-        {
-            for (auto&& it : diseases)
-            {
-                result.push_back(std::make_unique<data::objects::Disease>(std::move(it)));
-            }
+            std::vector<data::objects::Disease> partial_diseases =
+                    handbook_.diseases().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+            result.add(std::move(partial_diseases), SearchResponse::PARTIAL_MATCH);
         }
         return result;
     }
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
+    SearchResponse
     SearchServiceInternal::direct_search_organizations(const std::string& pattern, const std::size_t page_number)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
-        if (std::vector<data::objects::Organization> organizations =
-                handbook_.organizations().search_paged(pattern, this->page_limit_);
-            organizations.size() < 5)
+        SearchResponse result;
+        std::vector<data::objects::Organization> perfect_organizations = handbook_.organizations().search_paged(pattern, this->page_limit_, page_number);
+        result.add(std::move(perfect_organizations), SearchResponse::PERFECT_MATCH);
+        if (result.get().size() < page_limit_)
         {
-            for (auto&& it : organizations)
-            {
-                result.push_back(std::make_unique<data::objects::Organization>(std::move(it)));
-            }
-            for (auto&& it :
-                 handbook_.organizations().fuzzy_search_paged(pattern, page_limit_ - organizations.size(), page_number))
-            {
-                result.push_back(std::make_unique<data::objects::Organization>(std::move(it)));
-            }
+            std::vector<data::objects::Organization> partial_organizations =
+                    handbook_.organizations().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+            result.add(std::move(partial_organizations), SearchResponse::PARTIAL_MATCH);
         }
         return result;
     }
 
-    std::vector<std::unique_ptr<data::objects::ObjectBase>>
+    SearchResponse
     SearchServiceInternal::direct_search_patients(const std::string& pattern, const std::size_t page_number)
     {
-        std::vector<std::unique_ptr<data::objects::ObjectBase>> result;
-        if (std::vector<data::objects::Patient> patients =
-                handbook_.patients().search_paged(pattern, this->page_limit_);
-            patients.size() < 5)
+        SearchResponse result;
+        std::vector<data::objects::Patient> perfect_patients = handbook_.patients().search_paged(pattern, this->page_limit_, page_number);
+        result.add(std::move(perfect_patients), SearchResponse::PERFECT_MATCH);
+        if (result.get().size() < page_limit_)
         {
-            for (auto&& it : patients)
-            {
-                result.push_back(std::make_unique<data::objects::Patient>(std::move(it)));
-            }
-            for (auto&& it :
-                 handbook_.patients().fuzzy_search_paged(pattern, page_limit_ - patients.size(), page_number))
-            {
-                result.push_back(std::make_unique<data::objects::Patient>(std::move(it)));
-            }
+            std::vector<data::objects::Patient> partial_patients =
+                    handbook_.patients().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+            result.add(std::move(partial_patients), SearchResponse::PARTIAL_MATCH);
         }
         return result;
     }

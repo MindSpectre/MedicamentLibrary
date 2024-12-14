@@ -63,7 +63,7 @@ namespace drug_lib::services::drogon
 
 	private:
 		template<typename Func>
-		static std::vector<std::unique_ptr<data::objects::ObjectBase> > handle_search(Func &&search_function)
+		static SearchResponse handle_search(Func &&search_function)
 		{
 			try
 			{
@@ -93,7 +93,7 @@ namespace drug_lib::services::drogon
 				LOG_INFO << "Where param is: " << req->getParameter(constants::query_parameter);
 				LOG_INFO << "Where page is: " << req->getParameter(constants::page_number_parameter);
 				auto internalResult = handle_search(std::forward<Func>(search_function));
-				auto response = create_json_response_from_objects(internalResult);
+				const auto response = ::drogon::HttpResponse::newHttpJsonResponse(internalResult.to_json());
 				callback(response);
 			} catch (const std::exception &e)
 			{
