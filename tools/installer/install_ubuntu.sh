@@ -35,14 +35,15 @@ wget https://apt.llvm.org/llvm.sh && \
     sudo apt-get install -y \
         clang-19 \
         clang++-19 && \
-    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100 && \
-    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100 && \
-    sudo update-alternatives --config clang && \
-    sudo update-alternatives --config clang++ && \
+    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 101 && \
+    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 101 && \
+    sudo update-alternatives --set clang /usr/bin/clang-19 && \
+    sudo update-alternatives --set clang++ /usr/bin/clang++-19 && \
     rm -f llvm.sh
 
 echo "LLVM and Clang installation completed. Current version"
 clang --version
+
 
 # Set up Vcpkg
 VCPKG_ROOT="/opt/vcpkg"
