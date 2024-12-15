@@ -31,7 +31,7 @@ echo "Base packages installation completed."
 echo "Installing LLVM and Clang..."
 wget https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
-    ./llvm.sh 19 && \
+    sudo ./llvm.sh 19 && \
     sudo apt-get install -y \
         clang-19 \
         clang++-19 && \
@@ -41,6 +41,7 @@ wget https://apt.llvm.org/llvm.sh && \
 
 echo "LLVM and Clang installation completed. Current version"
 clang --version
+
 # Set up Vcpkg
 VCPKG_ROOT="/opt/vcpkg"
 
