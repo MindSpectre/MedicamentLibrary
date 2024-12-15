@@ -100,10 +100,8 @@ Json::Value createDiseaseJson()
     properties["complications"].append("Sepsis");
 
     // Curative drugs
-    properties["curative_drugs"].append(1);
-    properties["curative_drugs"].append(2);
-    properties["curative_drugs"].append(3);
-
+    properties["curative_drugs"].append("default");
+    properties["curative_drugs"].append("default");
     // Risk factors
     properties["risk_factors"].append("Smoking");
     properties["risk_factors"].append("Obesity");

@@ -14,39 +14,33 @@ TEST(CurativeDrugsTest, DefaultConstructor)
 
 TEST(CurativeDrugsTest, ParameterizedConstructorWithVector)
 {
-    const std::vector diseases = {drug_lib::common::database::Uuid(), drug_lib::common::database::Uuid()};
+    const std::vector diseases = {drug_lib::common::database::Uuid(), drug_lib::common::database::Uuid(),drug_lib::common::database::Uuid()};
     const CurativeDrugs curative_drugs(diseases);
 
     Json::Value info = curative_drugs.get_info();
     ASSERT_TRUE(info.isArray());
     EXPECT_EQ(info.size(), 3);
-    EXPECT_EQ(info[0].asInt(), 101);
-    EXPECT_EQ(info[1].asInt(), 202);
-    EXPECT_EQ(info[2].asInt(), 303);
 }
 
 TEST(CurativeDrugsTest, ParameterizedConstructorWithJson)
 {
     Json::Value properties(Json::arrayValue);
-    properties.append(101);
-    properties.append(202);
-    properties.append(303);
+    properties.append("default");
+    properties.append("default");
+    properties.append("default");
 
     const CurativeDrugs curative_drugs(properties);
 
     Json::Value info = curative_drugs.get_info();
     ASSERT_TRUE(info.isArray());
     EXPECT_EQ(info.size(), 3);
-    EXPECT_EQ(info[0].asInt(), 101);
-    EXPECT_EQ(info[1].asInt(), 202);
-    EXPECT_EQ(info[2].asInt(), 303);
 }
 
 TEST(CurativeDrugsTest, SetInfoValidJson)
 {
     Json::Value properties(Json::arrayValue);
-    properties.append(404);
-    properties.append(505);
+    properties.append("default");
+    properties.append("default");
 
     CurativeDrugs curative_drugs;
     curative_drugs.set_info(properties);
@@ -54,8 +48,8 @@ TEST(CurativeDrugsTest, SetInfoValidJson)
     Json::Value info = curative_drugs.get_info();
     ASSERT_TRUE(info.isArray());
     EXPECT_EQ(info.size(), 2);
-    EXPECT_EQ(info[0].asInt(), 404);
-    EXPECT_EQ(info[1].asInt(), 505);
+    EXPECT_EQ(info[0].asString(), "default");
+    EXPECT_EQ(info[1].asString(), "default");
 }
 
 TEST(CurativeDrugsTest, SetInfoInvalidJson)

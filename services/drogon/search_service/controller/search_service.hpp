@@ -31,12 +31,19 @@ namespace drug_lib::services::drogon
 
 		explicit Search(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Search service has been  created";
 			set_up_db(connect);
 		}
 
 		explicit Search(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
 		{
+			LOG_INFO << "Search has been service created";
 			set_up_db(connect);
+		}
+
+		~Search() override
+		{
+			LOG_INFO << "Search service has been destroyed.";
 		}
 
 		// Declare functions for endpoints
@@ -58,6 +65,7 @@ namespace drug_lib::services::drogon
 
 		void set_up_db(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Setting up search db";
 			service_.setup_from_one(connect);
 		}
 

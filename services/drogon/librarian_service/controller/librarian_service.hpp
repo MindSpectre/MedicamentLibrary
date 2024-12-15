@@ -47,19 +47,27 @@ namespace drug_lib::services::drogon
 
 		explicit Librarian(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Librarian service has been created";
 			this->set_up_db(connect);
 		}
 
 		explicit Librarian(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
 		{
+			LOG_INFO << "Librarian service has been created";
 			this->set_up_db(std::move(connect));
 		}
 
 		static constexpr bool isAutoCreation = false;
 
+		~Librarian() override
+		{
+			LOG_INFO << "Librarian service has been destroyed";
+		}
+
 	private:
 		void set_up_db(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Setting up search db";
 			service_.setup_from_one(connect);
 		}
 
@@ -145,7 +153,7 @@ namespace drug_lib::services::drogon
 			}
 			catch (const std::exception &e)
 			{
-				LOG_ERROR << "Get exception: " << e.what();
+				LOG_ERROR << "Caught exception: " << e.what();
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k404NotFound);
 				response->setBody(e.what());
