@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: docker/database/Dockerfile
+    image: postgres:latest
     container_name: postgres-container
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -18,11 +16,8 @@ services:
       - app_network
 
   gateway:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/services/drogon/gateway/Dockerfile
+    image: ghcr.io/mindspectre/gateway:1.0.0
     container_name: gateway-container
-    image: neurospectrelin/gateway:1.0.0
     depends_on:
       - postgres
     ports:
@@ -31,11 +26,8 @@ services:
       - app_network
 
   librarian_service:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/services/drogon/librarian_service/Dockerfile
+    image: ghcr.io/mindspectre/librarian_service:1.0.0
     container_name: librarian-service-container
-    image: neurospectrelin/librarian_service:1.0.0
     depends_on:
       - postgres
     ports:
@@ -44,18 +36,23 @@ services:
       - app_network
 
   search_service:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/services/drogon/search_service/Dockerfile
+    image: ghcr.io/mindspectre/search_service:1.0.0
     container_name: search-service-container
-    image: neurospectrelin/search_service:1.0.0
     depends_on:
       - postgres
     ports:
       - "8001:8001"
     networks:
       - app_network
-
+  frontend:
+    image: ghcr.io/mindspectre/frontend:1.0.0
+    container_name: frontend-container
+    depends_on:
+      - gateway
+    ports:
+      - "80:3001" # Expose frontend on port 80
+    networks:
+      - app_network
 volumes:
   postgres_data:
     driver: local
@@ -63,4 +60,3 @@ volumes:
 networks:
   app_network:
     driver: bridge
-
