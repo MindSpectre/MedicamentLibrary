@@ -1,4 +1,4 @@
-FROM vcpkg_base:latest
+FROM ubuntu:latest
 
 WORKDIR /app
 

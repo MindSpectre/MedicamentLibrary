@@ -7,8 +7,6 @@
   ],
   "app": {
     "enable_cross_origin_resource_sharing": true,
-    "threads_num": 4,
-    "document_root": "/home/neo/MedicamentLibraryFrontend",
-    "index": "index.html"
+    "threads_num": 4
   }
 }
