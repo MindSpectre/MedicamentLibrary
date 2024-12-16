@@ -28,6 +28,11 @@ namespace drug_lib::services::drogon
 		static constexpr bool isAutoCreation = false;
 
 		explicit Gateway(const Json::Value &refs); // Constructor to initialize persistent clients
+		~Gateway() override
+		{
+			LOG_INFO << "Gateway has been destroyed";
+		}
+
 	private:
 		void proxy_to_search_service(const ::drogon::HttpRequestPtr &req,
 		                             std::function<void(const ::drogon::HttpResponsePtr &)> &&callback,

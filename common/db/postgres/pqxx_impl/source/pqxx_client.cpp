@@ -566,7 +566,6 @@ namespace drug_lib::common::database
 	std::unique_ptr<FieldBase> PqxxClient::process_field(const pqxx::field &field) const
 	{
 		std::unique_ptr<FieldBase> field_ptr;
-		std::cout << field.name() << std::endl;
 		// Get the field's PostgreSQL type OID
 		boost::container::flat_map<uint32_t, std::string>::const_iterator type_oid; {
 			std::lock_guard lock(this->conn_mutex_);

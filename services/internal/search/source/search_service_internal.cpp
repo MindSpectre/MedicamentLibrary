@@ -33,15 +33,22 @@ namespace drug_lib::services
 
     SearchResponse SearchServiceInternal::direct_search_medicaments(const std::string &pattern, const std::size_t page_number)
     {
+        std::cout << "SearchServiceInternal::direct_search_medicaments" << std::endl;
         SearchResponse result;
         std::vector<data::objects::Medicament> perfect_medicaments = handbook_.medicaments().search_paged(pattern, this->page_limit_, page_number);
         result.add(std::move(perfect_medicaments), SearchResponse::PERFECT_MATCH);
         if (result.get().size() < page_limit_)
         {
             std::vector<data::objects::Medicament> partial_medicaments =
-                    handbook_.medicaments().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+                    handbook_.medicaments().fuzzy_search_paged(pattern, page_limit_, page_number);
+            while (partial_medicaments.size() > result.get().size())
+            {
+                result.add(std::move(partial_medicaments.back()), SearchResponse::PARTIAL_MATCH);
+                partial_medicaments.pop_back();
+            }
             result.add(std::move(partial_medicaments), SearchResponse::PARTIAL_MATCH);
         }
+        std::cerr << result.get().size() << std::endl;
         return result;
     }
     SearchResponse
@@ -53,7 +60,12 @@ namespace drug_lib::services
         if (result.get().size() < page_limit_)
         {
             std::vector<data::objects::Disease> partial_diseases =
-                    handbook_.diseases().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+                    handbook_.diseases().fuzzy_search_paged(pattern, page_limit_, page_number);
+            while (partial_diseases.size() > result.get().size())
+            {
+                result.add(std::move(partial_diseases.back()), SearchResponse::PARTIAL_MATCH);
+                partial_diseases.pop_back();
+            }
             result.add(std::move(partial_diseases), SearchResponse::PARTIAL_MATCH);
         }
         return result;
@@ -67,7 +79,12 @@ namespace drug_lib::services
         if (result.get().size() < page_limit_)
         {
             std::vector<data::objects::Organization> partial_organizations =
-                    handbook_.organizations().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+                    handbook_.organizations().fuzzy_search_paged(pattern, page_limit_, page_number);
+            while (partial_organizations.size() > result.get().size())
+            {
+                result.add(std::move(partial_organizations.back()), SearchResponse::PARTIAL_MATCH);
+                partial_organizations.pop_back();
+            }
             result.add(std::move(partial_organizations), SearchResponse::PARTIAL_MATCH);
         }
         return result;
@@ -82,7 +99,12 @@ namespace drug_lib::services
         if (result.get().size() < page_limit_)
         {
             std::vector<data::objects::Patient> partial_patients =
-                    handbook_.patients().fuzzy_search_paged(pattern, page_limit_ - result.get().size(), page_number);
+                    handbook_.patients().fuzzy_search_paged(pattern, page_limit_, page_number);
+            while (partial_patients.size() > result.get().size())
+            {
+                result.add(std::move(partial_patients.back()), SearchResponse::PARTIAL_MATCH);
+                partial_patients.pop_back();
+            }
             result.add(std::move(partial_patients), SearchResponse::PARTIAL_MATCH);
         }
         return result;

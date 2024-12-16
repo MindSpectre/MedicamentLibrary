@@ -13,14 +13,14 @@ namespace drug_lib::services::drogon
 		struct constants
 		{
 			static constexpr auto query_parameter = "query";
-			static constexpr auto disease_wiki_endpoint = "/api/wiki/diseases/";
-			static constexpr auto disease_wiki_endpoint_n = "/api/wiki/diseases/{1}";
-			static constexpr auto medicament_wiki_endpoint = "/api/wiki/medicaments/";
-			static constexpr auto medicament_wiki_endpoint_n = "/api/wiki/medicaments/{1}";
-			static constexpr auto patient_wiki_endpoint = "/api/wiki/patients/";
-			static constexpr auto patient_wiki_endpoint_n = "/api/wiki/patients/{1}";
-			static constexpr auto organization_wiki_endpoint = "/api/wiki/organizations/";
-			static constexpr auto organization_wiki_endpoint_n = "/api/wiki/organizations/{1}";
+			static constexpr auto disease_wiki_endpoint = "/api/wiki/disease/";
+			static constexpr auto disease_wiki_endpoint_n = "/api/wiki/disease/{1}";
+			static constexpr auto medicament_wiki_endpoint = "/api/wiki/medicament/";
+			static constexpr auto medicament_wiki_endpoint_n = "/api/wiki/medicament/{1}";
+			static constexpr auto patient_wiki_endpoint = "/api/wiki/patient/";
+			static constexpr auto patient_wiki_endpoint_n = "/api/wiki/patient/{1}";
+			static constexpr auto organization_wiki_endpoint = "/api/wiki/organization/";
+			static constexpr auto organization_wiki_endpoint_n = "/api/wiki/organization/{1}";
 		};
 
 		METHOD_LIST_BEGIN
@@ -47,19 +47,27 @@ namespace drug_lib::services::drogon
 
 		explicit Librarian(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Librarian service has been created";
 			this->set_up_db(connect);
 		}
 
 		explicit Librarian(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
 		{
+			LOG_INFO << "Librarian service has been created";
 			this->set_up_db(std::move(connect));
 		}
 
 		static constexpr bool isAutoCreation = false;
 
+		~Librarian() override
+		{
+			LOG_INFO << "Librarian service has been destroyed";
+		}
+
 	private:
 		void set_up_db(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
+			LOG_INFO << "Setting up search db";
 			service_.setup_from_one(connect);
 		}
 
@@ -145,7 +153,7 @@ namespace drug_lib::services::drogon
 			}
 			catch (const std::exception &e)
 			{
-				LOG_ERROR << "Get exception: " << e.what();
+				LOG_ERROR << "Caught exception: " << e.what();
 				const auto response = ::drogon::HttpResponse::newHttpResponse();
 				response->setStatusCode(::drogon::k404NotFound);
 				response->setBody(e.what());

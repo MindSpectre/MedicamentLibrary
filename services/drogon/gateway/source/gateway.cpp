@@ -4,7 +4,7 @@
 // Constructor: Initialize persistent clients
 drug_lib::services::drogon::Gateway::Gateway(const Json::Value &refs)
 {
-	LOG_DEBUG << "Gateway constructor";
+	LOG_DEBUG << "Gateway has been created in " << refs["name"].asString();
 	search_service_client_ = ::drogon::HttpClient::newHttpClient(refs["search_service_url"].asString());
 	librarian_service_client_ = ::drogon::HttpClient::newHttpClient(refs["librarian_service_url"].asString());
 }
@@ -27,10 +27,9 @@ void drug_lib::services::drogon::Gateway::proxy_to_search_service(const ::drogon
                                                                   &&callback,
                                                                   const std::string &path) const
 {
-
 	// Include query parameters in the proxied path
 	const auto full_path = append_query_params(req, constants::endpoint_search_service + path);
-	common::Stopwatch<std::chrono::milliseconds> sw(" Redirected to Search Service with path" + full_path);
+	common::Stopwatch sw(" Redirected to Search Service with path" + full_path);
 	// Create and send the proxied request
 	const auto request = ::drogon::HttpRequest::newHttpRequest();
 	request->setPath(full_path);
@@ -41,12 +40,12 @@ void drug_lib::services::drogon::Gateway::proxy_to_search_service(const ::drogon
 		{
 			if (result == ::drogon::ReqResult::Ok)
 			{
-				LOG_INFO << "successfully redirected";
+				LOG_INFO << "Redirection passed";
 				callback(get_body_response(resp));
 			}
 			else
 			{
-				LOG_DEBUG << "redirection failed";
+				LOG_DEBUG << "Redirection failed";
 				const auto error_response = ::drogon::HttpResponse::newHttpResponse();
 				error_response->setStatusCode(::drogon::k500InternalServerError);
 				error_response->setBody("Failed to connect to SearchService");

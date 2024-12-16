@@ -1,8 +1,8 @@
-FROM vcpkg_base:latest
+FROM ubuntu:latest
 
 WORKDIR /app
 
-COPY build/services/drogon/gateway/ .
+COPY build-release/services/drogon/gateway/ .
 
 EXPOSE 3000
 ENTRYPOINT ["./DrugLib_Services_Drogon_Gateway", "--docker"]

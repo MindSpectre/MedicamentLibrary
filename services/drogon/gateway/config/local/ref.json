@@ -1,4 +1,5 @@
 {
+  "name": "local",
   "gateway_port": 3000,
   "search_service_url": "http://localhost:8001",
   "librarian_service_url": "http://localhost:8000",

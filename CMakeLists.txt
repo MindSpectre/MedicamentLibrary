@@ -28,7 +28,7 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 find_package(jsoncpp REQUIRED)
-find_package(absl REQUIRED)
+#find_package(absl REQUIRED)
 find_package(libpqxx REQUIRED)
 #find_package(Libevent CONFIG REQUIRED)
 find_package(Drogon CONFIG REQUIRED)
@@ -42,7 +42,7 @@ if (USE_BOOST)
     set(Boost_NO_SYSTEM_PATHS ON)
     # set(BOOST_ROOT /opt/vcpkg/installed/x64-linux) # Adjust if necessary
 
-    find_package(Boost CONFIG COMPONENTS container log)
+    find_package(Boost CONFIG COMPONENTS container)
     if (NOT Boost_FOUND)
         message(FATAL_ERROR "Boost libraries not found, but USE_BOOST is ON.")
     endif ()

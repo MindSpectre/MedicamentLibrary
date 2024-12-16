@@ -10,16 +10,14 @@ runs:
       uses: actions/cache@v3
       with:
         path: /opt/vcpkg
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install_ubuntu.sh') }}
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('tools/installer/install_ubuntu.sh') }}-refresh1
         restore-keys: |
           vcpkg-${{ runner.os }}-
 
     - name: Install dependencies
       run: |
-        if [ ! -d /opt/vcpkg ]; then
-          chmod +x tools/installer/install_ubuntu.sh
-          tools/installer/install_ubuntu.sh
-        fi
+        chmod +x tools/installer/install_ubuntu.sh
+        tools/installer/install_ubuntu.sh
       shell: bash
 
     - name: Clean vcpkg cache
