@@ -39,16 +39,16 @@ namespace drug_lib::services
 			results_.pop_back();
 		}
 
-		const std::vector<Match> &get() const
+		[[nodiscard]] const std::vector<Match> &get() const
 		{
 			return results_;
 		}
 
 		void add(std::vector<std::unique_ptr<data::objects::ObjectBase>> &&arr, MatchStatus status = PARTIAL_MATCH)
 		{
-			for (std::size_t i = 0; i < arr.size(); ++i)
+			for (auto & i : arr)
 			{
-				results_.emplace_back(std::move(arr[i]), status);
+				results_.emplace_back(std::move(i), status);
 			}
 		}
 
@@ -61,13 +61,13 @@ namespace drug_lib::services
 			}
 		}
 
-		Json::Value to_json() const
+		[[nodiscard]] Json::Value to_json() const
 		{
 			Json::Value response(Json::arrayValue);
 			for (const auto &object: results_)
 			{
 				const auto &[obj, match] = object;
-				Json::Value match_object;
+				Json::Value match_object = obj->to_json();;
 				switch (match)
 				{
 					case MatchStatus::PERFECT_MATCH:
@@ -75,18 +75,18 @@ namespace drug_lib::services
 					case MatchStatus::PARTIAL_MATCH:
 						match_object["match"] = "PARTIAL_MATCH";
 				}
-				match_object["data"] = obj->to_json();
+
 				response.append(match_object);
 			}
 			return response;
 		}
 
-		std::vector<Match>::const_iterator begin() const
+		[[nodiscard]] std::vector<Match>::const_iterator begin() const
 		{
 			return results_.cbegin();
 		}
 
-		std::vector<Match>::const_iterator end() const
+		[[nodiscard]] std::vector<Match>::const_iterator end() const
 		{
 			return results_.cend();
 		}

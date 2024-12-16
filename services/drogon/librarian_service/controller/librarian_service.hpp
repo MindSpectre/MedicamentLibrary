@@ -13,14 +13,14 @@ namespace drug_lib::services::drogon
 		struct constants
 		{
 			static constexpr auto query_parameter = "query";
-			static constexpr auto disease_wiki_endpoint = "/api/wiki/diseases/";
-			static constexpr auto disease_wiki_endpoint_n = "/api/wiki/diseases/{1}";
-			static constexpr auto medicament_wiki_endpoint = "/api/wiki/medicaments/";
-			static constexpr auto medicament_wiki_endpoint_n = "/api/wiki/medicaments/{1}";
-			static constexpr auto patient_wiki_endpoint = "/api/wiki/patients/";
-			static constexpr auto patient_wiki_endpoint_n = "/api/wiki/patients/{1}";
-			static constexpr auto organization_wiki_endpoint = "/api/wiki/organizations/";
-			static constexpr auto organization_wiki_endpoint_n = "/api/wiki/organizations/{1}";
+			static constexpr auto disease_wiki_endpoint = "/api/wiki/disease/";
+			static constexpr auto disease_wiki_endpoint_n = "/api/wiki/disease/{1}";
+			static constexpr auto medicament_wiki_endpoint = "/api/wiki/medicament/";
+			static constexpr auto medicament_wiki_endpoint_n = "/api/wiki/medicament/{1}";
+			static constexpr auto patient_wiki_endpoint = "/api/wiki/patient/";
+			static constexpr auto patient_wiki_endpoint_n = "/api/wiki/patient/{1}";
+			static constexpr auto organization_wiki_endpoint = "/api/wiki/organization/";
+			static constexpr auto organization_wiki_endpoint_n = "/api/wiki/organization/{1}";
 		};
 
 		METHOD_LIST_BEGIN

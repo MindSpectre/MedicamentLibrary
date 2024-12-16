@@ -12,10 +12,10 @@ namespace drug_lib::services::drogon
 		{
 			static constexpr auto query_parameter = "query";
 			static constexpr auto page_number_parameter = "page";
-			static constexpr auto disease_search_endpoint = "/api/search/diseases?query={pattern}&page={page}";
-			static constexpr auto medicament_search_endpoint = "/api/search/medicaments?query={pattern}&page={page}";
-			static constexpr auto patient_search_endpoint = "/api/search/patients?query={pattern}&page={page}";
-			static constexpr auto organization_search_endpoint = "/api/search/organizations?query={pattern}&page={page}";
+			static constexpr auto disease_search_endpoint = "/api/search/disease?query={pattern}&page={page}";
+			static constexpr auto medicament_search_endpoint = "/api/search/medicament?query={pattern}&page={page}";
+			static constexpr auto patient_search_endpoint = "/api/search/patient?query={pattern}&page={page}";
+			static constexpr auto organization_search_endpoint = "/api/search/organization?query={pattern}&page={page}";
 			static constexpr auto open_search_endpoint = "/api/search/open?query={pattern}";
 		};
 
