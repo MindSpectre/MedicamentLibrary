@@ -41,19 +41,19 @@ TEST(DiseaseTest, ToRecord)
     const Disease disease(common::database::Uuid(), "Chickenpox", "Viral", true);
     for (const auto record = disease.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == Disease::field_name::name)
+        if (field->get_name() == disease::field_name::name)
         {
             EXPECT_EQ("Chickenpox", field->as<std::string>());
         }
-        else if (field->get_name() == Disease::field_name::type)
+        else if (field->get_name() == disease::field_name::type)
         {
             EXPECT_EQ("Viral", field->as<std::string>());
         }
-        else if (field->get_name() == Disease::field_name::is_infectious)
+        else if (field->get_name() == disease::field_name::is_infectious)
         {
             EXPECT_TRUE(field->as<bool>());
         }
-        else if (field->get_name() == Disease::field_name::id)
+        else if (field->get_name() == shared::field_name::id)
         {
             EXPECT_EQ(common::database::Uuid(), field->as<common::database::Uuid>());
         }
@@ -63,10 +63,10 @@ TEST(DiseaseTest, ToRecord)
 TEST(DiseaseTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(Disease::field_name::id, common::database::Uuid()));
-    record.push_back(std::make_unique<common::database::Field<std::string>>(Disease::field_name::name, "Measles"));
-    record.push_back(std::make_unique<common::database::Field<std::string>>(Disease::field_name::type, "Viral"));
-    record.push_back(std::make_unique<common::database::Field<bool>>(Disease::field_name::is_infectious, true));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid()));
+    record.push_back(std::make_unique<common::database::Field<std::string>>(disease::field_name::name, "Measles"));
+    record.push_back(std::make_unique<common::database::Field<std::string>>(disease::field_name::type, "Viral"));
+    record.push_back(std::make_unique<common::database::Field<bool>>(disease::field_name::is_infectious, true));
 
     Disease disease;
     disease.from_record(record);
@@ -171,8 +171,7 @@ Disease createDisease()
 
 TEST(DiseaseTest, ToJson)
 {
-
-    Disease em = createDisease();
+    const Disease em = createDisease();
     EXPECT_EQ(em.to_json(), createDiseaseJson());
 }
 

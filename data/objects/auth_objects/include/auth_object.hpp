@@ -17,37 +17,37 @@ namespace drug_lib::data::objects
             Sudo
         };
 
-        struct roles_permissions
+        namespace roles_permissions
         {
-            static constexpr auto free_user = {Browse};
-            static constexpr auto patient = {Browse, EditPatientInfo};
-            static constexpr auto nurse = {Browse, EditPatientInfo, Treat};
-            static constexpr auto doctor = {Browse, EditPatientInfo, Treat, AssignDrugs};
-            static constexpr auto administrator = {Browse, Administrate};
-            static constexpr auto sudo = {Sudo};
+            constexpr auto free_user = {Browse};
+            constexpr auto patient = {Browse, EditPatientInfo};
+            constexpr auto nurse = {Browse, EditPatientInfo, Treat};
+            constexpr auto doctor = {Browse, EditPatientInfo, Treat, AssignDrugs};
+            constexpr auto administrator = {Browse, Administrate};
+            constexpr auto sudo = {Sudo};
         };
 
-        struct roles_names
+        namespace roles_names
         {
-            static constexpr auto free_user = "user";
-            static constexpr auto patient = "patient";
-            static constexpr auto nurse = "nurse";
-            static constexpr auto doctor = "doctor";
-            static constexpr auto administrator = "administrator";
-            static constexpr auto sudo = "sudo";
+            constexpr char free_user[] = "user";
+            constexpr char patient[] = "patient";
+            constexpr char nurse[] = "nurse";
+            constexpr char doctor[] = "doctor";
+            constexpr char administrator[] = "administrator";
+            constexpr char sudo[] = "sudo";
         };
     }
 
+    namespace auth_object::field_name
+    {
+        constexpr char user_id[] = "user_id";
+        constexpr char role[] = "role";
+        constexpr char login[] = "login";
+        constexpr char password[] = "password";
+    };
     class AuthObject final
     {
     public:
-        struct field_name
-        {
-            static constexpr auto user_id = "user_id";
-            static constexpr auto role = "role";
-            static constexpr auto login = "login";
-            static constexpr auto password = "password";
-        };
 
         [[nodiscard]] common::database::Record to_record() const;
         void from_record(const common::database::Record& record);
@@ -119,24 +119,24 @@ namespace drug_lib::data::objects
         [[nodiscard]] [[nodiscard]] Json::Value to_json() const
         {
             Json::Value result;
-            result[field_name::user_id] = user_id_.get_id();
-            result[field_name::login] = login_;
-            result[field_name::password] = password_hash_;
+            result[auth_object::field_name::user_id] = user_id_.get_id();
+            result[auth_object::field_name::login] = login_;
+            result[auth_object::field_name::password] = password_hash_;
             return result;
         }
 
         void from_json(const Json::Value& val)
         {
-            if (val.isMember(field_name::user_id))
+            if (val.isMember(auth_object::field_name::user_id))
             {
-                user_id_.set_id(val[field_name::user_id].asString()) ;
+                user_id_.set_id(val[auth_object::field_name::user_id].asString()) ;
             } else
             {
                 user_id_.set_id(common::database::Uuid::default_value);
             }
-            login_ = val[field_name::login].asString();
+            login_ = val[auth_object::field_name::login].asString();
             // Todo: crete hash calc because in json stores raw value
-            password_hash_ = val[field_name::password].asString();
+            password_hash_ = val[auth_object::field_name::password].asString();
 
         }
     private:

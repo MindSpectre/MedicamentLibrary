@@ -15,7 +15,7 @@ TEST(OrganizationTest, DefaultConstructor)
 
 TEST(OrganizationTest, ParameterizedConstructor)
 {
-    const Organization organization(common::database::Uuid("1"), "PharmaCorp", "Pharmaceutical", "USA", "123-456-7890");
+    const Organization organization(common::database::Uuid("1", true), "PharmaCorp", "Pharmaceutical", "USA", "123-456-7890");
     EXPECT_EQ(organization.get_id(), "1");
     EXPECT_EQ(organization.get_name(), "PharmaCorp");
     EXPECT_EQ(organization.get_type(), "Pharmaceutical");
@@ -41,27 +41,27 @@ TEST(OrganizationTest, SettersAndGetters)
 
 TEST(OrganizationTest, ToRecord)
 {
-    const Organization organization(common::database::Uuid("3"), "HealthCorp", "Healthcare", "Canada", "555-555-5555");
+    const Organization organization(common::database::Uuid("3", true), "HealthCorp", "Healthcare", "Canada", "555-555-5555");
 
     for (const auto record = organization.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == Organization::field_name::name)
+        if (field->get_name() == organization::field_name::name)
         {
             EXPECT_EQ("HealthCorp", field->as<std::string>());
         }
-        else if (field->get_name() == Organization::field_name::type)
+        else if (field->get_name() == organization::field_name::type)
         {
             EXPECT_EQ("Healthcare", field->as<std::string>());
         }
-        else if (field->get_name() == Organization::field_name::country)
+        else if (field->get_name() == organization::field_name::country)
         {
             EXPECT_EQ("Canada", field->as<std::string>());
         }
-        else if (field->get_name() == Organization::field_name::contact_details)
+        else if (field->get_name() == organization::field_name::contact_details)
         {
             EXPECT_EQ("555-555-5555", field->as<std::string>());
         }
-        else if (field->get_name() == Organization::field_name::id)
+        else if (field->get_name() == shared::field_name::id)
         {
             EXPECT_EQ("3", field->as<common::database::Uuid>().get_id());
         }
@@ -71,15 +71,15 @@ TEST(OrganizationTest, ToRecord)
 TEST(OrganizationTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(Organization::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4", true)));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Organization::field_name::name, "WellnessCo"));
+        std::make_unique<common::database::Field<std::string>>(organization::field_name::name, "WellnessCo"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Organization::field_name::type, "Wellness"));
+        std::make_unique<common::database::Field<std::string>>(organization::field_name::type, "Wellness"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Organization::field_name::country, "Germany"));
+        std::make_unique<common::database::Field<std::string>>(organization::field_name::country, "Germany"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Organization::field_name::contact_details,
+        std::make_unique<common::database::Field<std::string>>(organization::field_name::contact_details,
                                                                "111-222-3333"));
 
     Organization organization;

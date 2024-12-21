@@ -19,7 +19,7 @@ void print_menu()
     std::cout << "Enter your choice: ";
 }
 
-void print_results(drug_lib::services::SearchResponse &results)
+void print_results(const drug_lib::services::SearchResponse &results)
 {
     if (results.get().empty())
     {

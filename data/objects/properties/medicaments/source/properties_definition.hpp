@@ -1,15 +1,14 @@
 #pragma once
-#include "data_property.hpp"
 
 namespace drug_lib::data::objects::medicaments
 {
-    struct properties : DataProperty::_common_properties
+    namespace properties
     {
-        static constexpr auto prescription = "prescription";
-        static constexpr auto dosage_form = "dosage_form";
-        static constexpr auto strength = "strength";
-        static constexpr auto active_ingredients = "active_ingredients";
-        static constexpr auto inactive_ingredients = "inactive_ingredients";
-        static constexpr auto side_effects = "side_effects";
+        constexpr char prescription[] = "prescription";
+        constexpr char dosage_form[] = "dosage_form";
+        constexpr char strength[] = "strength";
+        constexpr char active_ingredients[] = "active_ingredients";
+        constexpr char inactive_ingredients[] = "inactive_ingredients";
+        constexpr char side_effects[] = "side_effects";
     };
 }

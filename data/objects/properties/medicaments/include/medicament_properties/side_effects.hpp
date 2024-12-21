@@ -2,7 +2,8 @@
 
 #include <ostream>
 
-#include "diseases/source/properties_definition.hpp"
+#include "data_property.hpp"
+#include "medicaments/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::medicaments
 {

@@ -1,4 +1,4 @@
-#pragma once
+#include <properties_controller.hpp>
 #include <gtest/gtest.h>
 
 #include "disease_properties/affected_age_groups.hpp"

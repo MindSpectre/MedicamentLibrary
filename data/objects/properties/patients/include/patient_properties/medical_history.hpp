@@ -1,7 +1,9 @@
 #pragma once
 
+#include <chrono>
 #include <ostream>
 
+#include "data_property.hpp"
 #include "patients/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::patients

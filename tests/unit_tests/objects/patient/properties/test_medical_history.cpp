@@ -1,5 +1,5 @@
-#pragma once
-
+#include <chrono>
+#include <db_field.hpp>
 #include <gtest/gtest.h>
 #include "patient_properties/medical_history.hpp"
 
@@ -16,9 +16,9 @@ TEST(MedicalHistoryTest, ParameterizedConstructorWithVector)
 {
     auto start_date = std::chrono::year{2022} / std::chrono::month{1};
     auto end_date = std::chrono::year{2022} / std::chrono::month{12};
-    std::vector<HealthRecord> records = {
-        {common::database::Uuid("101"), start_date, end_date},
-        {common::database::Uuid("102"), start_date},
+    const std::vector<HealthRecord> records = {
+        {common::database::Uuid("101", false), start_date, end_date},
+        {common::database::Uuid("102", false), start_date},
     };
 
     const MedicalHistory history(records);
@@ -67,7 +67,7 @@ TEST(MedicalHistoryTest, SetInfoValidJson)
 
 TEST(MedicalHistoryTest, SetInfoInvalidJson)
 {
-    Json::Value invalid_property(Json::objectValue); // Not an array
+    const Json::Value invalid_property(Json::objectValue); // Not an array
 
     MedicalHistory history;
     EXPECT_THROW(history.set_info(invalid_property), std::invalid_argument);
@@ -77,9 +77,9 @@ TEST(MedicalHistoryTest, GetInfo)
 {
     auto start_date = std::chrono::year{2022} / std::chrono::month{1};
     auto end_date = std::chrono::year{2022} / std::chrono::month{12};
-    std::vector<HealthRecord> records = {
-        {common::database::Uuid("101"), start_date, end_date},
-        {common::database::Uuid("102"), start_date},
+    const std::vector<HealthRecord> records = {
+        {common::database::Uuid("101", false), start_date, end_date},
+        {common::database::Uuid("102", false), start_date},
     };
 
     const MedicalHistory history(records);

@@ -14,9 +14,9 @@ TEST(CurrentDiseasesTest, DefaultConstructor)
 
 TEST(CurrentDiseasesTest, ParameterizedConstructorWithVector)
 {
-	const std::vector<common::database::Uuid> diseases = {
-		common::database::Uuid("101"),
-		common::database::Uuid("202")
+	const std::vector diseases = {
+		common::database::Uuid("101", false),
+		common::database::Uuid("202", false)
 	};
 	const CurrentDiseases current_diseases(diseases);
 

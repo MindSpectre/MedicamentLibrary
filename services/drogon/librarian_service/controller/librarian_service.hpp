@@ -76,11 +76,11 @@ namespace drug_lib::services::drogon
 		// Patient Methods
 		void get_patient(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void update_patient(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void add_patient(
 			const ::drogon::HttpRequestPtr &req,
@@ -88,16 +88,16 @@ namespace drug_lib::services::drogon
 
 		void remove_patient(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		// Disease Methods
 		void get_disease(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void update_disease(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void add_disease(
 			const ::drogon::HttpRequestPtr &req,
@@ -105,15 +105,15 @@ namespace drug_lib::services::drogon
 
 		void remove_disease(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void get_medicament(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void update_medicament(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void add_medicament(
 			const ::drogon::HttpRequestPtr &req,
@@ -121,16 +121,16 @@ namespace drug_lib::services::drogon
 
 		void remove_medicament(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 
 		void get_organization(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void update_organization(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		void add_organization(
 			const ::drogon::HttpRequestPtr &req,
@@ -138,7 +138,7 @@ namespace drug_lib::services::drogon
 
 		void remove_organization(
 			const ::drogon::HttpRequestPtr &req,
-			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id);
+			std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid &id);
 
 		// Shared Handlers for CRUD Operations
 		static void handle_get(const std::function<void(const ::drogon::HttpResponsePtr &)> &callback, const std::function<Json::Value()> &get_func)

@@ -13,29 +13,27 @@ namespace drug_lib::dao
 {
 	namespace handbook_tables_name
 	{
-		constexpr auto medicaments = "medicaments";
-		constexpr auto organizations = "organizations";
-		constexpr auto patients = "patients";
-		constexpr auto diseases = "diseases";
-		constexpr auto config_operations = "config_operations";
+		constexpr char medicaments[] = "medicaments";
+		constexpr char organizations[] = "organizations";
+		constexpr char patients[] = "patients";
+		constexpr char diseases[] = "diseases";
+		constexpr char config_operations[] = "config_operations";
 	} // namespace handbook_tables_name
 
-	template <typename T> concept RecordTypeConcept = std::derived_from<T, data::objects::ObjectBase> && requires(
-                                                  T a, common::database::Record record)
-	                                                  {
-		                                                  { a.to_record() } -> std::same_as<common::database::Record>; {
-			                                                  a.from_record(record)
-		                                                  } -> std::same_as<void>; { T::field_name::id }; { T::field_name::name }; {
-			                                                  T::field_name::properties
-		                                                  };
-	                                                  };
+	template <typename T>
+	concept RecordTypeConcept =
+			std::derived_from<T, data::objects::ObjectBase> && requires(T a, common::database::Record record)
+			{
+				{ a.to_record() } -> std::same_as<common::database::Record>;
+				{a.from_record(record)} -> std::same_as<void>;
+			};
 
 	template <RecordTypeConcept RecordType>
 	class HandbookBase
 	{
 	protected:
 		std::shared_ptr<common::database::interfaces::DbInterface> connect_;
-		std::string_view table_name_;
+		std::string table_name_;
 		std::vector<std::shared_ptr<common::database::FieldBase>> fts_fields_;
 		std::vector<std::shared_ptr<common::database::FieldBase>> key_fields_;
 		std::vector<std::shared_ptr<common::database::FieldBase>> value_fields_;
@@ -47,15 +45,11 @@ namespace drug_lib::dao
 				throw std::runtime_error("Cannot connect to database interface.");
 			}
 			// creating fields
-			const auto id_field = common::database::make_field_shared_by_default<common::database::Uuid>(RecordType::field_name::id);
-			const auto name_field = common::database::make_field_shared_by_default<std::string>(RecordType::field_name::name);
-			const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
-				RecordType::field_name::properties);
+			const auto id_field = common::database::make_field_shared<common::database::Uuid>(data::objects::shared::field_name::id);
+			const auto properties_field = common::database::make_field_shared<Json::Value>(
+				data::objects::shared::field_name::properties);
 			fts_fields_.push_back(id_field);
-			fts_fields_.push_back(name_field);
 			fts_fields_.push_back(properties_field);
-
-			value_fields_.push_back(name_field);
 			value_fields_.push_back(properties_field);
 
 			key_fields_.push_back(id_field);
@@ -137,8 +131,8 @@ namespace drug_lib::dao
 			db_records.push_back(record.to_record());
 			const std::vector<common::database::Record> ids = connect_->insert_with_returning(
 				table_name_, std::move(db_records), {
-					common::database::make_field_shared_by_default<common::database::Uuid>(
-						data::objects::ObjectBase::common_fields_names::id)});
+					common::database::make_field_shared<common::database::Uuid>(
+						data::objects::shared::field_name::id)});
 			return ids[0][0]->as<common::database::Uuid>();
 		}
 
@@ -147,7 +141,7 @@ namespace drug_lib::dao
 			common::database::Conditions removed_conditions;
 			removed_conditions.add_field_condition(
 				std::make_unique<common::database::Field<common::database::Uuid>>(
-					data::objects::ObjectBase::common_fields_names::id, common::database::Uuid()), "=",
+					data::objects::shared::field_name::id, common::database::Uuid()), "=",
 				std::make_unique<common::database::Field<common::database::Uuid>>("", std::move(id)));
 			connect_->remove(table_name_, removed_conditions);
 		}
@@ -181,7 +175,7 @@ namespace drug_lib::dao
 			common::database::Conditions select_conditions;
 			select_conditions.add_field_condition(
 				std::make_unique<common::database::Field<common::database::Uuid>>(
-					data::objects::ObjectBase::common_fields_names::id, common::database::Uuid()), "=",
+					data::objects::shared::field_name::id, common::database::Uuid()), "=",
 				std::make_unique<common::database::Field<common::database::Uuid>>("", std::move(id)));
 			auto res = connect_->select(table_name_, select_conditions);
 			if (res.size() > 1)

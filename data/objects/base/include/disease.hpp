@@ -1,28 +1,29 @@
 #pragma once
 #include <utility>
+#include <algorithm>
 
 #include "common_object.hpp"
 #include "properties_controller.hpp"
 namespace drug_lib::data::objects
 {
+    namespace disease::field_name
+    {
+        static constexpr char name[] = "name";
+        static constexpr char type[] = "type";
+        static constexpr char is_infectious[] = "is_infectious";
+    };
     class Disease final : public ObjectBase, public PropertiesHolder
     {
     public:
-        struct field_name : common_fields_names
-        {
-            static constexpr auto name = "name";
-            static constexpr auto type = "type";
-            static constexpr auto is_infectious = "is_infectious";
-        };
 
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(field_name::id, id_));
-            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
-            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
+            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, id_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>(disease::field_name::name, name_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>(disease::field_name::type, type_));
             record.push_back(
-                std::make_unique<common::database::Field<bool>>(field_name::is_infectious, is_infectious_));
+                std::make_unique<common::database::Field<bool>>(disease::field_name::is_infectious, is_infectious_));
             record.push_back(collection_.make_properties_field());
             return record;
         }
@@ -32,23 +33,23 @@ namespace drug_lib::data::objects
             for (const auto& field : record.fields())
             {
                 if (const auto& field_name = field->get_name();
-                    field_name == field_name::id)
+                    field_name == shared::field_name::id)
                 {
                     id_ = field->as<common::database::Uuid>();
                 }
-                else if (field_name == field_name::name)
+                else if (field_name == disease::field_name::name)
                 {
                     name_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::type)
+                else if (field_name == disease::field_name::type)
                 {
                     type_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::is_infectious)
+                else if (field_name == disease::field_name::is_infectious)
                 {
                     is_infectious_ = field->as<bool>();
                 }
-                else if (field_name == field_name::properties)
+                else if (field_name == shared::field_name::properties)
                 {
                     create_collection(field);
                 }
@@ -64,24 +65,24 @@ namespace drug_lib::data::objects
             for (std::size_t i = 0; i < viewed->size(); i++)
             {
                 if (const auto& field_name = viewed->name(i);
-                    field_name == field_name::id)
+                    field_name == shared::field_name::id)
                 {
                     id_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::name)
+                else if (field_name == disease::field_name::name)
                 {
                     name_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::type)
+                else if (field_name == disease::field_name::type)
                 {
                     type_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::is_infectious)
+                else if (field_name == disease::field_name::is_infectious)
                 {
                     //WARNING this is wierd stuff
                     is_infectious_ = viewed->extract(i) == "t";
                 }
-                else if (field_name == field_name::properties)
+                else if (field_name == shared::field_name::properties)
                 {
                     create_collection(viewed->extract(i));
                 }
@@ -95,32 +96,32 @@ namespace drug_lib::data::objects
         [[nodiscard]] [[nodiscard]] Json::Value to_json() const  override
         {
             Json::Value result = ObjectBase::to_json();
-            result[field_name::name] = name_;
-            result[field_name::type] = type_;
-            result[field_name::is_infectious] = is_infectious_;
-            result[field_name::properties] = collection_.make_properties_field()->value();
+            result[disease::field_name::name] = name_;
+            result[disease::field_name::type] = type_;
+            result[disease::field_name::is_infectious] = is_infectious_;
+            result[shared::field_name::properties] = collection_.make_properties_field()->value();
             return result;
         }
 
         void from_json(const Json::Value& val) override
         {
             ObjectBase::from_json(val);
-            name_ = val[field_name::name].asString();
-            type_ = val[field_name::type].asString();
+            name_ = val[disease::field_name::name].asString();
+            type_ = val[disease::field_name::type].asString();
             try
             {
-                is_infectious_ = val[field_name::is_infectious].asBool();
+                is_infectious_ = val[disease::field_name::is_infectious].asBool();
             } catch ([[maybe_unused]] const Json::LogicError& e)
             {
-                std::string is_infectious_string = val[field_name::is_infectious].asString();
-                std::transform(is_infectious_string.begin(), is_infectious_string.end(), is_infectious_string.begin(), ::tolower);
+                std::string is_infectious_string = val[disease::field_name::is_infectious].asString();
+                std::ranges::transform(is_infectious_string, is_infectious_string.begin(), ::tolower);
                 if (is_infectious_string != "true" && is_infectious_string != "false")
                 {
                     throw;
                 }
                 is_infectious_ = is_infectious_string == "true";
             }
-            create_collection(val[field_name::properties]);
+            create_collection(val[shared::field_name::properties]);
 
         }
 

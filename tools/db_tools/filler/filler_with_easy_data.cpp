@@ -15,11 +15,6 @@ constexpr int32_t batch_size = 1e3;
 std::mutex pool_mutex;
 using namespace drug_lib::data::objects;
 
-template <typename T>
-void write_to_csv(auto path)
-{
-    // Implementation to write T objects to CSV (if needed later).
-}
 
 void create_meds(drug_lib::common::database::creational::DbInterfacePool &db_pool)
 {
@@ -186,13 +181,13 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool &db
 
             Patient patient(drug_lib::common::database::Uuid(), std::move(name), std::move(gender), birth_date,
                             std::move(contact_info));
-            std::vector<drug_lib::common::database::Uuid> diseases = {drug_lib::common::database::Uuid("101")};
+            std::vector diseases = {drug_lib::common::database::Uuid("101", false)};
             patients::CurrentDiseases current_diseases(std::move(diseases));
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::CurrentDiseases>(
                     std::move(current_diseases)));
             patient.add_property(
-                drug_lib::data::PropertyFactory::create<patients::CurrentMedicaments>(std::vector<drug_lib::common::database::Uuid>{drug_lib::common::database::Uuid("1")}));
+                drug_lib::data::PropertyFactory::create<patients::CurrentMedicaments>(std::vector{drug_lib::common::database::Uuid("1", false)}));
             // Adding Allergies property
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::Allergies>(
@@ -210,8 +205,8 @@ void create_patients(drug_lib::common::database::creational::DbInterfacePool &db
 
             // Adding MedicalHistory property
             std::vector<patients::HealthRecord> medical_history = {
-                {drug_lib::common::database::Uuid("101"), std::chrono::year{2022} / std::chrono::month{5}, std::chrono::year{2023} / std::chrono::month{2}},
-                {drug_lib::common::database::Uuid("102"), std::chrono::year{2023} / std::chrono::month{3}} // Ongoing disease without an end date
+                {drug_lib::common::database::Uuid("101", false), std::chrono::year{2022} / std::chrono::month{5}, std::chrono::year{2023} / std::chrono::month{2}},
+                {drug_lib::common::database::Uuid("102", false), std::chrono::year{2023} / std::chrono::month{3}} // Ongoing disease without an end date
             };
             patient.add_property(
                 drug_lib::data::PropertyFactory::create<patients::MedicalHistory>(std::move(medical_history)));

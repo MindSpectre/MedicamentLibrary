@@ -40,10 +40,10 @@ std::vector<Json::Value> csv_to_json(const std::string &csv_file)
 					std::string errs;
 					std::istringstream properties_stream(cell_value);
 					Json::Value properties_json;
-					Json::CharReaderBuilder reader_builder;
 
 					// Parse the JSON from the properties column
-					if (!Json::parseFromStream(reader_builder, properties_stream, &properties_json, &errs))
+					if (Json::CharReaderBuilder reader_builder;
+						!Json::parseFromStream(reader_builder, properties_stream, &properties_json, &errs))
 					{
 						std::cerr << "Failed to parse properties JSON in row " << i + 1 << ": " << errs << std::endl;
 						// Optionally, handle the error (e.g., skip the row or set properties to null)

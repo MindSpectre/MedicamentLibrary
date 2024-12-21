@@ -31,7 +31,7 @@ namespace drug_lib::services
 		template <SearchableType T>
 		void add(T &&object, MatchStatus status = PARTIAL_MATCH)
 		{
-			results_.emplace_back(std::make_unique<T>(std::move(object)), status);
+			results_.emplace_back(std::make_unique<T>(std::forward<T>(object)), status);
 		}
 
 		void pop()

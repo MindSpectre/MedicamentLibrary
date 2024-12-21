@@ -67,7 +67,7 @@ namespace drug_lib::dao
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
                 std::make_unique<common::database::Field<int32_t>>(
-                    data::objects::AuthObject::field_name::user_id,
+                    data::objects::auth_object::field_name::user_id,
                     0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
@@ -80,7 +80,7 @@ namespace drug_lib::dao
             common::database::Conditions removed_conditions;
             removed_conditions.add_field_condition(
                 std::make_unique<common::database::Field<std::string>>(
-                    data::objects::AuthObject::field_name::login, ""),
+                    data::objects::auth_object::field_name::login, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", login)
             );
@@ -102,7 +102,7 @@ namespace drug_lib::dao
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
                 std::make_unique<common::database::Field<int32_t>>(
-                    data::objects::AuthObject::field_name::user_id,
+                    data::objects::auth_object::field_name::user_id,
                     0),
                 "=",
                 std::make_unique<common::database::Field<int32_t>>("", id)
@@ -128,7 +128,7 @@ namespace drug_lib::dao
             common::database::Conditions select_conditions;
             select_conditions.add_field_condition(
                 std::make_unique<common::database::Field<std::string>>(
-                    data::objects::AuthObject::field_name::login, ""),
+                    data::objects::auth_object::field_name::login, ""),
                 "=",
                 std::make_unique<common::database::Field<std::string>>("", login)
             );
@@ -171,7 +171,7 @@ namespace drug_lib::dao
     private:
         std::shared_ptr<common::database::interfaces::DbInterface> connect_;
         std::optional<std::reference_wrapper<common::database::creational::DbInterfacePool>> used_pool;
-        std::string_view table_name_;
+        std::string table_name_;
 
         std::vector<std::shared_ptr<common::database::FieldBase>> key_fields_;
         std::vector<std::shared_ptr<common::database::FieldBase>> value_fields_;
@@ -183,12 +183,12 @@ namespace drug_lib::dao
                 throw std::runtime_error("Cannot connect to database interface.");
             }
             //creating fields
-            const auto id_field = common::database::make_field_shared_by_default<int32_t>(
-                data::objects::AuthObject::field_name::user_id);
-            const auto login_field = common::database::make_field_shared_by_default<std::string>(
-                data::objects::AuthObject::field_name::login);
-            const auto password_field = common::database::make_field_shared_by_default<std::string>(
-                data::objects::AuthObject::field_name::password);
+            const auto id_field = common::database::make_field_shared<int32_t>(
+                data::objects::auth_object::field_name::user_id);
+            const auto login_field = common::database::make_field_shared<std::string>(
+                data::objects::auth_object::field_name::login);
+            const auto password_field = common::database::make_field_shared<std::string>(
+                data::objects::auth_object::field_name::password);
 
             value_fields_.push_back(password_field);
             value_fields_.push_back(id_field);
