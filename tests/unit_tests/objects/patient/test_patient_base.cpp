@@ -51,19 +51,19 @@ TEST(PatientTest, ToRecord)
 
     for (const auto record = patient.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == Patient::field_name::name)
+        if (field->get_name() == patient::field_name::personal_name)
         {
             EXPECT_EQ("Alice Smith", field->as<std::string>());
         }
-        else if (field->get_name() == Patient::field_name::gender)
+        else if (field->get_name() == patient::field_name::gender)
         {
             EXPECT_EQ("Female", field->as<std::string>());
         }
-        else if (field->get_name() == Patient::field_name::contact_information)
+        else if (field->get_name() == patient::field_name::contact_information)
         {
             EXPECT_EQ("555-555-5555", field->as<std::string>());
         }
-        else if (field->get_name() == Patient::field_name::id)
+        else if (field->get_name() == shared::field_name::id)
         {
             EXPECT_EQ("3", field->as<common::database::Uuid>().get_id());
         }
@@ -73,12 +73,12 @@ TEST(PatientTest, ToRecord)
 TEST(PatientTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(Patient::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4")));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Patient::field_name::name, "Bob Brown"));
-    record.push_back(std::make_unique<common::database::Field<std::string>>(Patient::field_name::gender, "Male"));
+        std::make_unique<common::database::Field<std::string>>(patient::field_name::personal_name, "Bob Brown"));
+    record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::gender, "Male"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Patient::field_name::contact_information,
+        std::make_unique<common::database::Field<std::string>>(patient::field_name::contact_information,
                                                                "111-222-3333"));
 
     Patient patient;

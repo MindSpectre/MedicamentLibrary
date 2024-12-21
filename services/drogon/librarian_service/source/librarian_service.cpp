@@ -80,16 +80,16 @@ void drug_lib::services::drogon::Librarian::remove_disease(const ::drogon::HttpR
 {
 	handle_remove(callback, [&]()
 	{
-		return service_.remove_disease(id);
+		return service_.remove_disease(std::move(id));
 	});
 }
 
 void drug_lib::services::drogon::Librarian::get_medicament(const ::drogon::HttpRequestPtr &req,
-                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, const common::database::Uuid id)
+                                                           std::function<void(const ::drogon::HttpResponsePtr &)> &&callback, common::database::Uuid id)
 {
 	handle_get(callback, [&]()
 	{
-		return service_.get_medicament(id)->to_json();
+		return service_.get_medicament(std::move(id))->to_json();
 	});
 }
 

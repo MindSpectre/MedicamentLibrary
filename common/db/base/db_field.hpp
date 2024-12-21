@@ -32,7 +32,7 @@ namespace drug_lib::common::database
 	class Uuid
 	{
 	public:
-		static constexpr auto default_value = "default";
+		static constexpr char default_value[] = "default";
 
 		// Default constructor
 		Uuid() = default;

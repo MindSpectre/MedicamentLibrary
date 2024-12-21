@@ -51,31 +51,31 @@ TEST(MedicamentTest, ToRecord)
 
     for (const auto record = medicament.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == Medicament::field_name::name)
+        if (field->get_name() == medicament::field_name::name)
         {
             EXPECT_EQ("Ibuprofen", field->as<std::string>());
         }
-        else if (field->get_name() == Medicament::field_name::type)
+        else if (field->get_name() == medicament::field_name::type)
         {
             EXPECT_EQ("Painkiller", field->as<std::string>());
         }
-        else if (field->get_name() == Medicament::field_name::requires_prescription)
+        else if (field->get_name() == medicament::field_name::requires_prescription)
         {
             EXPECT_TRUE(field->as<bool>());
         }
-        else if (field->get_name() == Medicament::field_name::id)
+        else if (field->get_name() == shared::field_name::id)
         {
             EXPECT_EQ("3", field->as<common::database::Uuid>().get_id());
         }
-        else if (field->get_name() == Medicament::field_name::approval_number)
+        else if (field->get_name() == medicament::field_name::approval_number)
         {
             EXPECT_EQ("ABUIT123", field->as<std::string>());
         }
-        else if (field->get_name() == Medicament::field_name::approval_status)
+        else if (field->get_name() == medicament::field_name::approval_status)
         {
             EXPECT_EQ("accepted", field->as<std::string>());
         }
-        else if (field->get_name() == Medicament::field_name::atc_code)
+        else if (field->get_name() == medicament::field_name::atc_code)
         {
             EXPECT_EQ("AV13", field->as<std::string>());
         }
@@ -85,18 +85,18 @@ TEST(MedicamentTest, ToRecord)
 TEST(MedicamentTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(Medicament::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4")));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Medicament::field_name::name, "Codeine"));
+        std::make_unique<common::database::Field<std::string>>(medicament::field_name::name, "Codeine"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Medicament::field_name::type, "Opioid"));
+        std::make_unique<common::database::Field<std::string>>(medicament::field_name::type, "Opioid"));
     record.push_back(
-        std::make_unique<common::database::Field<bool>>(Medicament::field_name::requires_prescription, true));
+        std::make_unique<common::database::Field<bool>>(medicament::field_name::requires_prescription, true));
    record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Medicament::field_name::approval_number, "ABUIT123"));
+        std::make_unique<common::database::Field<std::string>>(medicament::field_name::approval_number, "ABUIT123"));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(Medicament::field_name::approval_status, "accepted"));
-    record.push_back(std::make_unique<common::database::Field<std::string>>(Medicament::field_name::atc_code, "AV14"));
+        std::make_unique<common::database::Field<std::string>>(medicament::field_name::approval_status, "accepted"));
+    record.push_back(std::make_unique<common::database::Field<std::string>>(medicament::field_name::atc_code, "AV14"));
     Medicament medicament;
     medicament.from_record(record);
 

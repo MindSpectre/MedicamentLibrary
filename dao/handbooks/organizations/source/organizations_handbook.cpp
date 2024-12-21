@@ -10,11 +10,11 @@ namespace drug_lib::dao
     {
         table_name_ = handbook_tables_name::organizations;
         const auto country_field = common::database::make_field_shared_by_default<std::string>(
-            objects::Organization::field_name::country);
+            objects::organization::field_name::country);
         const auto type_field = common::database::make_field_shared_by_default<std::string>(
-            objects::Organization::field_name::type);
+            objects::organization::field_name::type);
         const auto contact_details_field = common::database::make_field_shared_by_default<std::string>(
-            objects::Organization::field_name::contact_details);
+            objects::organization::field_name::contact_details);
 
         value_fields_.push_back(type_field);
         value_fields_.push_back(country_field);

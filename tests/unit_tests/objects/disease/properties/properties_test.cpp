@@ -56,19 +56,19 @@ TEST(DiseasePropertiesTest, ValidationJson)
     for (const auto record = disease.to_record().fields();
          const auto &field: record)
     {
-        if (field->get_name() == Disease::field_name::name)
+        if (field->get_name() == disease::field_name::name)
         {
             EXPECT_EQ("Chickenpox", field->as<std::string>());
         }
-        else if (field->get_name() == Disease::field_name::type)
+        else if (field->get_name() == disease::field_name::type)
         {
             EXPECT_EQ("Viral", field->as<std::string>());
         }
-        else if (field->get_name() == Disease::field_name::is_infectious)
+        else if (field->get_name() == disease::field_name::is_infectious)
         {
             EXPECT_TRUE(field->as<bool>());
         }
-        else if (field->get_name() == Disease::field_name::properties)
+        else if (field->get_name() == shared::field_name::properties)
         {
             const auto info = field->as<Json::Value>();
             ASSERT_TRUE(info.isObject());

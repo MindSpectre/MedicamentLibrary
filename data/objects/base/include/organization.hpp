@@ -7,26 +7,26 @@
 
 namespace drug_lib::data::objects
 {
+    namespace organization::field_name
+    {
+        constexpr char name[] = "name";
+        constexpr char type[] = "type";
+        constexpr char country[] = "country";
+        constexpr char contact_details[] = "contact_details";
+    };
     class Organization final : public ObjectBase, public PropertiesHolder
     {
     public:
-        struct field_name : common_fields_names
-        {
-            static constexpr auto name = "name";
-            static constexpr auto type = "type";
-            static constexpr auto country = "country";
-            static constexpr auto contact_details = "contact_details";
-        };
 
         [[nodiscard]] common::database::Record to_record() const override
         {
             common::database::Record record;
-            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(field_name::id, id_));
-            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::name, name_));
-            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::type, type_));
-            record.push_back(std::make_unique<common::database::Field<std::string>>(field_name::country, country_));
+            record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, id_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>(organization::field_name::name, name_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>(organization::field_name::type, type_));
+            record.push_back(std::make_unique<common::database::Field<std::string>>(organization::field_name::country, country_));
             record.push_back(
-                std::make_unique<common::database::Field<std::string>>(field_name::contact_details, contact_details_));
+                std::make_unique<common::database::Field<std::string>>(organization::field_name::contact_details, contact_details_));
             record.push_back(collection_.make_properties_field());
             return record;
         }
@@ -36,27 +36,27 @@ namespace drug_lib::data::objects
             for (const auto& field : record.fields())
             {
                 if (const auto& field_name = field->get_name();
-                    field_name == field_name::id)
+                    field_name == shared::field_name::id)
                 {
                     id_ = field->as<common::database::Uuid>();
                 }
-                else if (field_name == field_name::name)
+                else if (field_name == organization::field_name::name)
                 {
                     name_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::type)
+                else if (field_name == organization::field_name::type)
                 {
                     type_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::country)
+                else if (field_name == organization::field_name::country)
                 {
                     country_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::contact_details)
+                else if (field_name == organization::field_name::contact_details)
                 {
                     contact_details_ = field->as<std::string>();
                 }
-                else if (field_name == field_name::properties)
+                else if (field_name == shared::field_name::properties)
                 {
                     create_collection(field);
                 }
@@ -72,27 +72,27 @@ namespace drug_lib::data::objects
             for (std::size_t i = 0; i < viewed->size(); i++)
             {
                 if (const auto& field_name = viewed->name(i);
-                    field_name == field_name::id)
+                    field_name == shared::field_name::id)
                 {
                     id_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::name)
+                else if (field_name == organization::field_name::name)
                 {
                     name_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::type)
+                else if (field_name == organization::field_name::type)
                 {
                     type_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::country)
+                else if (field_name == organization::field_name::country)
                 {
                     country_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::contact_details)
+                else if (field_name == organization::field_name::contact_details)
                 {
                     contact_details_ = viewed->extract(i);
                 }
-                else if (field_name == field_name::properties)
+                else if (field_name == shared::field_name::properties)
                 {
                     create_collection(viewed->extract(i));
                 }
@@ -106,22 +106,22 @@ namespace drug_lib::data::objects
         [[nodiscard]] Json::Value to_json() const override
         {
             Json::Value result = ObjectBase::to_json();
-            result[field_name::name] = name_;
-            result[field_name::type] = type_;
-            result[field_name::contact_details] = contact_details_;
-            result[field_name::country] = country_;
-            result[field_name::properties] = collection_.make_properties_field()->value();
+            result[organization::field_name::name] = name_;
+            result[organization::field_name::type] = type_;
+            result[organization::field_name::contact_details] = contact_details_;
+            result[organization::field_name::country] = country_;
+            result[shared::field_name::properties] = collection_.make_properties_field()->value();
             return result;
         }
 
         void from_json(const Json::Value& val) override
         {
             ObjectBase::from_json(val);
-            name_ = val[field_name::name].asString();
-            type_ = val[field_name::type].asString();
-            contact_details_ = val[field_name::contact_details].asString();
-            country_ = val[field_name::country].asString();
-            create_collection(val[field_name::properties]);
+            name_ = val[organization::field_name::name].asString();
+            type_ = val[organization::field_name::type].asString();
+            contact_details_ = val[organization::field_name::contact_details].asString();
+            country_ = val[organization::field_name::country].asString();
+            create_collection(val[shared::field_name::properties]);
         }
 
         Organization() = default;

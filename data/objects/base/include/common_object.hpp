@@ -9,6 +9,11 @@ namespace drug_lib::data
 {
     namespace objects
     {
+        namespace shared::field_name
+        {
+            static constexpr char id[] = "id";
+            static constexpr char properties[] = "properties";
+        };
         class ObjectBase
         {
         public:
@@ -30,25 +35,19 @@ namespace drug_lib::data
             [[nodiscard]] virtual Json::Value to_json() const
             {
                 Json::Value result;
-                result[common_fields_names::id] = id_.get_id();
+                result[shared::field_name::id] = id_.get_id();
                 return result;
             }
             virtual void from_json(const Json::Value& val)
             {
-                if (val.isMember(common_fields_names::id))
+                if (val.isMember(shared::field_name::id))
                 {
-                    id_.set_id(val[common_fields_names::id].asString()) ;
+                    id_.set_id(val[shared::field_name::id].asString()) ;
                 } else
                 {
                     id_.set_id(common::database::Uuid::default_value);
                 }
             }
-
-            struct common_fields_names
-            {
-                static constexpr auto id = "id";
-                static constexpr auto properties = "properties";
-            };
 
             [[nodiscard]] const std::string& get_id() const
             {
@@ -80,6 +79,6 @@ namespace drug_lib::data
             result[name] = property->get_info();
         }
         return std::make_unique<common::database::Field<Json::Value>>(
-            objects::ObjectBase::common_fields_names::properties, result);
+            objects::shared::field_name::properties, result);
     }
 }

@@ -46,7 +46,7 @@ TEST(OrganizationPropertiesTest, ValidationJson)
     organization.add_property(license);
     for (const auto record = organization.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == Organization::field_name::properties)
+        if (field->get_name() == shared::field_name::properties)
         {
             const auto info = field->as<Json::Value>();
             ASSERT_TRUE(info.isObject());
