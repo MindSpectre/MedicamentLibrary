@@ -26,10 +26,6 @@ namespace drug_lib::data
         {
             return !(lhs == rhs);
         }
-
-        struct _common_properties
-        {
-        };
     };
 
     template <typename DataPropertyType>

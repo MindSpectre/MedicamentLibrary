@@ -178,7 +178,7 @@ TEST_F(PqxxClientTest, InsertTestWithUuidGenerate)
     db_client_->create_table(test_table_, record1);
     records.push_back(std::move(record1));
     Record record2;
-    record2.push_back(std::make_unique<Field<Uuid>>("id", Uuid("550e8400-e29b-41d4-a716-446655440001")));
+    record2.push_back(std::make_unique<Field<Uuid>>("id", Uuid("550e8400-e29b-41d4-a716-446655440001", true)));
     record2.push_back(std::make_unique<Field<std::string>>("name", "Bob"));
     record2.push_back(std::make_unique<Field<std::string>>("description", "L"));
     records.push_back(std::move(record2));

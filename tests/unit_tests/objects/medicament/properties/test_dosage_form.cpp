@@ -1,8 +1,7 @@
-#pragma once
-
 #include <gtest/gtest.h>
+#include <json/json.h>
 
-#include "medicament_properties/prescription.hpp"
+#include "medicament_properties/dosage_form.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects::medicaments;
 TEST(DosageFormTest, DefaultConstructor)
@@ -64,3 +63,4 @@ TEST(DosageFormTest, GetName)
     const DosageForm dosage_form;
     EXPECT_EQ(dosage_form.get_name(), properties::dosage_form);
 }
+

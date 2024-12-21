@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ostream>
-
+#include "data_property.hpp"
 #include "patients/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::patients
@@ -47,7 +47,7 @@ namespace drug_lib::data::objects::patients
             data_.reserve(property.size());
             for (const auto& it : property)
             {
-                data_.emplace_back(std::move(it.asString()));
+                data_.emplace_back(std::move(it.asString()), false);
             }
         }
     };

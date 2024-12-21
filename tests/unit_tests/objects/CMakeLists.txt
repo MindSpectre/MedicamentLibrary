@@ -20,11 +20,11 @@ set_tests_properties(${UnitTestObject}_DiseaseBase PROPERTIES LABELS "unit")
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         disease/properties/properties_test.cpp
-        disease/properties/test_symptoms.hpp
-        disease/properties/test_curative_drugs.hpp
-        disease/properties/test_affected_age_groups.hpp
-        disease/properties/test_risk_factors.hpp
-        disease/properties/test_complications.hpp
+        disease/properties/test_symptoms.cpp
+        disease/properties/test_curative_drugs.cpp
+        disease/properties/test_affected_age_groups.cpp
+        disease/properties/test_risk_factors.cpp
+        disease/properties/test_complications.cpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Disease_Properties
         PRIVATE
@@ -56,12 +56,13 @@ set_tests_properties(${UnitTestObject}_MedicamentBase PROPERTIES LABELS "unit")
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         medicament/properties/properties_test.cpp
-        medicament/properties/test_prescription.hpp
-        medicament/properties/test_active_ingredients.hpp
-        medicament/properties/test_inactive_ingredients.hpp
-        medicament/properties/test_dosage_form.hpp
-        medicament/properties/test_side_effects.hpp
-        medicament/properties/test_strength.hpp
+        medicament/properties/test_prescription.cpp
+        medicament/properties/test_active_ingredients.cpp
+        medicament/properties/test_inactive_ingredients.cpp
+        medicament/properties/test_dosage_form.cpp
+        medicament/properties/test_side_effects.cpp
+        medicament/properties/test_strength.cpp
+
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Medicament_Properties
         PRIVATE
@@ -93,9 +94,13 @@ set_tests_properties(${UnitTestObject}_PatientBase PROPERTIES LABELS "unit")
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         patient/properties/properties_test.cpp
-        patient/properties/test_current_diseases.hpp
-        patient/properties/test_current_medicaments.hpp
-        patient/properties/test_allergies.hpp
+        patient/properties/test_current_diseases.cpp
+        patient/properties/test_current_medicaments.cpp
+        patient/properties/test_allergies.cpp
+        patient/properties/test_blood_type.cpp
+        patient/properties/test_insurance.cpp
+        patient/properties/test_medical_history.cpp
+        patient/properties/test_vaccines.cpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Patient_Properties
         PRIVATE
@@ -127,6 +132,7 @@ set_tests_properties(${UnitTestObject}_OrganizationBase PROPERTIES LABELS "unit"
 ##############################################################################
 add_executable(${UNIT_TESTING_TARGET}_Objects_Organization_Properties
         organization/properties/properties_test.cpp
+        organization/properties/test_license.cpp
 )
 target_link_libraries(${UNIT_TESTING_TARGET}_Objects_Organization_Properties
         PRIVATE

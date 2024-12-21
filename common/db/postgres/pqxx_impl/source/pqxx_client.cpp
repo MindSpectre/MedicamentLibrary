@@ -624,7 +624,8 @@ namespace drug_lib::common::database
 		// Handle UUID type
 		if (type_oid->second == "uuid") // UUID type
 		{
-			field_ptr = std::make_unique<Field<Uuid>>(field.name(), Uuid(field.as<std::string>()));
+			//WARNING All fields are identified as not primary, suppose be checked further
+			field_ptr = std::make_unique<Field<Uuid>>(field.name(), Uuid(field.as<std::string>(), false));
 			return field_ptr;
 		}
 		// Handle timestamp types (with or without a timezone)

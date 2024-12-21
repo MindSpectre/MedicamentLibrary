@@ -1,6 +1,6 @@
-#pragma once
-
 #include <gtest/gtest.h>
+#include <json/value.h>
+
 #include "patient_properties/blood_type.hpp"
 
 using namespace drug_lib;
@@ -55,7 +55,7 @@ TEST(BloodTypeTest, SetInfoInvalidJson)
 
 TEST(BloodTypeTest, GetInfo)
 {
-    BloodType blood_type("O+");
+    const BloodType blood_type("O+");
     Json::Value info = blood_type.get_info();
 
     ASSERT_TRUE(info.isObject());

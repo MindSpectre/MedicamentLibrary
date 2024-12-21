@@ -15,6 +15,7 @@ namespace drug_lib::common::database
 {
 	template <typename T>
 	class Field;
+
 	/// @brief Base class representing a field in the database
 	enum class SqlType
 	{
@@ -38,11 +39,12 @@ namespace drug_lib::common::database
 		Uuid() = default;
 
 		// Constructor from std::string
-		explicit Uuid(std::string value)
+		explicit Uuid(std::string value, const bool is_primary) : primary_(is_primary), uuid_(std::move(value))
 		{
-			uuid_ = std::move(value);
 		}
-
+		// explicit Uuid(const bool is_primary) : primary_(is_primary)
+		// {
+		// }
 		explicit operator std::string() const
 		{
 			return uuid_;
@@ -72,6 +74,16 @@ namespace drug_lib::common::database
 		void set_id(std::string uuid)
 		{
 			uuid_ = std::move(uuid);
+		}
+
+		[[nodiscard]] bool is_primary() const
+		{
+			return primary_;
+		}
+
+		void set_primary(const bool is_primary)
+		{
+			primary_ = is_primary;
 		}
 
 		Uuid(const Uuid &other) = default;
@@ -129,6 +141,7 @@ namespace drug_lib::common::database
 		}
 
 	private:
+		bool primary_ = true;
 		std::string uuid_ = default_value;
 
 		// Validate UUID format (basic example, can be extended)
@@ -159,7 +172,7 @@ namespace drug_lib::common::database
 		[[nodiscard]] virtual SqlType get_sql_type() const = 0;
 
 		/// @brief Gets the SQL data type of the field for creating
-		[[nodiscard]] virtual std::string get_sql_type_initialization() const = 0;
+		[[nodiscard]] virtual constexpr const char *get_sql_type_initialization() const = 0;
 
 		template <typename T>
 		T as() const
@@ -344,7 +357,7 @@ namespace drug_lib::common::database
 		}
 
 		/// @brief Gets the SQL data type of the field
-		[[nodiscard]] std::string get_sql_type_initialization() const override
+		[[nodiscard]] constexpr const char *get_sql_type_initialization() const override
 		{
 			if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>)
 			{
@@ -352,7 +365,9 @@ namespace drug_lib::common::database
 			}
 			else if constexpr (std::is_same_v<T, Uuid>)
 			{
-				return "UUID DEFAULT gen_random_uuid() PRIMARY KEY";
+				if (this->value().is_primary())
+					return "UUID DEFAULT gen_random_uuid() PRIMARY KEY";
+				return "UUID NOT NULL";
 			}
 			else if constexpr (std::is_same_v<T, int64_t>)
 			{
@@ -397,16 +412,16 @@ namespace drug_lib::common::database
 
 	template <typename T>
 		requires std::default_initializable<T>
-	std::shared_ptr<Field<T>> make_field_shared_by_default(std::string name)
+	std::shared_ptr<Field<T>> make_field_shared(std::string name, T value = T())
 	{
-		return std::make_shared<Field<T>>(std::move(name), T());
+		return std::make_shared<Field<T>>(std::move(name), std::move(value));
 	}
 
 	template <typename T>
 		requires std::default_initializable<T>
-	std::unique_ptr<Field<T>> make_field_unique_by_default(std::string name)
+	std::unique_ptr<Field<T>> make_field_unique(std::string name, T value = T())
 	{
-		return std::make_unique<Field<T>>(std::move(name), T());
+		return std::make_unique<Field<T>>(std::move(name), std::move(value));
 	}
 
 	class ViewingField final : public FieldBase
@@ -468,7 +483,7 @@ namespace drug_lib::common::database
 			throw std::runtime_error("get_sql_type() called in VIEWING field");
 		}
 
-		[[nodiscard]] std::string get_sql_type_initialization() const override
+		[[nodiscard]] constexpr const char *get_sql_type_initialization() const override
 		{
 			throw std::runtime_error("get_sql_type_initialization() called in VIEWING field");
 		}

@@ -183,11 +183,11 @@ namespace drug_lib::dao
                 throw std::runtime_error("Cannot connect to database interface.");
             }
             //creating fields
-            const auto id_field = common::database::make_field_shared_by_default<int32_t>(
+            const auto id_field = common::database::make_field_shared<int32_t>(
                 data::objects::auth_object::field_name::user_id);
-            const auto login_field = common::database::make_field_shared_by_default<std::string>(
+            const auto login_field = common::database::make_field_shared<std::string>(
                 data::objects::auth_object::field_name::login);
-            const auto password_field = common::database::make_field_shared_by_default<std::string>(
+            const auto password_field = common::database::make_field_shared<std::string>(
                 data::objects::auth_object::field_name::password);
 
             value_fields_.push_back(password_field);

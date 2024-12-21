@@ -16,7 +16,7 @@ TEST(PatientTest, DefaultConstructor)
 
 TEST(PatientTest, ParameterizedConstructor)
 {
-    const Patient patient(common::database::Uuid("4"), "John Doe", "Male",
+    const Patient patient(common::database::Uuid("4", true), "John Doe", "Male",
                           std::chrono::year_month_day{
                               std::chrono::year{1990}, std::chrono::month{5}, std::chrono::day{15}
                           }, "123-456-7890");
@@ -45,7 +45,7 @@ TEST(PatientTest, SettersAndGetters)
 
 TEST(PatientTest, ToRecord)
 {
-    const Patient patient(common::database::Uuid("3"), "Alice Smith", "Female", std::chrono::year_month_day{
+    const Patient patient(common::database::Uuid("3", true), "Alice Smith", "Female", std::chrono::year_month_day{
                               std::chrono::year{2000}, std::chrono::month{1}, std::chrono::day{1}
                           }, "555-555-5555");
 
@@ -73,7 +73,7 @@ TEST(PatientTest, ToRecord)
 TEST(PatientTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4", true)));
     record.push_back(
         std::make_unique<common::database::Field<std::string>>(patient::field_name::personal_name, "Bob Brown"));
     record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::gender, "Male"));

@@ -1,6 +1,8 @@
-#pragma once
-#include <gtest/gtest.h>
 
+#include <gtest/gtest.h>
+#include <json/json.h>
+
+#include "properties_controller.hpp"
 #include "disease_properties/symptoms.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects;

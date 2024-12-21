@@ -13,9 +13,9 @@ namespace drug_lib::dao
         value_fields_.clear();
         table_name_ = handbook_tables_name::diseases;
         //creating fields
-        const auto infectious_field = common::database::make_field_shared_by_default<bool>(
+        const auto infectious_field = common::database::make_field_shared<bool>(
             objects::disease::field_name::is_infectious);
-        const auto type_field = common::database::make_field_shared_by_default<std::string>(
+        const auto type_field = common::database::make_field_shared<std::string>(
             objects::disease::field_name::type);
 
         value_fields_.push_back(type_field);

@@ -1,6 +1,6 @@
-#pragma once
-
+#include <db_field.hpp>
 #include <gtest/gtest.h>
+#include <json/value.h>
 
 #include "patient_properties/current_medicaments.hpp"
 using namespace drug_lib;
@@ -14,10 +14,10 @@ TEST(CurrentMedicamentsTest, DefaultConstructor)
 
 TEST(CurrentMedicamentsTest, ParameterizedConstructorWithVector)
 {
-	const std::vector<common::database::Uuid> medicaments = {
-		common::database::Uuid("505"),
-		common::database::Uuid("505"),
-		common::database::Uuid("505")
+	const std::vector medicaments = {
+		common::database::Uuid("505", false),
+		common::database::Uuid("505", false),
+		common::database::Uuid("505", false)
 	};
 	const CurrentMedicaments current_medicaments(medicaments);
 

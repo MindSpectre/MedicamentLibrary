@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ostream>
-
+#include "data_property.hpp"
 #include "diseases/source/properties_definition.hpp"
 
 namespace drug_lib::data::objects::diseases

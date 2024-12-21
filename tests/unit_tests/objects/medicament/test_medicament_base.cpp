@@ -14,7 +14,7 @@ TEST(MedicamentTest, DefaultConstructor)
 TEST(MedicamentTest, ParameterizedConstructor)
 {
     const Medicament medicament
-        (common::database::Uuid("1"), "Aspirin", "Painkiller", true, "ABUIT123", "accepted", "AV12");
+        (common::database::Uuid("1", true), "Aspirin", "Painkiller", true, "ABUIT123", "accepted", "AV12");
     EXPECT_EQ(medicament.get_id(), "1");
     EXPECT_EQ(medicament.get_name(), "Aspirin");
     EXPECT_EQ(medicament.get_type(), "Painkiller");
@@ -46,7 +46,7 @@ TEST(MedicamentTest, SettersAndGetters)
 
 TEST(MedicamentTest, ToRecord)
 {
-    const Medicament medicament(common::database::Uuid("3"), "Ibuprofen", "Painkiller", true, "ABUIT123", "accepted",
+    const Medicament medicament(common::database::Uuid("3", true), "Ibuprofen", "Painkiller", true, "ABUIT123", "accepted",
                                 "AV13");
 
     for (const auto record = medicament.to_record().fields(); const auto& field : record)
@@ -85,7 +85,7 @@ TEST(MedicamentTest, ToRecord)
 TEST(MedicamentTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4", true)));
     record.push_back(
         std::make_unique<common::database::Field<std::string>>(medicament::field_name::name, "Codeine"));
     record.push_back(

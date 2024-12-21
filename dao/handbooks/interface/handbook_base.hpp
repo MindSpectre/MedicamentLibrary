@@ -45,8 +45,8 @@ namespace drug_lib::dao
 				throw std::runtime_error("Cannot connect to database interface.");
 			}
 			// creating fields
-			const auto id_field = common::database::make_field_shared_by_default<common::database::Uuid>(data::objects::shared::field_name::id);
-			const auto properties_field = common::database::make_field_shared_by_default<Json::Value>(
+			const auto id_field = common::database::make_field_shared<common::database::Uuid>(data::objects::shared::field_name::id);
+			const auto properties_field = common::database::make_field_shared<Json::Value>(
 				data::objects::shared::field_name::properties);
 			fts_fields_.push_back(id_field);
 			fts_fields_.push_back(properties_field);
@@ -131,7 +131,7 @@ namespace drug_lib::dao
 			db_records.push_back(record.to_record());
 			const std::vector<common::database::Record> ids = connect_->insert_with_returning(
 				table_name_, std::move(db_records), {
-					common::database::make_field_shared_by_default<common::database::Uuid>(
+					common::database::make_field_shared<common::database::Uuid>(
 						data::objects::shared::field_name::id)});
 			return ids[0][0]->as<common::database::Uuid>();
 		}

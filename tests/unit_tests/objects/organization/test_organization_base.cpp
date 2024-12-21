@@ -15,7 +15,7 @@ TEST(OrganizationTest, DefaultConstructor)
 
 TEST(OrganizationTest, ParameterizedConstructor)
 {
-    const Organization organization(common::database::Uuid("1"), "PharmaCorp", "Pharmaceutical", "USA", "123-456-7890");
+    const Organization organization(common::database::Uuid("1", true), "PharmaCorp", "Pharmaceutical", "USA", "123-456-7890");
     EXPECT_EQ(organization.get_id(), "1");
     EXPECT_EQ(organization.get_name(), "PharmaCorp");
     EXPECT_EQ(organization.get_type(), "Pharmaceutical");
@@ -41,7 +41,7 @@ TEST(OrganizationTest, SettersAndGetters)
 
 TEST(OrganizationTest, ToRecord)
 {
-    const Organization organization(common::database::Uuid("3"), "HealthCorp", "Healthcare", "Canada", "555-555-5555");
+    const Organization organization(common::database::Uuid("3", true), "HealthCorp", "Healthcare", "Canada", "555-555-5555");
 
     for (const auto record = organization.to_record().fields(); const auto& field : record)
     {
@@ -71,7 +71,7 @@ TEST(OrganizationTest, ToRecord)
 TEST(OrganizationTest, FromRecord)
 {
     common::database::Record record;
-    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4")));
+    record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4", true)));
     record.push_back(
         std::make_unique<common::database::Field<std::string>>(organization::field_name::name, "WellnessCo"));
     record.push_back(
