@@ -8,7 +8,7 @@ namespace drug_lib::dao
 
     void PatientsHandbook::setup() &
     {
-        table_name_ = handbook_tables_name::patients;
+        table_name_ = table_names::patients;
         //creating field
         const auto gender_field = common::database::make_field_shared<std::string>(
             objects::patient::field_name::gender);

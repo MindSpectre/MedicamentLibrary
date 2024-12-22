@@ -1,0 +1,3 @@
+### GET request to example server
+GET http://localhost:3000/api/search/medicament?query={{$random.lorem.word}}&page=1
+###

@@ -3,11 +3,11 @@
 #include <memory>
 
 #include "hash_creator_interface.hpp"
-#include "sha_256.h"
 #include "pbkdf2.hpp"
+#include "sha_256.h"
 
 
-namespace drug_lib::common::hash_creator
+namespace drug_lib::common::crypto
 {
     class HashCreatorFactory
     {

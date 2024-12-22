@@ -26,7 +26,6 @@ add_library(DrugLib_Data_AuthObject
 )
 target_link_libraries(DrugLib_Data_AuthObject
         PUBLIC
-        DrugLib_Common_HashCreator_Factory
         DrugLib_Common_Database_Base
 )
 target_include_directories(DrugLib_Data_AuthObject

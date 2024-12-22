@@ -1,0 +1,10 @@
+### GET request to example server
+POST http://localhost:8002/api/auth/signup
+Content-Type: application/json
+
+{
+  "login": "log1234",
+  "email": "{{$random.email}}",
+  "password": "pass1234"
+}
+###

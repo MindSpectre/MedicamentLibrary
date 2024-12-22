@@ -1,5 +1,5 @@
 ###############################################
-add_subdirectory(hash_creator)
+add_subdirectory(crypto)
 
 add_subdirectory(stopwatch)
 

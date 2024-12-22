@@ -1,6 +1,6 @@
-#pragma once
-#include "organization_properties/license.hpp"
 #include <gtest/gtest.h>
+
+#include "organization_properties/license.hpp"
 using namespace drug_lib;
 using namespace drug_lib::data::objects::organizations;
 
