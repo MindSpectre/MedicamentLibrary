@@ -1,6 +1,7 @@
 {
   "name": "local",
   "gateway_port": 3000,
+  "authenticator_service_url": "http://localhost:8002",
   "search_service_url": "http://localhost:8001",
   "librarian_service_url": "http://localhost:8000",
   "database_port": 5432

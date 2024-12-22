@@ -1,6 +1,7 @@
 {
   "name": "docker",
   "gateway_port": 3000,
+  "authenticator_service_url": "http://authenticator_service:8002",
   "search_service_url": "http://search_service:8001",
   "librarian_service_url": "http://librarian_service:8000",
   "database_port": 5432

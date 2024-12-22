@@ -11,6 +11,7 @@ target_include_directories(DrugLib_Services_Drogon_Gateway PRIVATE controller in
 target_link_libraries(DrugLib_Services_Drogon_Gateway
         PRIVATE
         ${NecessaryDrogonLibs}
+        DrugLib_Common_Utilities
 )
 
 file(COPY config DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

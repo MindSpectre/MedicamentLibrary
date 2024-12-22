@@ -56,6 +56,19 @@ services:
     networks:
       - app_network
 
+  authenticator_service:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/services/drogon/authenticator_service/Dockerfile
+    container_name: authenticator-service-container
+    image: neurospectrelin/authenticator_service:1.0.0
+    depends_on:
+      - postgres
+    ports:
+      - "8002:8002"
+    networks:
+      - app_network
+
 volumes:
   postgres_data:
     driver: local
