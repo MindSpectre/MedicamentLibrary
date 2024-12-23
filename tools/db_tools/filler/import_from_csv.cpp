@@ -77,7 +77,7 @@ std::vector<Json::Value> csv_to_json(const std::string &csv_file)
 int main()
 {
 	constexpr uint32_t port = 5432;
-	constexpr auto host = "localhost";
+	constexpr auto host = "188.225.86.164";
 	constexpr auto db_name = "test_db";
 	constexpr auto username = "postgres";
 	constexpr auto password = "postgres";

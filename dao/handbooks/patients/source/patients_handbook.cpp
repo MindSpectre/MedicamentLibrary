@@ -17,11 +17,12 @@ namespace drug_lib::dao
             objects::patient::field_name::birth_date);
         const auto contact_information_field = common::database::make_field_shared<std::string>(
             objects::patient::field_name::contact_information);
-
+        const auto name_field = common::database::make_field_shared<std::string>(
+                            objects::patient::field_name::name);
         value_fields_.push_back(gender_field);
         value_fields_.push_back(birth_date_field);
         value_fields_.push_back(contact_information_field);
-
+        value_fields_.push_back(name_field);
         HandbookBase::setup();
     }
 }

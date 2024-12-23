@@ -17,10 +17,11 @@ namespace drug_lib::dao
             objects::disease::field_name::is_infectious);
         const auto type_field = common::database::make_field_shared<std::string>(
             objects::disease::field_name::type);
-
+        const auto name_field = common::database::make_field_shared<std::string>(
+                    objects::disease::field_name::name);
         value_fields_.push_back(type_field);
         value_fields_.push_back(infectious_field);
-
+        value_fields_.push_back(name_field);
         HandbookBase::setup();
     }
 }
