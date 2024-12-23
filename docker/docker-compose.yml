@@ -16,6 +16,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   gateway:
     build:
@@ -23,8 +28,6 @@ services:
       dockerfile: ${PROJECT_ROOT}/services/drogon/gateway/Dockerfile
     container_name: gateway-container
     image: neurospectrelin/gateway:1.0.0
-    depends_on:
-      - postgres
     ports:
       - "3000:3000"
     networks:
@@ -37,7 +40,8 @@ services:
     container_name: librarian-service-container
     image: neurospectrelin/librarian_service:1.0.0
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     networks:
@@ -50,7 +54,8 @@ services:
     container_name: search-service-container
     image: neurospectrelin/search_service:1.0.0
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8001:8001"
     networks:
@@ -63,7 +68,8 @@ services:
     container_name: authenticator-service-container
     image: neurospectrelin/authenticator_service:1.0.0
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8002:8002"
     networks:

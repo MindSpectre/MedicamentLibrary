@@ -16,3 +16,4 @@ add_subdirectory(test_service)
 
 add_subdirectory(gateway)
 
+add_subdirectory(treatment_manager_service)

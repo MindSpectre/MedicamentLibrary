@@ -9,7 +9,7 @@ namespace drug_lib::data::objects
 {
 	namespace patient::field_name
 	{
-		static constexpr char personal_name[] = "personal_name";
+		static constexpr char name[] = "name";
 		static constexpr char gender[] = "gender";
 		static constexpr char birth_date[] = "birth_date";
 		static constexpr char contact_information[] = "contact_information";
@@ -28,7 +28,7 @@ namespace drug_lib::data::objects
 			common::database::Uuid id, std::string name, std::string gender, std::chrono::year_month_day const birth_date,
 			std::string contact_information)
 			: ObjectBase(std::move(id)),
-			  personal_name_(std::move(name)),
+			  name_(std::move(name)),
 			  gender_(std::move(gender)),
 			  birth_date_(birth_date),
 			  contact_information_(std::move(contact_information))
@@ -41,7 +41,7 @@ namespace drug_lib::data::objects
 		{
 			common::database::Record record;
 			record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, id_));
-			record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::personal_name, personal_name_));
+			record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::name, name_));
 			record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::gender, gender_));
 			record.push_back(
 				std::make_unique<common::database::Field<std::chrono::system_clock::time_point>>(
@@ -62,9 +62,9 @@ namespace drug_lib::data::objects
 				{
 					id_ = field->as<common::database::Uuid>();
 				}
-				else if (field_name == patient::field_name::personal_name)
+				else if (field_name == patient::field_name::name)
 				{
-					personal_name_ = field->as<std::string>();
+					name_ = field->as<std::string>();
 				}
 
 				else if (field_name == patient::field_name::gender)
@@ -100,9 +100,9 @@ namespace drug_lib::data::objects
 				{
 					id_ = viewed->extract(i);
 				}
-				else if (field_name == patient::field_name::personal_name)
+				else if (field_name == patient::field_name::name)
 				{
-					personal_name_ = viewed->extract(i);
+					name_ = viewed->extract(i);
 				}
 				else if (field_name == patient::field_name::gender)
 				{
@@ -138,7 +138,7 @@ namespace drug_lib::data::objects
 		[[nodiscard]] Json::Value to_json() const override
 		{
 			Json::Value result = ObjectBase::to_json();
-			result[patient::field_name::personal_name] = personal_name_;
+			result[patient::field_name::name] = name_;
 			result[patient::field_name::gender] = gender_;
 			result[patient::field_name::birth_date]["year"] = static_cast<int>(birth_date_.year());
 			result[patient::field_name::birth_date]["month"] = static_cast<uint>(birth_date_.month());
@@ -151,7 +151,7 @@ namespace drug_lib::data::objects
 		void from_json(const Json::Value &val) override
 		{
 			ObjectBase::from_json(val);
-			personal_name_ = val[patient::field_name::personal_name].asString();
+			name_ = val[patient::field_name::name].asString();
 			gender_ = val[patient::field_name::gender].asString();
 
 			if (const Json::Value &birth_date = val[patient::field_name::birth_date];
@@ -172,12 +172,12 @@ namespace drug_lib::data::objects
 
 		[[nodiscard]] const std::string &get_name() const
 		{
-			return personal_name_;
+			return name_;
 		}
 
 		void set_name(const std::string &name)
 		{
-			personal_name_ = name;
+			name_ = name;
 		}
 
 		[[nodiscard]] const std::string &get_gender() const
@@ -211,7 +211,7 @@ namespace drug_lib::data::objects
 		}
 
 	private:
-		std::string personal_name_;
+		std::string name_;
 		std::string gender_;
 		std::chrono::year_month_day birth_date_{};
 		std::string contact_information_;

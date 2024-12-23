@@ -1,0 +1,32 @@
+///Request to auth server with SIGNUP
+
+### Proposal - success
+POST http://localhost:8002/api/auth/signup
+Content-Type: application/json
+
+{
+  "login": "admin",
+  "email": "{{$random.email}}",
+  "password": "admin"
+}
+### Empty body
+POST http://localhost:8002/api/auth/signup
+
+### Not existed user
+POST http://localhost:8002/api/auth/signup
+Content-Type: application/json
+
+{
+  "login": "{{$random.name.username}}",
+  "email": "{{$random.email}}",
+  "password": "{{$random.internet.password}}"
+}
+
+### Existed user
+POST http://localhost:8002/api/auth/signup
+Content-Type: application/json
+
+{
+  "login": "admin",
+  "password": "admin"
+}
