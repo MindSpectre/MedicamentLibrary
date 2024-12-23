@@ -34,25 +34,62 @@ namespace drug_lib::common::database
 	{
 	public:
 		static constexpr char default_value[] = "default";
+		static constexpr char null_value[] = "null";
 
-		// Default constructor
-		Uuid() = default;
 
-		// Constructor from std::string
-		explicit Uuid(std::string value, const bool is_primary) : primary_(is_primary), uuid_(std::move(value))
+		[[nodiscard]] bool is_null() const
 		{
+			return is_null_;
 		}
-		// explicit Uuid(const bool is_primary) : primary_(is_primary)
-		// {
-		// }
-		explicit operator std::string() const
+
+		[[nodiscard]] bool is_default() const
+		{
+			return is_default_;
+		}
+		Uuid& set_default()
+		{
+			uuid_ = default_value;
+			is_default_ = true;
+			is_null_ = false;
+			return *this;
+		}
+		Uuid& set_null()
+		{
+			uuid_ = null_value;
+			is_null_ = true;
+			is_default_ = false;
+			primary_ = false;
+			return *this;
+		}
+
+		[[nodiscard]] const std::string &get_id() const
 		{
 			return uuid_;
 		}
 
-		explicit operator std::string()
+		void set_id(std::string uuid)
 		{
-			return uuid_;
+			uuid_ = std::move(uuid);
+			if (uuid_ == default_value)
+			{
+				is_null_ = false;
+				is_default_ = true;
+			}
+			if (uuid_ == null_value)
+			{
+				is_null_ = true;
+				is_default_ = false;
+			}
+		}
+
+		[[nodiscard]] bool is_primary() const
+		{
+			return primary_;
+		}
+
+		void set_primary(const bool is_primary)
+		{
+			primary_ = is_primary;
 		}
 
 		// Equality operators
@@ -66,52 +103,36 @@ namespace drug_lib::common::database
 			return uuid_ != other.uuid_;
 		}
 
-		[[nodiscard]] const std::string &get_id() const
+		explicit operator std::string() const
 		{
 			return uuid_;
 		}
 
-		void set_id(std::string uuid)
+		explicit operator std::string()
 		{
-			uuid_ = std::move(uuid);
+			return uuid_;
 		}
 
-		[[nodiscard]] bool is_primary() const
+		// Default constructor
+		Uuid() = default;
+
+		// Constructor from std::string
+		explicit Uuid(std::string value, const bool is_primary)
+			: primary_(is_primary),
+			  uuid_(std::move(value))
 		{
-			return primary_;
+			is_null_ = uuid_ == null_value;
+			is_default_ = !is_null_ && uuid_ == default_value;
 		}
 
-		void set_primary(const bool is_primary)
+		explicit Uuid(const bool is_primary)
+			: primary_(is_primary)
 		{
-			primary_ = is_primary;
-		}
-
-		Uuid(const Uuid &other) = default;
-
-		Uuid(Uuid &&other) noexcept
-			: uuid_(std::move(other.uuid_))
-		{
-		}
-
-		Uuid &operator=(const Uuid &other)
-		{
-			if (this == &other)
-				return *this;
-			uuid_ = other.uuid_;
-			return *this;
 		}
 
 		Uuid &operator=(std::string other)
 		{
 			uuid_ = std::move(other);
-			return *this;
-		}
-
-		Uuid &operator=(Uuid &&other) noexcept
-		{
-			if (this == &other)
-				return *this;
-			uuid_ = std::move(other.uuid_);
 			return *this;
 		}
 
@@ -142,6 +163,8 @@ namespace drug_lib::common::database
 
 	private:
 		bool primary_ = true;
+		bool is_default_ = false;
+		bool is_null_ = false;
 		std::string uuid_ = default_value;
 
 		// Validate UUID format (basic example, can be extended)
@@ -367,6 +390,8 @@ namespace drug_lib::common::database
 			{
 				if (this->value().is_primary())
 					return "UUID DEFAULT gen_random_uuid() PRIMARY KEY";
+				if (this->value().is_null())
+					return "UUID NULL";
 				return "UUID NOT NULL";
 			}
 			else if constexpr (std::is_same_v<T, int64_t>)

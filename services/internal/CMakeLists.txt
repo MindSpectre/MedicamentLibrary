@@ -5,7 +5,7 @@
 set(InternalLibs
         DrugLib_Dao_SuperHandbook
         DrugLib_Common_Database_Factory
-        DrugLib_Common_HashCreator_Factory
+        DrugLib_Common_Crypto
         DrugLib_Common_Utilities
         DrugLib_Common_Stopwatch
 )

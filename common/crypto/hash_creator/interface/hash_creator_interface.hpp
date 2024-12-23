@@ -7,7 +7,7 @@
 #include <ostream>
 #include <iomanip>
 
-namespace drug_lib::common::hash_creator
+namespace drug_lib::common::crypto
 {
     class HashCreator
     {
@@ -38,7 +38,7 @@ namespace drug_lib::common::hash_creator
 
         HashCreator() = default;
 
-        virtual std::string hash_function(const std::string& data, const std::string& salt) = 0;
+        virtual std::string hash_function(std::string_view data, std::string_view salt) = 0;
 
         std::pair<std::string, std::string> hash_with_generated_salt(const std::string& password)
         {

@@ -11,13 +11,12 @@
 
 namespace drug_lib::dao
 {
-	namespace handbook_tables_name
+	namespace table_names
 	{
 		constexpr char medicaments[] = "medicaments";
 		constexpr char organizations[] = "organizations";
 		constexpr char patients[] = "patients";
 		constexpr char diseases[] = "diseases";
-		constexpr char config_operations[] = "config_operations";
 	} // namespace handbook_tables_name
 
 	template <typename T>
@@ -146,15 +145,6 @@ namespace drug_lib::dao
 			connect_->remove(table_name_, removed_conditions);
 		}
 
-		void remove_by_name(const std::string &name) const
-		{
-			common::database::Conditions removed_conditions;
-			removed_conditions.add_field_condition(
-				std::make_unique<common::database::Field<std::string>>(RecordType::field_name::name, ""), "=",
-				std::make_unique<common::database::Field<std::string>>("", name));
-			connect_->remove(table_name_, removed_conditions);
-		}
-
 		[[nodiscard]] uint32_t count_all() const
 		{
 			return connect_->count(table_name_);
@@ -191,44 +181,6 @@ namespace drug_lib::dao
 			RecordType record;
 			record.from_record(res.front());
 			return record;
-		}
-
-		std::vector<RecordType> get_by_name(const std::string &name) const
-		{
-			common::database::Conditions select_conditions;
-			select_conditions.add_field_condition(
-				std::make_unique<common::database::Field<std::string>>(RecordType::field_name::name, ""), "=",
-				std::make_unique<common::database::Field<std::string>>("", name));
-			auto res = connect_->select(table_name_, select_conditions);
-			std::vector<RecordType> records;
-			records.reserve(res.size());
-			for (const auto &record: res)
-			{
-				RecordType tmp;
-				tmp.from_record(record);
-				records.push_back(std::move(tmp));
-			}
-			return records;
-		}
-
-		std::vector<RecordType> get_by_name_paged(
-			const std::string &name, const uint16_t page_limit, const std::size_t page_number = 1) const
-		{
-			common::database::Conditions select_conditions;
-			select_conditions.add_field_condition(
-				std::make_unique<common::database::Field<int32_t>>(RecordType::field_name::name, 0), "=",
-				std::make_unique<common::database::Field<std::string>>("", name));
-			select_conditions.set_page_condition(common::database::PageCondition(page_limit).set_page_number(page_number));
-			auto res = connect_->select(table_name_, select_conditions);
-			std::vector<RecordType> records;
-			records.reserve(res.size());
-			for (const auto &record: res)
-			{
-				RecordType tmp;
-				tmp.from_record(record);
-				records.push_back(std::move(tmp));
-			}
-			return records;
 		}
 
 		std::vector<RecordType> search(const std::string &pattern) const

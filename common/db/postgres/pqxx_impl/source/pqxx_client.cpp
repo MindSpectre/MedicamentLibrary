@@ -625,6 +625,11 @@ namespace drug_lib::common::database
 		if (type_oid->second == "uuid") // UUID type
 		{
 			//WARNING All fields are identified as not primary, suppose be checked further
+			if (field.is_null() == true)
+			{
+				field_ptr = std::make_unique<Field<Uuid>>(field.name(), Uuid().set_null());
+				return field_ptr;
+			}
 			field_ptr = std::make_unique<Field<Uuid>>(field.name(), Uuid(field.as<std::string>(), false));
 			return field_ptr;
 		}

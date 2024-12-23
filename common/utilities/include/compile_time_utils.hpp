@@ -40,4 +40,5 @@ namespace drug_lib::common::utilities::compile_time
 
 		return result;
 	}
+	// Overload + operator for compile-time string concatenation
 }

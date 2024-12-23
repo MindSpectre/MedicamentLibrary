@@ -234,6 +234,9 @@ namespace drug_lib::common::database
 					if (field->get_sql_type() == SqlType::UUID && field->to_string() == Uuid::default_value)
 					{
 						query += "DEFAULT, ";
+					} else if (field->get_sql_type() == SqlType::UUID && field->to_string() == Uuid::null_value)
+					{
+						query += "NULL, ";
 					}
 					else
 					{

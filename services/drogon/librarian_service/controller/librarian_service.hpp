@@ -51,12 +51,6 @@ namespace drug_lib::services::drogon
 			this->set_up_db(connect);
 		}
 
-		explicit Librarian(std::shared_ptr<common::database::interfaces::DbInterface> &&connect)
-		{
-			LOG_INFO << "Librarian service has been created";
-			this->set_up_db(std::move(connect));
-		}
-
 		static constexpr bool isAutoCreation = false;
 
 		~Librarian() override

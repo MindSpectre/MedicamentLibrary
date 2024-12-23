@@ -11,7 +11,7 @@ namespace drug_lib::dao
         fts_fields_.clear();
         key_fields_.clear();
         value_fields_.clear();
-        table_name_ = handbook_tables_name::diseases;
+        table_name_ = table_names::diseases;
         //creating fields
         const auto infectious_field = common::database::make_field_shared<bool>(
             objects::disease::field_name::is_infectious);

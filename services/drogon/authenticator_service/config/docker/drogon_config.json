@@ -1,0 +1,12 @@
+{
+  "listeners": [
+    {
+      "address": "0.0.0.0",
+      "port": 8002
+    }
+  ],
+  "app": {
+    "threads_num": 4,
+    "enable_cross_origin_resource_sharing": true
+  }
+}

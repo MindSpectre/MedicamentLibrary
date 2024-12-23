@@ -1,0 +1,28 @@
+/// Login auth server
+
+### Login all correct
+POST http://localhost:8002/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "admin",
+  "password": "admin"
+}
+### Login wrong password
+POST http://localhost:8002/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "admin",
+  "password": "_not_admin"
+}
+### Login wrong login
+POST http://localhost:8002/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "_not_admin",
+  "password": "_not_admin"
+}
+### Empty
+POST http://localhost:8002/api/auth/login

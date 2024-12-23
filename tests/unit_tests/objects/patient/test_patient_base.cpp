@@ -51,7 +51,7 @@ TEST(PatientTest, ToRecord)
 
     for (const auto record = patient.to_record().fields(); const auto& field : record)
     {
-        if (field->get_name() == patient::field_name::personal_name)
+        if (field->get_name() == patient::field_name::name)
         {
             EXPECT_EQ("Alice Smith", field->as<std::string>());
         }
@@ -75,7 +75,7 @@ TEST(PatientTest, FromRecord)
     common::database::Record record;
     record.push_back(std::make_unique<common::database::Field<common::database::Uuid>>(shared::field_name::id, common::database::Uuid("4", true)));
     record.push_back(
-        std::make_unique<common::database::Field<std::string>>(patient::field_name::personal_name, "Bob Brown"));
+        std::make_unique<common::database::Field<std::string>>(patient::field_name::name, "Bob Brown"));
     record.push_back(std::make_unique<common::database::Field<std::string>>(patient::field_name::gender, "Male"));
     record.push_back(
         std::make_unique<common::database::Field<std::string>>(patient::field_name::contact_information,

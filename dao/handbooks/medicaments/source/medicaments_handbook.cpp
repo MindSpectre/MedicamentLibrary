@@ -10,7 +10,7 @@ namespace drug_lib::dao
 
     void MedicamentsHandbook::setup() &
     {
-        table_name_ = handbook_tables_name::medicaments;
+        table_name_ = table_names::medicaments;
         //creating fields
         const auto infectious_field = common::database::make_field_shared<bool>(
             objects::medicament::field_name::requires_prescription);

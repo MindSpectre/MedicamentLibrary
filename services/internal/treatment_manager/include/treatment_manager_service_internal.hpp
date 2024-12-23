@@ -31,11 +31,12 @@ namespace drug_lib::services
         void assign_disease(common::database::Uuid patient_id, common::database::Uuid disease_id);
         void remove_disease(common::database::Uuid patient_id, const common::database::Uuid &disease_id);
         void cure_disease(common::database::Uuid patient_id, const common::database::Uuid &disease_id);
-        void assign_drug(common::database::Uuid patient_id, common::database::Uuid drug_id);
-        void remove_drug(common::database::Uuid patient_id, const common::database::Uuid &drug_id);
-        std::vector<data::objects::Medicament> current_drugs(common::database::Uuid patient_id);
+        void assign_medicament(common::database::Uuid patient_id, common::database::Uuid drug_id);
+        void remove_medicament(common::database::Uuid patient_id, const common::database::Uuid &drug_id);
+        std::vector<data::objects::Medicament> current_medicaments(common::database::Uuid patient_id);
         std::vector<data::objects::Disease> current_diseases(common::database::Uuid patient_id);
         data::objects::Patient patient_profile(common::database::Uuid patient_id);
+        MedicamentSuggestion suggest_medicament(const common::database::Uuid &patient_id);
         bool is_dangerous(common::database::Uuid patient_id);
 
         void setup_from_one(const std::shared_ptr<common::database::interfaces::DbInterface>& connect)
