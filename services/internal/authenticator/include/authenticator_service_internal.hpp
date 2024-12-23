@@ -11,20 +11,9 @@ namespace drug_lib::services
 	public:
 		[[nodiscard]] bool login(const std::string_view username, const std::string_view password) const
 		{
-			data::objects::AuthObject user;
-			try
-			{
-				user = auth_data_holder_.get_by_login(username.data());
-			}
-			catch (const common::database::exceptions::InvalidIdentifierException &e)
-			{
-				if (e.get_error() == common::database::errors::db_error_code::RECORD_NOT_FOUND)
-				{
-					// TODO: suggest signup
-				}
-			}
-			if (common::utilities::security::constant_time_compare(user.get_password_hash(),
-			                                                       hasher->hash_function(password, user.get_salt())))
+			if (const data::objects::AuthObject user = auth_data_holder_.get_by_login(username.data());
+				common::utilities::security::constant_time_compare(user.get_password_hash(),
+				                                                   hasher->hash_function(password, user.get_salt())))
 			{
 				return true;
 			}
@@ -54,8 +43,8 @@ namespace drug_lib::services
 					return;
 				}
 			}
-			//TODO: replace with custom exception
-			throw std::invalid_argument("User is already exist");
+			throw common::database::exceptions::InvalidIdentifierException("User already exists",
+			                                                               common::database::errors::db_error_code::DUPLICATE_RECORD);
 		}
 
 		AuthenticatorServiceInternal() : hasher(common::crypto::HashCreatorFactory::CreatePBKDF2Coder())

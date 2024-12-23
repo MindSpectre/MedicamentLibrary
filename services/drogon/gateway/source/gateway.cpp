@@ -9,6 +9,9 @@ drug_lib::services::drogon::Gateway::Gateway(const Json::Value &refs)
 	librarian_service_client_ = ::drogon::HttpClient::newHttpClient(refs["librarian_service_url"].asString());
 	authenticator_service_client_ = ::drogon::HttpClient::newHttpClient(refs["authenticator_service_url"].asString());
 	LOG_DEBUG << "Services has been connected to network.";
+	LOG_DEBUG << "Search service URL: " << search_service_client_->getHost().c_str() << ":" << search_service_client_->getPort();
+	LOG_DEBUG << "Library service URL: " << librarian_service_client_->getHost().c_str() << ":" << librarian_service_client_->getPort();
+	LOG_DEBUG << "Authenticator service URL: " << authenticator_service_client_->getHost().c_str() <<":" << authenticator_service_client_->getPort();
 }
 
 void drug_lib::services::drogon::Gateway::hello_world(
@@ -98,9 +101,11 @@ void drug_lib::services::drogon::Gateway::proxy_to_librarian_service(
 	sw.finish();
 }
 
-void drug_lib::services::drogon::Gateway::proxy_to_authenticator_service(const ::drogon::HttpRequestPtr &req, std::function<void(const ::drogon::HttpResponsePtr &)> &&callback) const
+void drug_lib::services::drogon::Gateway::proxy_to_authenticator_service(
+	const ::drogon::HttpRequestPtr &req, std::function<void(const ::drogon::HttpResponsePtr &)> &&callback,
+	const std::string &path) const
 {
-	const auto full_path = append_query_params(req, constants::endpoint_authenticator_service);
+	const auto full_path = append_query_params(req, constants::endpoint_authenticator_service + path);
 	common::Stopwatch<std::chrono::nanoseconds> sw(" Redirected to Authenticator Service with path" + full_path);
 
 	const auto cloned_request = ::drogon::HttpRequest::newHttpRequest();
@@ -108,7 +113,7 @@ void drug_lib::services::drogon::Gateway::proxy_to_authenticator_service(const :
 	req->setPath(full_path);
 	req->setContentTypeCode(::drogon::ContentType::CT_APPLICATION_JSON);
 	sw.start();
-	librarian_service_client_->sendRequest(
+	authenticator_service_client_->sendRequest(
 		req, [callback](const ::drogon::ReqResult result, const ::drogon::HttpResponsePtr &resp)
 		{
 			if (result == ::drogon::ReqResult::Ok)

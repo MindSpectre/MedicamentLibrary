@@ -2,3 +2,12 @@
 GET http://localhost:3000/api/search/medicament?query={{$random.lorem.word}}&page=1
 ###
 GET http://localhost:3000/api/wiki/medicament/{{$random.uuid}}
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "log1234",
+  "email": "{{$random.email}}",
+  "password": "pass1234"
+}

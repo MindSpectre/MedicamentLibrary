@@ -22,7 +22,7 @@ namespace drug_lib::services::drogon
 	{
 	public:
 		METHOD_LIST_BEGIN
-			ADD_METHOD_TO(Authenticator::login, constants::endpoint_login, ::drogon::Get);
+			ADD_METHOD_TO(Authenticator::login, constants::endpoint_login, ::drogon::Post);
 			ADD_METHOD_TO(Authenticator::signup, constants::endpoint_signup, ::drogon::Post);
 		METHOD_LIST_END
 
@@ -52,7 +52,7 @@ namespace drug_lib::services::drogon
 
 		void set_up_db(const std::shared_ptr<common::database::interfaces::DbInterface> &connect)
 		{
-			LOG_INFO << "Setting up search db";
+			LOG_INFO << "Setting up auth db";
 			service_.setup_from_one(connect);
 		}
 	};

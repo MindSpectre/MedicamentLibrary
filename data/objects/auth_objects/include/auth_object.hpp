@@ -168,7 +168,6 @@ namespace drug_lib::data::objects
                 user_id_.set_id(common::database::Uuid::default_value);
             }
             login_ = val[auth_object::field_name::login].asString();
-            // Todo: crete hash calc because in json stores raw value
             password_hash_ = val[auth_object::field_name::password].asString();
             role_ = val[auth_object::field_name::role].asString();
             email_ = val[auth_object::field_name::email].asString();

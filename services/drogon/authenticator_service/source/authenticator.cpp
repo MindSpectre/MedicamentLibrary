@@ -3,11 +3,11 @@
 void drug_lib::services::drogon::Authenticator::login(const ::drogon::HttpRequestPtr &req, std::function<void(const ::drogon::HttpResponsePtr &)> &&callback) const
 {
 	LOG_INFO << "Login";
-	Json::Value request = *req->getJsonObject();
+	const auto response = ::drogon::HttpResponse::newHttpResponse();
+	const std::shared_ptr<Json::Value> &request = req->getJsonObject();
 	if (!request)
 	{
 		LOG_ERROR << "Unobtainable json";
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
 		response->setStatusCode(::drogon::k400BadRequest);
 		response->setBody("Invalid JSON payload");
 		callback(response);
@@ -16,19 +16,31 @@ void drug_lib::services::drogon::Authenticator::login(const ::drogon::HttpReques
 
 	try
 	{
-		const std::string& login = request["login"].asString();
-		const std::string& password = request["password"].asString();
-		const bool verdict = service_.login(login, password);
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
-		if (verdict) response->setStatusCode(::drogon::k200OK);
-		else response->setStatusCode(::drogon::k400BadRequest);
+		if (request->empty())
+		{
+			response->setStatusCode(::drogon::k400BadRequest);
+			callback(response);
+		}
+		const std::string &login = (*request)["login"].asString();
+		const std::string &password = (*request)["password"].asString();
+		if (service_.login(login, password))
+			response->setStatusCode(::drogon::k200OK);
+		else
+			response->setStatusCode(::drogon::k401Unauthorized);
 		callback(response);
 	}
-	//TODO: Process more exceptions, like bad data or invalid login
+	catch (const common::database::exceptions::InvalidIdentifierException &e)
+	{
+		if (e.get_error() == common::database::errors::db_error_code::RECORD_NOT_FOUND)
+		{
+			LOG_ERROR << "User not exist" << e.what();
+			response->setStatusCode(::drogon::k404NotFound);
+			response->setBody(e.what());
+		}
+	}
 	catch (const std::exception &e)
 	{
 		LOG_ERROR << "Cant signup" << e.what();
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
 		response->setStatusCode(::drogon::k500InternalServerError);
 		response->setBody(e.what());
 		callback(response);
@@ -37,12 +49,12 @@ void drug_lib::services::drogon::Authenticator::login(const ::drogon::HttpReques
 
 void drug_lib::services::drogon::Authenticator::signup(const ::drogon::HttpRequestPtr &req, std::function<void(const ::drogon::HttpResponsePtr &)> &&callback) const
 {
+	const auto response = ::drogon::HttpResponse::newHttpResponse();
 	LOG_INFO << "Signup";
 	Json::Value request = *req->getJsonObject();
 	if (!request)
 	{
 		LOG_ERROR << "Unobtainable json";
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
 		response->setStatusCode(::drogon::k400BadRequest);
 		response->setBody("Invalid JSON payload");
 		callback(response);
@@ -59,15 +71,21 @@ void drug_lib::services::drogon::Authenticator::signup(const ::drogon::HttpReque
 			email = request["email"].asString();
 		}
 		service_.signup(login, password, email);
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
 		response->setStatusCode(::drogon::k200OK);
 		callback(response);
 	}
-	//TODO: Process more exceptions, like bad data or invalid login
+	catch (const common::database::exceptions::InvalidIdentifierException &e)
+	{
+		if (e.get_error() == common::database::errors::db_error_code::DUPLICATE_RECORD)
+		{
+			LOG_ERROR << "User not exist" << e.what();
+			response->setStatusCode(::drogon::k401Unauthorized);
+			response->setBody(e.what());
+		}
+	}
 	catch (const std::exception &e)
 	{
 		LOG_ERROR << "Cant signup" << e.what();
-		const auto response = ::drogon::HttpResponse::newHttpResponse();
 		response->setStatusCode(::drogon::k500InternalServerError);
 		response->setBody(e.what());
 		callback(response);
