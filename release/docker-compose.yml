@@ -21,7 +21,7 @@ services:
       retries: 5
 
   gateway:
-    image: ghcr.io/mindspectre/gateway:1.0.0
+    image: ghcr.io/mindspectre/gateway:latest
     container_name: gateway-container
     depends_on:
       postgres:
@@ -32,7 +32,7 @@ services:
       - app_network
 
   librarian_service:
-    image: ghcr.io/mindspectre/librarian_service:1.0.0
+    image: ghcr.io/mindspectre/librarian_service:latest
     container_name: librarian-service-container
     depends_on:
       postgres:
@@ -43,7 +43,7 @@ services:
       - app_network
 
   search_service:
-    image: ghcr.io/mindspectre/search_service:1.0.0
+    image: ghcr.io/mindspectre/search_service:latest
     container_name: search-service-container
     depends_on:
       postgres:
@@ -54,7 +54,7 @@ services:
       - app_network
 
   frontend:
-    image: ghcr.io/mindspectre/frontend:1.0.0
+    image: ghcr.io/mindspectre/frontend:latest
     container_name: frontend-container
     depends_on:
       - gateway
